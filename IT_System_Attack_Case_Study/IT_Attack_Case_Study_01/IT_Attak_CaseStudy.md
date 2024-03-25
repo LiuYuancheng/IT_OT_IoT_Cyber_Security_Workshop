@@ -2,7 +2,7 @@
 
 ### Malicious Macro and Backdoor Trojan Attack on IT-Network
 
-![](img/IT01_overView.png)
+![](img/IT01_overview.png)
 
 **Project Design Purpose**: The objective of this cyber attack case study is to develop a workshop showcasing a practical demonstration of a red team attacker implementing an IT system/network attack via a Malicious Macro MS-Office-Word file (`CVE-2015-1641`) and phishing email generation program to penetrate multiple layers of firewall defenses and implant a backdoor trojan into the railway system's OT network.
 
@@ -17,7 +17,7 @@
 >  Important : The demonstrated attack case is used for education and training for different level of IT-OT cyber security ICS course, please don't apply it on any real world system.
 
 ```
-# version:		v0.1.2
+# version:      v0.1.2
 # Created:     	February 18, 2024
 # Copyright:   	Copyright (c) 2024 LiuYuancheng
 # License:     	MIT License
