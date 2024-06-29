@@ -223,4 +223,163 @@ For detailed S7Comm packet, you can refer to this article: https://blog.viettelc
 
 ![](img/S7CommTable.png)
 
-We will use the python snap-7 lib to communicate with the PLC with S7Comm protocol. 
+We will use the python snap-7 lib to communicate with the PLC with S7Comm protocol then use the `read_area` and `write_area` to do the PLC data IO. 
+
+#### STEP 4: Use Python to Communicate with the PLC
+
+**4.1 Init connection**
+
+To communicate with the PLC, we need to fist init a TCP client which connect to the PLC's  IPaddress with port 102 as shown below: 
+
+```
+ self.plcAgent = snap7.client.Client()        
+ try:
+     self.plcAgent.connect(self.ip, 0, 1, 502)
+     if self.debug: print("S71200Client: Connected to the PLC [%s]" % self.ip)
+     self.connected = True 
+ except Exception as err:
+     print("Error: S71200Client init Error: %s" % err)
+     return None
+```
+
+
+
+**4.2 Read the  PLC memory**
+
+For the data area read, the S71200 support 5 data types: 
+
+| Data types           | Bytes number | Identify character | memory tab format                 |
+| -------------------- | ------------ | ------------------ | --------------------------------- |
+| BOOL_TYPE (bool)     | 1 bytes      | x                  | `m(i/q)x<start Byte>.<start bit>` |
+| Byte_TYPE (byte/int) | 1 bytes      | b                  | `m(i/q)b<start Byte>`             |
+| WORD_TYPE(char)      | 2bytes       | w                  | `m(i/q)w<start Byte>`             |
+| Double_WORD_TYPE     | 4bytes       | d                  | `m(i/q)d<start Byte>`             |
+| REAL_NUM_TYPE        | 4bytes       | freal              | `freal<start Byte>`               |
+
+We use the snapy-util.get_* function to convert the read data to the related value as shown below:
+
+```
+    def _memByte2Value(self, mbyte, valType, startMIdx, bitIndex):
+        """ Convert the memeory byte to the value of the specified type.
+            Args:
+                mbyte (bytes): data bytes. 
+                valType (int): convert value's data type.
+                startMIdx (int): start index of the memeory byte.
+                bitIndex (_type_): start index of the memeory bit.
+            Returns:
+                _type_: _description_
+        """
+        data = None
+        if valType == BOOL_TYPE:
+            data = snap7.util.get_bool(mbyte, 0, bitIndex)
+        elif valType == INT_TYPE:
+            data = snap7.util.get_int(mbyte, startMIdx)
+        elif valType == REAL_TYPE:
+            data = snap7.util.get_real(mbyte, 0)
+        elif valType == WORD_TYPE:
+            data = snap7.util.get_word(mbyte, startMIdx)
+        elif valType == DWORD_TYPE:
+            data = snap7.util.get_dword(mbyte, 0)
+        else:
+            print("Error: _getMemValue()> input type invlided: %s" % str(valType))
+        return data
+```
+
+Based on the read memory tag type config the start byte index and bit index then read the data: 
+
+```
+        if(memAddrTag[1].lower() == 'x'):
+            # Config the bool type data tag 
+            valLength = 1
+            valType = BOOL_TYPE
+            startMIdx = int(memAddrTag.split('.')[0][2:])
+            bitIndex = int(memAddrTag.split('.')[1])
+        elif(memAddrTag[1].lower() == 'b'):
+            # Config the bype or integer type data tag
+            valLength = 1
+            valType = INT_TYPE
+            startMIdx = int(memAddrTag[2:])
+        elif(memAddrTag[1].lower() == 'w'):
+            # Config the word type data tag
+            valLength = 2
+            valType = WORD_TYPE
+            startMIdx = int(memAddrTag[2:])
+        elif(memAddrTag[1].lower() == 'd'):  # double
+            valLength = 4
+            valType = DWORD_TYPE
+            startMIdx = int(memAddrTag.split('.')[0][2:])
+        elif('freal' in memAddrTag.lower()): # float real number
+            valLength = 4
+            valType = REAL_TYPE
+            startMIdx = int(memAddrTag.lower().replace('freal', ''))
+        else:
+            print("Error: readMem()> input memory tag invlided: %s" %str(memAddrTag))
+            return None
+        # Init the memory start area.
+        memoryArea = MEM_AREA_IDX[memType]
+        try: 
+            mbyte = self.plcAgent.read_area(memoryArea, 0, startMIdx, valLength)
+```
+
+
+
+**4.4 Write the PLC memory data **  
+
+To write the bytes data to a PLC we don't want to overwrite the bit which we don't want to change, so we will read the data from the memory then change the related part wit the snapy-util.set_* functions, then write the data back to the memory. The simple memory write function is shown below:
+
+```
+    def writeMem(self, mem, value):
+        """ Set the PLC state from related memeory address: IX0.N-input, QX0.N-output, 
+            MX0.N-memory.
+        """
+        data = self.getMem(mem, True)
+        start = bit = 0  # start position idx
+        # get the area memory address
+        memType = mem[0].lower()
+        area = self.memAreaDict[memType]
+        # Set the data lenght and start idx and call the utility functions from <snap7.util>
+        if(mem[1].lower() == 'x'):  # bit
+            start, bit = int(mem.split('.')[0][2:]), int(mem.split('.')[1])
+            set_bool(data, 0, bit, int(value))
+        elif(mem[1].lower() == 'b'):  # byte
+            start = int(mem[2:])
+            set_int(data, 0, value)
+        elif(mem[1].lower() == 'w'):
+            start = int(mem.split('.')[0][2:])
+        elif(mem[1].lower() == 'd'):
+            start = int(mem.split('.')[0][2:])
+            set_dword(data, 0, value)
+        elif('freal' in mem.lower()):  # double word (real numbers)
+            start = int(mem.lower().replace('freal', ''))
+            set_real(data, 0, value)
+        # Call the write function and return the value.
+        return self.plc.write_area(area, 0, start, data)
+```
+
+
+
+#### Full Python M221 PLC client program 
+
+You can download the full python M221 PLC memory from this link: [S71200PlcClient.py](https://github.com/LiuYuancheng/PLC_and_RTU_Simulator/blob/main/Physical_PLC_Client/S71200PlcClient.py) It also provide the threading wrapper class so you can run the PLC reader parallel with your main program program to read the PLC state regularly. 
+
+The lib also provide 3 test cases, you can follow test case 1 & 2 to read and write PLC memory and test case 3 to use the client thread wrapper class. 
+
+
+
+------
+
+### Multi thread wrapper
+
+
+
+------
+
+### Reference
+
+
+
+`
+
+------
+
+> Last edit by LiuYuancheng(liu_yuan_cheng@hotmail.com) at 29/06/2024, if you have any problem please free to message me.
