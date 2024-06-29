@@ -1,6 +1,6 @@
 # Python and PLC Communication 
 
-This article will introduce how to use Python Program to Communicate with Schneider M221 PLC or Siemens S7-1200 PLC. 
+This article will introduce the detail steps about how to use Python Program to Communicate with two type Schneider M221 PLC or Siemens S7-1200 PLC via ethernet. We also provide the packaged python PLC client library so you can use them to build your own SCADA control program such as HMI.
 
 ![](img/title.png)
 
@@ -191,7 +191,13 @@ S7-1200 Manual: https://assets.new.siemens.com/siemens/assets/api/uuid:c7de7888-
 
 To communicate S71200 we can use the the python snap-7 lib: https://python-snap7.readthedocs.io/en/latest/
 
- 
+#### STEP 1: Config the  Siemens S71200 
+
+Lined the Siemens S71200 PLC in the network, the user the Siemens PLC editor program [siemens tia portal ](https://www.siemens.com/global/en/products/automation/industry-software/automation-software/tia-portal/software/step7-tia-portal.html) to config the IP address. You can follow this article to setup the IP address and the : 
+
+https://www.geekering.com/categories/automation/rodrigovieira/siemens-tia-portal-s7-1200-plc-online-connection-2/
+
+#### STEP 2 : Config the ladder Logic and memory area
 
 S7-1200 support mapping memory area directly to read and write data on PLC contact, memory and coils. We use the snap7 library to communicate with the PLC via Siemens S7Comm protocol. The PLC ladder logic can be configure directly as: 
 
@@ -199,3 +205,22 @@ S7-1200 support mapping memory area directly to read and write data on PLC conta
   | ix.x/mx.x | --> | Your Ladder Logic | --> | qx.x/mx.x |
 ```
 
+Create a block and added the ladder logic as shown below:
+
+![](img/S7block.png)
+
+If we use the default memory area, the memory are start address of of contact, coil and editable memory are : 
+
+- PLC contact memory area (%i0.X) : `0x81`
+- PLC editable storage memory area (%m0.x): `0x83` 
+- PLC coils memory area (%q0.x): `0x82` 
+
+
+
+#### STEP3: Understand of Communication Protocol
+
+For detailed S7Comm packet, you can refer to this article: https://blog.viettelcybersecurity.com/security-wall-of-s7commplus-part-1/. The packet structure is shown below: 
+
+![](img/S7CommTable.png)
+
+We will use the python snap-7 lib to communicate with the PLC with S7Comm protocol. 
