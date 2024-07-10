@@ -1,8 +1,12 @@
-# IoT System Attack Case Study 02
+# IoT System Cyber Attack Case Study 02
 
-### Python Deserialization Attacks and Library Hijacking Attacks
+### Python Deserialization Attack and Library Hijacking Attack
 
-**Project Design Purpose**: The objective of this cyber attack case study is to develop a workshop showcasing a practical demonstration of a red team attacker implementing an deserialization attacks on an IoT device to inject and remote execute a web shell on the IoT people detection radar device for cyber security professional training. Then bypass the IoT user authorization and get the admin page and all the user's password then implement the python library hijack attack to inject the malicious code in the lib used by the IoT firmware then mess up the IoT's function.
+**Project Design Purpose**: The objective of this cyber attack case study is to develop a workshop that demonstrates how a red team attacker can permanently compromise a people detection radar IoT device. The attack path is achieved through a series of attacks, including data deserialization attacks, web shell attacks, remote command and code execution, and Python library hijacking attacks. This case study is intended for IoT and data security professional training, aiming to illustrate:
+
+1. How an attacker can use a Python pickle bomb to remote execute malicious program via an IoT device's data transmission interface or channel.
+2. How an attacker can bypass IoT user authorization through a web shell attack to access critical information.
+3. How an attacker can disrupt the protected (read-only) IoT firmware functions without modifying the firmware files through a Library Hijacking Attack.
 
 **Related Links**: 
 
