@@ -111,9 +111,37 @@ Web shell attack scripts are powerful tools used by attackers to gain remote con
 
 
 
+#### Design of Pickle Bomb
+
+Please refer this document for the pickle bomb design: https://www.linkedin.com/posts/yuancheng-liu-47b402174_deserializationabrattack-pickleabrbomb-cveabr2011abr3389-activity-7215623010290999297-ycMS?utm_source=combined_share_message&utm_medium=member_desktop
 
 
 
+#### Design of flask web shell attack script
+
+We use the python flask framework to build the web host portal, to make the script can be easily inject in to victim, the HTML page part are integrated in the python program directly. The web page provides the text field for user to input the command they want to execute, after press the run button, the command execute result will be automated update on the page. The page update uses socketIO pub-sub design. 
+
+The work flow is shown below:
+
+```mermaid
+sequenceDiagram
+    participant redTeam_Attacker1
+    participant redTeam_Attacker2
+    participant Webshell_Program
+    Webshell_Program --> Webshell_Program: Shell Init SocketIO Publisher	
+    Webshell_Program ->> redTeam_Attacker1: Load HTML page
+    redTeam_Attacker1 --> redTeam_Attacker1: Init SocketIO subscriber
+    Webshell_Program ->> redTeam_Attacker2: Load HTML page
+    redTeam_Attacker2 --> redTeam_Attacker2: Init SocketIO subscriber
+    redTeam_Attacker1 ->> Webshell_Program : command exeuction request
+    Webshell_Program --> Webshell_Program: Execute the program
+    Webshell_Program ->> redTeam_Attacker1: Publish execution result to subscriber
+    Webshell_Program ->> redTeam_Attacker2: Publish execution result to subscriber
+    redTeam_Attacker1 --> redTeam_Attacker1: Show execution result on web interface
+    redTeam_Attacker2 --> redTeam_Attacker2: Show execution result on web interface
+    
+    
+```
 
 
 
