@@ -2,6 +2,8 @@
 
 ### Python Deserialization Attack and Library Hijacking Attack
 
+![](img/s_00.png)
+
 **Project Design Purpose**: The objective of this cyber attack case study is to develop a workshop that demonstrates how a red team attacker can permanently compromise a people detection radar IoT device. The attack path is achieved through a series of attacks, including data deserialization attacks, web shell attacks, remote command and code execution, and Python library hijacking attacks. This case study is intended for IoT and data security professional training, aiming to illustrate:
 
 1. How an attacker can use a Python pickle bomb to remote execute malicious program via an IoT device's data transmission interface or channel.
@@ -44,10 +46,10 @@ The attack demonstration will encompass four primary sub projects:
 
 | Sub Project Name                                          | Function Description                                         | Project Link                                                 |
 | --------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Raspberry PI Xandar Kardian IoT People Count Radar        | Case study demo environment                                  | https://github.com/LiuYuancheng/Xandar_PPL_Sensor_IOT_Web    |
-| Python pickle bomb builder for Deserialization Attacks    | The attack scripts and tool to build and implement deserialization attacks | https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/pickleBomb |
-| Flask web shell for Remote Code/Command Execution Attacks | Web shell attack script to do the remote command execution attack | https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/flaskWebShell |
-| Python Serial COM Library Hijacking Attack                | Script to do the raspberry PI serial communication library hijacking attack | https://github.com/LiuYuancheng/IT_OT_IoT_Cyber_Security_Workshop/tree/main/IoT_System_Attack_Case_Study/IoT_Attack_Case_Study_02/src |
+| Raspberry PI Xandar Kardian IoT People Count Radar        | Case study demo environment                                  | [> Sub Project Link](https://github.com/LiuYuancheng/Xandar_PPL_Sensor_IOT_Web) |
+| Python pickle bomb builder for Deserialization Attacks    | The attack scripts and tool to build and implement deserialization attacks | [> Sub Project Link](https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/pickleBomb) |
+| Flask web shell for Remote Code/Command Execution Attacks | Web shell attack script to do the remote command execution attack | [> Sub Project Link](https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/flaskWebShell) |
+| Python Serial COM Library Hijacking Attack                | Script to do the raspberry PI serial communication library hijacking attack | [> Sub Project Link](https://github.com/LiuYuancheng/IT_OT_IoT_Cyber_Security_Workshop/tree/main/IoT_System_Attack_Case_Study/IoT_Attack_Case_Study_02/src) |
 
 #### Attack Scenario Introduction
 
@@ -124,17 +126,35 @@ Web shell attack scripts are powerful tools used by attackers to gain remote con
 
 ### IoT Cyber Attack Design 
 
+This section will introduce the design of the cyber attack path and the design of the attack tool used in the attack path. 
 
+#### Design of Attack Path
+
+The attacker will follow 11 attack steps sequence to impalement attack (As shown below)
+
+![](img/s_05.png)
+
+| Step Num | Name                                                         | Description                                                  |
+| -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 1        | Traffic Eavesdropping and Packet Analysis                    | Use `Ettercap` to eavesdrop on the traffic between the IoT device and the engineer's IoT allocate program. Then, use `Wireshark` to analyze the traffic packets and identify potential vulnerabilities. |
+| 2        | Build Web Shell Pickle Bomb                                  | Use a pickle bomb builder to disguise a Flask web shell attack script as a bytes data file. |
+| 3        | Inject Bomb as Data Stream                                   | Inject the pickle bomb as a data stream to the IoT device via the ZMQ communication channel. |
+| 4        | Activate the Bomb                                            | When the IoT device deserializes the incoming data, the pickle bomb is activated, creating a backdoor web shell interface on IoT port 5001, awaiting the attacker's instructions. |
+| 5        | Remote Command Execution                                     | The attacker connects to the shell's web interface and sends a command execution request. |
+| 6        | Steal Secret Information                                     | After trying several commands, the attacker locates the database file, identifies the Python library used by the IoT firmware, and obtains the IoT admin user's credentials. |
+| 7        | Build Attack Hijacking Library File                          | Based on the stolen information, the attacker creates a fake serial communication library file for the hijacking attack. |
+| 8        | Disguise Attack Library File                                 | Disguise the attack script as a normal configuration file to bypass the IoT file validation mechanism. |
+| 9        | Upload the Disguised Attack Script via IoT Web UI            | Inject the attack hijacking library into the IoT device's storage using the leaked IoT admin credentials via the IoT web interface. |
+| 10       | Fake COM Reading Library Interrupts Radar Data Reading Process | Once activated, the IoT firmware will call the fake serial port reading library's function, causing it to generate erroneous data for the IoT firmware. |
+| 11       | Reply Error IoT Data to the User                             | The error data will be shown in the IoT control hub which visible to the IoT users. |
 
 #### Design of Python Pickle Bomb
 
 Please refer this document for the pickle bomb design: https://www.linkedin.com/posts/yuancheng-liu-47b402174_deserializationabrattack-pickleabrbomb-cveabr2011abr3389-activity-7215623010290999297-ycMS?utm_source=combined_share_message&utm_medium=member_desktop
 
+#### Design of Flask Web Shell Attack Script
 
-
-#### Design of Flask web Shell Attack Script
-
-We use the python flask framework to build the web host portal, to make the script can be easily inject in to victim, the HTML page part are integrated in the python program directly. The web page provides the text field for user to input the command they want to execute, after press the run button, the command execute result will be automated update on the page. The page update uses socketIO publish-subscribe design. 
+We use the Python Flask framework to build the web host portal. To facilitate easy injection into the victim's system, the HTML page is integrated directly into the Python program. The web page provides a text field for the user to input the command they want to execute. After pressing the run button, the execution result will be automatically updated on the page. The page update uses a Socket.IO publish-subscribe design.
 
 The work flow is shown below:
 
@@ -143,13 +163,13 @@ sequenceDiagram
     participant redTeam_Attacker1
     participant redTeam_Attacker2
     participant Webshell_Program
-    Webshell_Program --> Webshell_Program: Shell Init SocketIO Publisher	
+    Webshell_Program --> Webshell_Program: Shell init SocketIO publisher	
     Webshell_Program ->> redTeam_Attacker1: Load HTML page
     redTeam_Attacker1 --> redTeam_Attacker1: Init SocketIO subscriber
     Webshell_Program ->> redTeam_Attacker2: Load HTML page
     redTeam_Attacker2 --> redTeam_Attacker2: Init SocketIO subscriber
     redTeam_Attacker1 ->> Webshell_Program : command exeuction request
-    Webshell_Program --> Webshell_Program: Execute the program
+    Webshell_Program --> Webshell_Program: Execute the command and archive the result
     Webshell_Program ->> redTeam_Attacker1: Publish execution result to subscriber
     Webshell_Program ->> redTeam_Attacker2: Publish execution result to subscriber
     redTeam_Attacker1 --> redTeam_Attacker1: Show execution result on web interface
@@ -180,7 +200,7 @@ Another connection protocol use `TCP`>`RSL`> `TCP` communication with the port 3
 
 The ZMQ provide 3 types of communication: server-client, publish-subscribe and push-pull. Then the attack go through the TCP and RSL one by one in sequence, the find the communication between the IoT and the connection peer follow the request and response sequence. So he guess it is a ZMQ server-client module and on IoT there is a ZMQ server. 
 
-Now he analysis the the bytes go to the ZMQ server, he finds the message is not a 'udf-8' or based64 encoded data : 
+Now he analysis the the bytes go to the ZMQ server, he finds the message is not a 'utf-8' or based64 encoded data : 
 
 ![](img/s_06.png)
 
