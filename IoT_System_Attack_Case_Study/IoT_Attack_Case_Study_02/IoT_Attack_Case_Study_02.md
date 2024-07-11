@@ -8,16 +8,16 @@
 2. How an attacker can bypass IoT user authorization through a web shell attack to access critical information.
 3. How an attacker can disrupt the protected (read-only) IoT firmware functions without modifying the firmware files through a Library Hijacking Attack.
 
-**Related Links**: 
-
 **Attacker Vector**: ` Deserialization Attacks`, `Remote Code Execution`,  `Library Hijacked Attacks`
 
 **Matched MIRTE-CWD**:
 
 **Mapped MITRE-ATT&CK-TTP**:
 
+Important: All the attack techniques and program in this article is only for research purpose, please don't apply them on real world environment.  
+
 ```
-# version:      v0.1.1
+# version:      v0.1.2
 # Created:     	July 08, 2024
 # Copyright:   	Copyright (c) 2024 LiuYuancheng
 # License:     	MIT License
@@ -31,28 +31,39 @@
 
 ### Introduction
 
-This case study aims to demonstrate how a red team attacker find the vulnerability of a IoT device which can deserializes untrusted ZMQ incoming data. Then the attacker build a python pickle bomb malware to camouflage a web shell attack program in a normal config file data stream to send to the IoT device to by pass the authorization mechanism. Then use the web shell to steal the secret information from the IoT device then get the IoT admin page. After successful get the admin page, use the config file update interface to implement a python lib Hijacked to mess up the IoT Xandar radar's reading. The attack demonstration will encompass four primary projects:
+This case study aims to demonstrate how a red team attacker can exploit vulnerabilities in an IoT device that deserializes untrusted ZMQ incoming data. The attacker constructs a Python pickle bomb malware to disguise a web shell attack program within a normal configuration file data stream, which is sent to the IoT device to bypass the authorization mechanism. The attacker then uses the web shell to steal secret information from the IoT device and gain access to the IoT admin page. Once the admin page is accessed, the attacker exploits the configuration file update interface to implement a Python library hijacking attack, disrupting the IoT Xandar radar's readings. This article will follow the structure below:
 
-- Raspberry PI Xandar Kardian IoT People Count Radar
-- Python pickle bomb builder for Deserialization Attacks
-- Flask web shell for Remote Code/Command Execution attack
-- Python Serial COM lib Hijacking Attack
+1. Introduce the attack scenario and the projects used to build the case study.
+2. Provide background knowledge about the demo environment and attack techniques.
+3. Present the attack design and demonstrate the detailed steps to implement the attack.
+4. Match the vulnerabilities to MITRE CWE (Common Weakness Enumeration) and align the attack path with MITRE ATT&CK (Adversarial Tactics, Techniques, and Common Knowledge) for further development.
 
-The attack path can also be used to explain and introduce the similar common vulnerabilities exploits such as CVE-2011-3389, CVE-2019-5021, CVE-2018-1000802, CVE-2019-9636, CVE-2019-20907 and the mitigations for avoid deserialization attack. 
+#### Sub Projects Introduction 
 
-**Attack Scenario Introduction**
+The attack demonstration will encompass four primary sub projects:
 
-The attack target is an simple IoT people detection radar. The IoT provides an web interface for the software engineers or network admins to change the IoT setting and manage the data access, the user need a valid credential (username and password ) to login the web page. For other programs which try to access the IoT data, they also need a valid access token which generate based on the username and password. For the IoT device, it also have one ZMQ server which can provide the basic not critical IoT config information such as the Ip config and port for the network admin can easily find the IoT in the network by using the IoT search program. 
+| Sub Project Name                                          | Function Description                                         | Project Link                                                 |
+| --------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Raspberry PI Xandar Kardian IoT People Count Radar        | Case study demo environment                                  | https://github.com/LiuYuancheng/Xandar_PPL_Sensor_IOT_Web    |
+| Python pickle bomb builder for Deserialization Attacks    | The attack scripts and tool to build and implement deserialization attacks | https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/pickleBomb |
+| Flask web shell for Remote Code/Command Execution Attacks | Web shell attack script to do the remote command execution attack | https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/flaskWebShell |
+| Python Serial COM Library Hijacking Attack                | Script to do the raspberry PI serial communication library hijacking attack | https://github.com/LiuYuancheng/IT_OT_IoT_Cyber_Security_Workshop/tree/main/IoT_System_Attack_Case_Study/IoT_Attack_Case_Study_02/src |
 
-During the attack the attack collect the network traffic and find the IoT search data packet are the includes serialized data using the pickle lib. After understand the protocol the attacker follow below steps to implement the attack path: 
+#### Attack Scenario Introduction
 
-1. Build the IoT ZMQ communication interface client program.
-2. Build a single file flask web shell program which can be executed independently for Remote Command Execution and Privilege Escalation. 
-3. Build a python pickle bomb to hide the web shell attack program in a normal bytes. 
-4. User the ZMQ client program to send the pickle bomb as data to IoT. 
-5. When the web shell is activated, search the credentials and break the IoT user authorization mechanism. 
-6. The attacker login the IoT as a admin, then found a web-API which allow to upload *.txt format config file. Then he camouflage his fake serial port library Hijacking program as a config file then upload in the IoT. 
-7. Change the Hijacking lib file to the related lib file and restart the IoT, after success we can see all the data reading are changed to 0.
+The target of the attack is a simple IoT people detection radar. This IoT device provides a web interface for software engineers or network admins to change its settings and manage data access. Users need valid credentials (username and password) to log in to the web page. Additionally, other programs that attempt to access the IoT data also require a valid access token, which is generated based on the username and password. The IoT device also features a ZMQ server that provides basic, non-critical configuration information, such as IP configuration and port details, allowing network admins to easily locate the IoT device on the network using an IoT search program.
+
+During the attack, the red team attacker collects network traffic and discovers that the IoT search data packets include serialized data using the Python `pickle` library. After understanding the protocol, the attacker follows these steps to implement the attack path:
+
+1. Build a ZMQ client program for the IoT ZMQ connection interface communication.
+2. Develop a single-file Flask web shell program that can be executed independently for remote command execution and privilege escalation.
+3. Create a Python pickle bomb to hide the web shell attack program within normal bytes data stream.
+4. Use the ZMQ client program to send the pickle bomb as data to the IoT device.
+5. Once the pickle bomb web shell is activated, search for credentials and bypass the IoT user authorization mechanism.
+6. The attacker logs into the IoT device as an admin and discovers a web API that allows the upload of `*.txt` format configuration files. The attacker then disguises a fake serial port library hijacking program as a configuration file and uploads it to the IoT device.
+7. The attacker replaces the legitimate library file with the hijacking library file and restarts the IoT device. Upon successful completion, all data readings are altered to zero.
+
+This attack path can also be used to explain and introduce similar common vulnerabilities and exploits such as CVE-2011-3389, CVE-2019-5021, CVE-2018-1000802, CVE-2019-9636, and CVE-2019-20907, as well as mitigations to avoid deserialization attacks.
 
 
 
@@ -60,7 +71,7 @@ During the attack the attack collect the network traffic and find the IoT search
 
 ### Background Knowledge
 
-Within this section, we aim to provide fundamental, general knowledge about each respective system and elucidate the Tactics, Techniques, and Procedures (TTP) associated with the attack vectors. If you understand what's Python Deserialization Attack and Python Package Hijacking Attack, you can skip this section. 
+Within this section, we aim to provide fundamental, general knowledge about each respective system and elucidate the Tactics, Techniques, and Procedures (TTP) associated with the attack vectors. If you understand what's Python Deserialization Attack, web shell attack and Python Package Hijacking Attack, you can skip this section. 
 
 #### Python Deserialization Attack
 
@@ -115,15 +126,15 @@ Web shell attack scripts are powerful tools used by attackers to gain remote con
 
 
 
-#### Design of Pickle Bomb
+#### Design of Python Pickle Bomb
 
 Please refer this document for the pickle bomb design: https://www.linkedin.com/posts/yuancheng-liu-47b402174_deserializationabrattack-pickleabrbomb-cveabr2011abr3389-activity-7215623010290999297-ycMS?utm_source=combined_share_message&utm_medium=member_desktop
 
 
 
-#### Design of flask web shell attack script
+#### Design of Flask web Shell Attack Script
 
-We use the python flask framework to build the web host portal, to make the script can be easily inject in to victim, the HTML page part are integrated in the python program directly. The web page provides the text field for user to input the command they want to execute, after press the run button, the command execute result will be automated update on the page. The page update uses socketIO pub-sub design. 
+We use the python flask framework to build the web host portal, to make the script can be easily inject in to victim, the HTML page part are integrated in the python program directly. The web page provides the text field for user to input the command they want to execute, after press the run button, the command execute result will be automated update on the page. The page update uses socketIO publish-subscribe design. 
 
 The work flow is shown below:
 
