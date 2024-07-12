@@ -12,9 +12,9 @@
 
 **Attacker Vector**: ` Deserialization Attacks`, `Remote Code Execution`,  `Library Hijacked Attacks`
 
-**Matched MIRTE-CWD**:
+**Matched MIRTE-CWD**: `CWE-78`, `CWE-502`, `CWE-434` `CWE-319`
 
-**Mapped MITRE-ATT&CK-TTP**:
+**Mapped MITRE-ATT&CK-TTP**: `T1027`, `T1036`, `T1562.001`, `T1190`, `T1485`
 
 Important: All the attack techniques and program in this article is only for research purpose, please don't apply them on real world environment.  
 
@@ -540,3 +540,65 @@ Regardless of whether the IoT engineer reboots the IoT OS or resets the configur
 
 ------
 
+### MITRE CWE Matching and ATT&CK Mapping
+
+#### MITRE CWE(Common Weakness Enumeration) Matching
+
+**CWE-78**
+
+- **CWE Name**: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')
+- **Matched Vulnerability**: The attacker is able to execute remote commands and achieve privilege escalation by exploiting a web shell program that is executed on the IoT device.
+
+**CWE-502**
+
+- **CWE Name**: Deserialization of Untrusted Data
+- **Matched Vulnerability**: The attacker is able to hide a web shell attack program within a normal data stream by using a Python pickle bomb. This allows the attacker to bypass the IoT user authorization mechanism and gain unauthorized access to the device.
+
+**CWE-434**
+
+- **CWE Name**: Unrestricted Upload of File with Dangerous Type
+- **Matched Vulnerability**: The attacker is able to upload a fake serial port library hijacking program disguised as a configuration file to the IoT device. This allows the attacker to replace the legitimate library file and alter all data readings to zero.
+
+**CWE-319**
+
+- **CWE Name**: Cleartext Transmission of Sensitive Information
+
+- **Matched Vulnerability**: The IoT device's web interface and other programs that access the IoT data transmit credentials and access tokens in cleartext, making them susceptible to interception and unauthorized access.
+
+  
+
+#### MITRE ATT&CK (Adversarial Tactics, Techniques, and Common Knowledge) Mapping
+
+
+
+**T1027 - Obfuscated Files or Information ** 
+
+- **Tactic**: Defense Evasion
+- **Technique Map** : The scenario describes the attacker using a Python pickle bomb to hide the web shell attack program within normal bytes data stream. This is an example of obfuscating files or information, as the attacker is using a technique to hide the malicious code within a seemingly harmless data stream.
+
+**T1036 - Masquerading**
+
+- **Tactic**: Defense Evasion
+- **Technique Map** : The attacker disguises a fake serial port library hijacking program as a configuration file and uploads it to the IoT device, which is an example of masquerading.
+
+**T1562.001 - Impair Defenses: Disable or Modify Tools**
+
+- **Tactic**: Defense Evasion
+- **Technique Map** : he attacker in the scenario replaces the legitimate library file with a hijacking library file, which impairs the defenses of the IoT device by modifying a tool used for data readings.
+
+**T1190 - Exploit Public-Facing Application**
+
+- **Tactic**: Initial Access
+
+- **Technique Map** :The scenario describes an attack on a public-facing web interface of an IoT device. The attacker exploits the web interface by implementing a web shell program for remote command execution and privilege escalation. This matches the technique of exploiting a public-facing application.
+
+**T1485 - Data Destruction** 
+
+- **Tactic**: Impact
+- **Technique Map** : The scenario describes an attack where the attacker replaces a legitimate library file with a hijacking library file, resulting in all data readings being altered to zero. This matches the technique of Data Destruction, where the attacker intentionally destroys or alters data to disrupt the target's operations.
+
+
+
+------
+
+> Last edit by LiuYuancheng(liu_yuan_cheng@hotmail.com) at 13/07/2024,  if you have any problem please free to message me.
