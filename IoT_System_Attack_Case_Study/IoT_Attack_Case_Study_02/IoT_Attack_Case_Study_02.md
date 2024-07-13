@@ -4,22 +4,22 @@
 
 ![](img/s_00.png)
 
-**Project Design Purpose**: The objective of this cyber attack case study is to develop a workshop that demonstrates how a red team attacker can permanently compromise a people detection radar IoT device. The attack path is achieved through a series of attacks, including data deserialization attacks, web shell attacks, remote command and code execution, and Python library hijacking attacks. This case study is intended for IoT and data security professional training, aiming to illustrate:
+**Project Design Purpose**: The objective of this cyber attack case study is to develop a workshop that demonstrates how a red team attacker can permanently compromise a people detection radar IoT device. The attack path is achieved through a series of attacks, including traffic eavesdropping, data deserialization attacks, web shell attacks, remote command/code execution, and Python library hijacking attacks. This case study is intended for IoT and data security professional training, aiming to illustrate:
 
 1. How an attacker can use a Python pickle bomb to remote execute malicious program via an IoT device's data transmission interface or channel.
 2. How an attacker can bypass IoT user authorization through a web shell attack to access critical information.
 3. How an attacker can disrupt the protected (read-only) IoT firmware functions without modifying the firmware files through a Library Hijacking Attack.
 
-**Attacker Vector**: ` Deserialization Attacks`, `Remote Code Execution`,  `Library Hijacked Attacks`
+**Attacker Vector**: `Traffic Eavesdropping`, ` Deserialization Attacks`, `Remote Code Execution`,  `Library Hijacked Attacks`
 
 **Matched MIRTE-CWD**: `CWE-78`, `CWE-502`, `CWE-434` `CWE-319`
 
 **Mapped MITRE-ATT&CK-TTP**: `T1027`, `T1036`, `T1562.001`, `T1190`, `T1485`
 
-Important: All the attack techniques and program in this article is only for research purpose, please don't apply them on real world environment.  
+Important: All the attack techniques and programs in this article are only for research purpose, please don't apply them on real world environment.  
 
 ```
-# version:      v0.1.2
+# version:      v0.1.3
 # Created:     	July 08, 2024
 # Copyright:   	Copyright (c) 2024 LiuYuancheng
 # License:     	MIT License
@@ -33,9 +33,9 @@ Important: All the attack techniques and program in this article is only for res
 
 ### Introduction
 
-This case study aims to demonstrate how a red team attacker can exploit vulnerabilities in an IoT device that deserializes untrusted ZMQ incoming data. The attacker constructs a Python pickle bomb malware to disguise a web shell attack program within a normal configuration file data stream, which is sent to the IoT device to bypass the authorization mechanism. The attacker then uses the web shell to steal secret information from the IoT device and gain access to the IoT admin page. Once the admin page is accessed, the attacker exploits the configuration file update interface to implement a Python library hijacking attack, disrupting the IoT Xandar radar's readings. This article will follow the structure below:
+This case study aims to demonstrate how a red team attacker can exploit vulnerabilities in an IoT device that deserializes untrusted ZMQ incoming data. The attacker constructs a Python pickle bomb malware to disguise a web shell attack program within a normal data stream, which is sent to the IoT device to bypass the authorization mechanism. The attacker then uses the web shell to steal secret information from the IoT device and gain access to the IoT admin page. Once the management page is accessed, the attacker exploits the configuration file update interface to implement a Python library hijacking attack, disrupting the IoT Xandar radar's readings. This article contents four sections:
 
-1. Introduce the attack scenario and the projects used to build the case study.
+1. Introduce the cyber attack scenario and the projects used to build the case study.
 2. Provide background knowledge about the demo environment and attack techniques.
 3. Present the attack design and demonstrate the detailed steps to implement the attack.
 4. Match the vulnerabilities to MITRE CWE (Common Weakness Enumeration) and align the attack path with MITRE ATT&CK (Adversarial Tactics, Techniques, and Common Knowledge) for further development.
@@ -47,22 +47,22 @@ The attack demonstration will encompass four primary sub projects:
 | Sub Project Name                                          | Function Description                                         | Project Link                                                 |
 | --------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | Raspberry PI Xandar Kardian IoT People Count Radar        | Case study demo environment                                  | [> Sub Project Link](https://github.com/LiuYuancheng/Xandar_PPL_Sensor_IOT_Web) |
-| Python pickle bomb builder for Deserialization Attacks    | The attack scripts and tool to build and implement deserialization attacks | [> Sub Project Link](https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/pickleBomb) |
+| Python pickle bomb builder for Deserialization Attacks    | The attack scripts and tool to build and implement deserialization attack | [> Sub Project Link](https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/pickleBomb) |
 | Flask web shell for Remote Code/Command Execution Attacks | Web shell attack script to do the remote command execution attack | [> Sub Project Link](https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/flaskWebShell) |
-| Python Serial COM Library Hijacking Attack                | Script to do the raspberry PI serial communication library hijacking attack | [> Sub Project Link](https://github.com/LiuYuancheng/IT_OT_IoT_Cyber_Security_Workshop/tree/main/IoT_System_Attack_Case_Study/IoT_Attack_Case_Study_02/src) |
+| Python Serial COM Library Hijacking Attack                | Script to do the Raspberry PI serial communication library hijacking attack | [> Sub Project Link](https://github.com/LiuYuancheng/IT_OT_IoT_Cyber_Security_Workshop/tree/main/IoT_System_Attack_Case_Study/IoT_Attack_Case_Study_02/src) |
 
 #### Attack Scenario Introduction
 
-The target of the attack is a simple IoT people detection radar. This IoT device provides a web interface for software engineers or network admins to change its settings and manage data access. Users need valid credentials (username and password) to log in to the web page. Additionally, other programs that attempt to access the IoT data also require a valid access token, which is generated based on the username and password. The IoT device also features a ZMQ server that provides basic, non-critical configuration information, such as IP configuration and port details, allowing network admins to easily locate the IoT device on the network using an IoT search program.
+In this case study, the attack target is a simple IoT people detection radar. This IoT device provides a web interface for software engineers or network admins to change its settings and manage data access permission. Users need valid credentials (username and password) to login to the IoT configuration web page. Additionally, other programs that attempt to access the IoT data also require a valid access token, which is generated based on the username and password. The IoT device also features a ZMQ server that provides basic, non-critical IoT network configuration information, such as IP address and port details, allowing network admins to easily locate the IoT device in the network using an IoT search program.
 
-During the attack, the red team attacker collects network traffic and discovers that the IoT search data packets include serialized data using the Python `pickle` library. After understanding the protocol, the attacker follows these steps to implement the attack path:
+During the attack, the red team attacker collects network traffic and discovers that the IoT search data packets include serialized data using the Python `pickle` library. After understanding the protocol, the attacker follows these below steps to implement the attack path:
 
 1. Build a ZMQ client program for the IoT ZMQ connection interface communication.
 2. Develop a single-file Flask web shell program that can be executed independently for remote command execution and privilege escalation.
 3. Create a Python pickle bomb to hide the web shell attack program within normal bytes data stream.
 4. Use the ZMQ client program to send the pickle bomb as data to the IoT device.
 5. Once the pickle bomb web shell is activated, search for credentials and bypass the IoT user authorization mechanism.
-6. The attacker logs into the IoT device as an admin and discovers a web API that allows the upload of `*.txt` format configuration files. The attacker then disguises a fake serial port library hijacking program as a configuration file and uploads it to the IoT device.
+6. The attacker login the IoT device as an admin and discovers a web API that allows the upload of `*.txt` format configuration files. The attacker then disguises a fake serial port communication library hijacking program as a configuration file and uploads it to the IoT device.
 7. The attacker replaces the legitimate library file with the hijacking library file and restarts the IoT device. Upon successful completion, all data readings are altered to zero.
 
 This attack path can also be used to explain and introduce similar common vulnerabilities and exploits such as CVE-2011-3389, CVE-2019-5021, CVE-2018-1000802, CVE-2019-9636, and CVE-2019-20907, as well as mitigations to avoid deserialization attacks.
@@ -73,11 +73,11 @@ This attack path can also be used to explain and introduce similar common vulner
 
 ### Background Knowledge
 
-Within this section, we aim to provide fundamental, general knowledge about each respective system and elucidate the Tactics, Techniques, and Procedures (TTP) associated with the attack vectors. If you understand what's Python Deserialization Attack, web shell attack and Python Package Hijacking Attack, you can skip this section. 
+Within this section, we aim to provide fundamental, general knowledge about each respective system and elucidate the Tactics, Techniques, and Procedures (TTP) associated with the attack vectors. If you understand what's Python Deserialization Attack, Web shell attack and Python Package Hijacking Attack, you can skip this section. 
 
 #### Python Deserialization Attack
 
-A deserialization attack occurs when an application deserializes untrusted or maliciously crafted data, leading to potential security vulnerabilities. These attacks can result in various forms of exploitation, including arbitrary code execution, data corruption, and denial of service. The vulnerability arises because the deserialization process often assumes that the incoming data is well-formed and trustworthy. For the detail Python Deserialization Attack example, you can refer to the detail of previous python Deserialization attack section: 
+A deserialization attack occurs when an application deserializes untrusted or maliciously crafted data, leading to potential security vulnerabilities. These attacks can result in various forms of exploitation, including arbitrary code execution, data corruption, and denial of service. The vulnerability arises because the deserialization process often assumes that the incoming data is well-formed and trustworthy. For the detail Python Deserialization Attack example, you can refer to the detail of previous Python Deserialization Attack Introduction section: 
 
 https://www.linkedin.com/pulse/python-deserialization-attack-how-build-pickle-bomb-yuancheng-liu-wi7oc/?trackingId=uW8zRHQfTd6VbKZ7MV41rg%3D%3D
 
@@ -88,9 +88,9 @@ Python Package Hijacking, also known as Dependency Confusion or Dependency Hijac
 The attack leverages the search order of the Python interpreter or the package manager (like `pip`) when resolving dependencies. Python resolves imports by searching through directories listed in `sys.path` in order, starting from the current directory and moving to the system-wide libraries. Similarly, `pip` resolves package dependencies by searching through specified repositories. Normally there are 2 types of Hijacking Attack: 
 
 - **Local File Hijacking**: An attacker places a malicious file in the local directory with the same name as a standard library module or a legitimate dependency. The program imports this local malicious file instead of the legitimate one due to Python's import resolution order.
-- **Repository Hijacking**: The attacker publishes a package with the same name as an internal or private package to a public repository like PyPI. If the internal package is not properly scoped or namespaced, the public malicious package may be installed instead.
+- **Repository Hijacking**: The attacker publishes a package with the same name as an internal or private package to a public repository like PyPI. If the internal package is not properly scoped or name spaced, the public malicious package may be installed instead.
 
-This  is a simple example scenario of local file hijacking attack:
+This  is a simple example scenario of Python local file hijacking attack:
 
 Legitimate Program:
 
@@ -126,31 +126,33 @@ Web shell attack scripts are powerful tools used by attackers to gain remote con
 
 ### IoT Cyber Attack Design 
 
-This section will introduce the design of the cyber attack path and the design of the attack tool used in the attack path. 
+This section will introduce the design of the cyber attack path and the design of the attack tools used in the attack path. 
 
 #### Design of Attack Path
 
-The attacker will follow 11 attack steps sequence to impalement attack (As shown below)
+The red team attacker will follow 11 attack steps sequence to impalement attack (As shown below) :
 
 ![](img/s_05.png)
+
+` Figure-00: IoT attack flow path detail steps diagram, version v1.3 (2024)`
 
 | Step Num | Name                                                         | Description                                                  |
 | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | 1        | Traffic Eavesdropping and Packet Analysis                    | Use `Ettercap` to eavesdrop on the traffic between the IoT device and the engineer's IoT allocate program. Then, use `Wireshark` to analyze the traffic packets and identify potential vulnerabilities. |
-| 2        | Build Web Shell Pickle Bomb                                  | Use a pickle bomb builder to disguise a Flask web shell attack script as a bytes data file. |
-| 3        | Inject Bomb as Data Stream                                   | Inject the pickle bomb as a data stream to the IoT device via the ZMQ communication channel. |
+| 2        | Build Web Shell Pickle Bomb                                  | Use the pickle bomb builder to disguise a Flask web shell attack script as a bytes data file. |
+| 3        | Inject Bomb as Data Stream                                   | Inject the pickle bomb as a normal data stream to the IoT device via the IoT ZMQ communication channel. |
 | 4        | Activate the Bomb                                            | When the IoT device deserializes the incoming data, the pickle bomb is activated, creating a backdoor web shell interface on IoT port 5001, awaiting the attacker's instructions. |
-| 5        | Remote Command Execution                                     | The attacker connects to the shell's web interface and sends a command execution request. |
-| 6        | Steal Secret Information                                     | After trying several commands, the attacker locates the database file, identifies the Python library used by the IoT firmware, and obtains the IoT admin user's credentials. |
+| 5        | Remote Command Execution                                     | The attacker connects to the Flask web shell interface and sends a command execution request. |
+| 6        | Steal Secret Information                                     | After trying several commands, the attacker locates the user database file, identifies the Python library used by the IoT firmware, and obtains the IoT admin user's credentials. |
 | 7        | Build Attack Hijacking Library File                          | Based on the stolen information, the attacker creates a fake serial communication library file for the hijacking attack. |
-| 8        | Disguise Attack Library File                                 | Disguise the attack script as a normal configuration file to bypass the IoT file validation mechanism. |
+| 8        | Disguise Attack Library File                                 | Disguise the attack lib hijacking script as a normal configuration file to bypass the IoT file validation mechanism. |
 | 9        | Upload the Disguised Attack Script via IoT Web UI            | Inject the attack hijacking library into the IoT device's storage using the leaked IoT admin credentials via the IoT web interface. |
 | 10       | Fake COM Reading Library Interrupts Radar Data Reading Process | Once activated, the IoT firmware will call the fake serial port reading library's function, causing it to generate erroneous data for the IoT firmware. |
 | 11       | Reply Error IoT Data to the User                             | The error data will be shown in the IoT control hub which visible to the IoT users. |
 
 #### Design of Python Pickle Bomb
 
-Please refer this document for the pickle bomb design: https://www.linkedin.com/posts/yuancheng-liu-47b402174_deserializationabrattack-pickleabrbomb-cveabr2011abr3389-activity-7215623010290999297-ycMS?utm_source=combined_share_message&utm_medium=member_desktop
+Please refer this document for the pickle bomb design: https://www.linkedin.com/pulse/python-deserialization-attack-how-build-pickle-bomb-yuancheng-liu-wi7oc/?trackingId=To8EkNvRTeeOsHEDVl%2FdQA%3D%3D
 
 #### Design of Flask Web Shell Attack Script
 
@@ -178,45 +180,51 @@ sequenceDiagram
     
 ```
 
+` Figure-01: Flask web shell attack script work flow UML diagram, version v1.3 (2024)`
+
 
 
 ------
 
 ### IoT Cyber Attack Demo 
 
-In this section we will demo the detail attack steps.
+In this section we will demo the eleven detail attack steps under three categories:  Understand the Traffic and Find Vulnerabilities, Building Pickle Bomb for Deserialization Attacks, Bypass IoT Authorization and Implement Local File Hijacking Attack, then show the attack effect of the IoT device.
 
 
 
 #### Understand the Traffic and Find Vulnerabilities
 
-The red team attacker captures about 10 minutes of IoT traffic, including the communication between the network engineer and the IoT device. Upon analyzing the pcap file, the attacker identifies two types of protocols connected to the IoT device: ZMQ for locating the IoT and HTTP for monitoring and controlling it.
+The red team attacker captures about 10 minutes of IoT traffic, including the communication between the network engineer and the IoT device. Upon analyzing the network traffic dump `pcap` file, the attacker identifies two types of protocols are used to connect the IoT device: ZMQ for locating the IoT and HTTP for monitoring and controlling it.
 
 **IoT Supported Protocol 1: ZMQ Connection**
 
-Using Wireshark to examine the network traffic dump file, the attacker discovers a protocol using `TCP` > `RSL` > `TCP` communication on port 3003. After analyzing the headers, the attacker recognizes that the communication matches the ZMQ communication structure and sequence (refer to the ZMQ communication packet structure and sequence document: https://zguide.zeromq.org/docs/chapter7/).
+Using Wireshark to examine the network traffic dump file, the attacker discovers a protocols set using `TCP` > `RSL` > `TCP` communication on port 3003. After analyzing the headers, the attacker recognizes that the communication matches the ZMQ communication structure and sequence (refer to the ZMQ communication packet structure and sequence document: https://zguide.zeromq.org/docs/chapter7/).
 
 ZMQ supports three types of communication: server-client, publish-subscribe, and push-pull. By examining the TCP and RSL sequences, the attacker deduces that the communication between the IoT device and the peer follows a request-response sequence, indicating a ZMQ server-client module with the IoT device acting as the server.
 
-Upon analyzing the bytes sent to the ZMQ server, the attacker finds that the message is not 'utf-8' or Base64 encoded data. Further analysis reveals that the data is serialized using the Python `pickle` library, which presents a potential vulnerability for deserialization attacks.(As shown below)
+Upon analyzing the bytes sent to the ZMQ server, the attacker finds that the message is not UTF-8 or Base64 encoded data. Further analysis reveals that the data is serialized using the Python `pickle` library, which presents a potential vulnerability for deserialization attacks.(As shown below)
 
 ![](img/s_06.png)
+
+` Figure-02: Wireshark network pcap analysis result, version v1.3 (2024)`
 
 Then, the attacker writes a simple ZMQ client program to perform a reply attack by repeatedly sending the packet collected from the traffic dump file back to the IoT device and receiving the same byte data as shown below:
 
 ![](img/s_11.png)
 
+` Figure-03: ZMQ client reply attack result screen shot, version v1.3 (2024)`
+
 Using the decoded text data shown in Wireshark, the attacker maps the text data to the corresponding bytes, as illustrated below:
-
-
 
 ![](img/s_12.png)
 
+` Figure-04: ZMQ communication bytes and text data mapping result, version v1.3 (2024)`
+
 After mapping the text data and byte stream, the attacker confirms the basic IoT communication mechanism:
 
-1. Use a ZMQ client to send pickle dumped dictionary-type data with key strings representing IoT configurations.
+1. The IoT search program uses a ZMQ client to send pickle dumped dictionary-type data with key strings representing IoT configurations.
 
-2. Use the ZMQ client to wait for the IoT device to reply with the corresponding values based on the sent key strings.
+2. The IoT search program's ZMQ client will wait for the IoT device to reply with the corresponding values based on the sent key strings.
 
 The attacker creates a ZMQ client program capable of sending data and decoding the fetched data from the IoT device, as shown below:
 
@@ -257,6 +265,8 @@ The execution shows that the attacker can retrieve the IoT configuration informa
 
 ![](img/s_13.png)
 
+` Figure-05: IoT response pickle.loads() decode result, version v1.3 (2024)`
+
 > Note: The attacker could also use Nmap to probe all services on the IoT device, but this might be detected by network threat detection programs.
 
 You can download the pcap example package file from this link: https://github.com/LiuYuancheng/Xandar_PPL_Sensor_IOT_Web/blob/master/resource/ZMQ_package_example.pcapng
@@ -284,7 +294,7 @@ After performing a network analysis, the attacker identifies two potential vulne
 
 
 
-#### Building a Pickle Bomb for Deserialization Attacks
+#### Building Pickle Bomb for Deserialization Attacks
 
 Based on the first vulnerability, the attacker aims to create a Pickle Bomb to exploit the ZMQ server. For reference, you can follow this project to build a UDP command executor: [Pickle Bomb Project](https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/pickleBomb). In this section, we provide an alternative and simpler solution by creating a web shell capable of executing commands on the IoT device.
 
