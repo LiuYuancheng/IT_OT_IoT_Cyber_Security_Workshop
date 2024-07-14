@@ -116,7 +116,7 @@ This  is a simple example scenario of Python local file hijacking attack:
 
 Legitimate Program:
 
-```
+```python
 import random
 print(random.randint(1, 10))
 ```
@@ -521,7 +521,7 @@ Exploring all the pages, the attacker finally finds a place to upload text forma
 
 ![](img/s_21.png)
 
-` Figure-14:IoT managment page can upload config file (limited to text format) , version v1.3 (2024)`
+` Figure-14:IoT management page can upload config file (limited to text format) , version v1.3 (2024)`
 
 By examining the radar serial communication firmware module, it is found that it uses the Python serial library (`import serial`) to read data from the people detection radar via USB-COM connection:
 
@@ -600,7 +600,7 @@ The radar connection indicator shows that the radar is connected normally, but a
 
 ![](img/s_26.png)
 
-` Figure-20: All radar paramters reading are incorrect , version v1.3 (2024)`
+` Figure-20: All radar parameters reading are incorrect , version v1.3 (2024)`
 
 Regardless of whether the IoT engineer reboots the IoT OS or resets the configuration file, the problem persists. The IoT device is now permanently compromised! 
 
