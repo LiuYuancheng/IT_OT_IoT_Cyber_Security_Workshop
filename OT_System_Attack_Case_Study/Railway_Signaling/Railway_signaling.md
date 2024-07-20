@@ -1,8 +1,10 @@
-# How to Use PLC to Implement Land Based Railway Track Fixed Block Signaling OT System
+# OT Railway System Development
 
-**Project Design Purpose:** This project aims to use Programmable Logic Controllers (PLC) with train detection sensors and train control signals to develop an automated control system for railway track fixed block signaling. The system will include a digital equivalent simulation to explain the logic of the track fixed block Automatic Train Control (ATC) mechanism for training purposes. In this article, we will introduce the design of the block controller's electrical circuit, then demonstrate how to implement this circuit using PLC ladder logic diagrams and Structured Text. Finally, we will show how to integrate the controllers to build an railway Automatic Train Protection (ATP) system capable of handling complex railway situations, such as controlling multi-track junctions and block override.
+### How to Use PLC to Implement Land Based Railway Track Fixed Block Signaling OT System
 
+![](img/title.png)
 
+**Project Design Purpose:** This project aims to use Programmable Logic Controllers (PLC) with train detection sensors and train control signals to develop an automated control system for railway track fixed block signaling. The system will include a digital equivalent simulation to explain the logic of the track fixed block Automatic Train Control (ATC) mechanism for training purposes. In this article, we will introduce the design of the block controller's electrical circuit, then demonstrate how to implement this circuit using PLC ladder logic diagrams and Structured Text. Finally, we will show how to integrate the controllers to build an railway Automatic Train Protection (ATP) system capable of handling complex situations, such as controlling multi-track junctions and block override.
 
 > **Important:** Real-world railway Automatic Train Control mechanisms, including Automatic Train Protection (ATP) and Automatic Train Operation (ATO), are much more complex than what we introduced in the article. This project simplifies the general operation logic for training purposes only.
 
@@ -13,25 +15,39 @@
 # License:     MIT License 
 ```
 
+**Table of Contents**
+
 [TOC]
 
 ------
 
 ### Introduction
 
-Fixed block signaling and moving block signaling are tow main railway signaling system in current world railway Automatic Train Control. **Fixed block signaling** is a traditional method used to manage train movements by dividing the railway track into discrete segments or blocks and **Moving block signaling** is a modern, more dynamic system that allows for real-time management of train movements, offering increased efficiency and flexibility. This document will show how to implement train fix blocking  Automatic Train Protection and Operation mechanism in a railway track digital simulation OT system. The implement includes 3 sub projects which cover 3 basic level of a OT system:
+Fixed block signaling and moving block signaling are the two main railway signaling systems used in modern Automatic Train Control (ATC). Fixed block signaling is a traditional method that manages train movements by dividing the railway track into discrete segments or blocks. Moving block signaling is a modern, dynamic system that allows for real-time management of train movements, offering increased efficiency and flexibility. This document demonstrates how to implement a fixed block Automatic Train Protection (ATP) and Operation mechanism in a railway track digital simulation OT (Operational Technology) system. 
 
-1. Railway signaling system physical world simulator [Private Project]. (OT-System-lvl0: Physical Process Field I/O device)
-2. Virtual PLC simulator lib project [Project link](https://github.com/LiuYuancheng/PLC_and_RTU_Simulator).(OT-System-lvl1: Controller LAN )
-3. Railway block control HMI [Private Project].(Control Center (HQ) Processing LAN)
+The implementation comprises three sub-projects, covering three basic levels of an OT system.
 
-In this article, we will introduce some basic background knowledge about Railway Fixed/Moving block system,  railway Automatic Train Control(ATC), Automatic Train Protection(ATP) and ATO(Automatic Train Operation), then we will introduce the system design about physical world digital equivalent program, the fixed block controller, multi-track block control system and ATO over ride function design.  
+| Sub-Project name                                   | OT System Level                                    | Project Link                                                 |
+| -------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------ |
+| Railway Signaling System Physical World Simulation | OT-System-lvl0: Physical Process Field I/O Devices | [Private Project Link](https://github.com/LiuYuancheng/Railway_IT_OT_System_Cyber_Security_Platform/tree/main/src/physicalWorldSimu) |
+| Virtual PLC & RTU Simulator Library Project        | OT-System-lvl1: Controller LAN.                    | [Public Project Link](https://github.com/LiuYuancheng/PLC_and_RTU_Simulator). |
+| Railway Track Block Control HMI                    | Control Center (HQ) Processing LAN                 | [Private Project Link](https://github.com/LiuYuancheng/Railway_IT_OT_System_Cyber_Security_Platform/tree/main/src/trackBlocksHMI) |
+
+The system workflow is illustrated below:
+
+![](img/systemworkflow.png)
+
+In this article, we will introduce some basic background knowledge about Railway Fixed/Moving block systems, Automatic Train Control (ATC), Automatic Train Protection (ATP), and Automatic Train Operation (ATO). We will then present the system design, including the physical world digital equivalent program, the fixed block controller, the multi-track block control system, and the ATP override function design.
 
 
 
 ------
 
-### Background knowledge Introduction
+### Background knowledge
+
+This section will give a short brief and compare about the fixed/moving block signaling system, PLC ladder logic diagram and Structure Text program. If you are familiar with them, you can skip this section and if the information is not detailed enough, we also append the reference document. 
+
+
 
 #### Introduction of Fixed Blocking System
 
@@ -47,15 +63,43 @@ The track fixed blocking system is a fundamental method used in railway signalin
 
 The track fixed blocking system is a reliable and straightforward method for managing train traffic, providing the foundational safety mechanism for railways around the world.
 
-> Reference: 
-
-https://www.linkedin.com/pulse/moving-block-vs-fixed-signalling-which-better-naeem-ali/
-
-Link: https://www.sgtrains.com/technology-signalling.html#atc
+> Reference: https://www.sgtrains.com/technology-signalling.html#atc
 
 
 
-------
+#### Compare Between Fixed Blocking and Moving Blocking
+
+|                   | Fixed Blocking                                               | Moving Block                                                 |
+| ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **Key Features**  | `Block Division`: The track is divided into fixed-length blocks, each controlled by signals. | `Dynamic Blocks`: Blocks are not fixed but vary in size depending on the position and speed of trains. The safe braking distance is dynamically calculated. |
+|                   | `Train Detection`: Presence of trains is detected using track circuits, axle counters, or other train detection systems. | `Real-Time Train Tracking`: Implements automatic train protection (ATP) and automatic train operation (ATO) systems, enhancing safety and efficiency. |
+|                   | `Signals train control`: Each block has entry and exit signals that indicate whether the block is occupied or free. These signals ensure that only one train occupies a block at any time. | `Increased Capacity` : Allows for closer headways between trains, increasing track capacity and reducing delays. |
+|                   | `Safety` : Ensures trains maintain a safe distance from each other, preventing collisions. | `Flexibility` : Adapts to varying train speeds and operational conditions, optimizing traffic flow. |
+|                   | `Interlocking`: Signals are interlocked to ensure that conflicting movements do not occur, providing an additional layer of safety. |                                                              |
+| **Advantages**    | Simplicity and reliability.                                  | Higher track capacity due to reduced headways.               |
+|                   | Well-established and widely understood.                      | Greater operational flexibility and efficiency.              |
+|                   | Proven safety record.                                        | Improved safety with continuous real-time monitoring and control. |
+| **Disadvantages** | Inefficiency due to large fixed block sizes, leading to reduced track capacity. | Complexity and higher cost of implementation and maintenance. |
+|                   | Lack of flexibility in handling variable train speeds and headways. | Requires advanced technology and continuous communication systems. |
+|                   |                                                              | Greater reliance on robust software and hardware infrastructure. |
+
+>  Reference: https://www.linkedin.com/pulse/moving-block-vs-fixed-signalling-which-better-naeem-ali/
+
+
+
+#### PLC Ladder Diagram Programming
+
+PLC ladder diagram programming is a graphical programming language used to develop software for programmable logic controllers (PLCs). It is widely used in industrial automation and control systems due to its intuitive, visual nature, which resembles electrical relay logic schematics.
+
+> Reference: https://www.solisplc.com/tutorials/how-to-read-ladder-logic
+
+
+
+#### PLC Structure Text Programming
+
+The Structured Text (ST) language is one of the programming languages defined in the IEC 61131-3 standard for programmable logic controllers (PLCs). ST is a high-level programming language that resembles traditional programming languages like Pascal or C, making it a powerful and flexible tool for developing complex control algorithms in industrial automation.
+
+> Reference: https://www.realpars.com/blog/structured-text
 
 
 
@@ -63,86 +107,109 @@ Link: https://www.sgtrains.com/technology-signalling.html#atc
 
 ### System Design
 
-### 
+This section introduces the design of the system's functions, which are divided into four main parts:
+
+- **Designing the Physical World Simulation Program**: We will explain how we create them simulation program that mimics real-world railway operations and generates electrical signals to input into the PLC.
+- **Implementing the Track Fixed Block Controller Circuit:** We will detail how to use ladder logic diagrams and Structured Text language to implement the track fixed block controller circuit by using PLC.
+- **Combining Track Block Controllers for Complex Multi-Track Traffic ATP:** We will demonstrate how to integrate multiple track block controllers to manage complex multi-track traffic using Automatic Train Operation (ATO) systems.
+- **Adding the ATP Override Functionality**: We will describe how to implement an override feature in the ATC system, enabling HQ operators to bypass the ATP for handling emergency situations.
+
+
 
 #### Physical World Simulation Design
 
-To implement the fixed blocking, we need trackside ATC and trainborne ATC. There are several level of ATC such as shown in the European Rail Traffic Management System (ERTMS):
+To implement fixed block signaling, we need both trackside ATC and trainborne ATC systems. There are various levels of ATC, as illustrated by the European Rail Traffic Management System (ERTMS):
 
 ![](img/s_05.png)
 
-Reference: https://medium.com/@POST_UK/moving-block-signalling-b9b0b9f498c2
+> Reference: https://medium.com/@POST_UK/moving-block-signalling-b9b0b9f498c2
 
-In our simulation program, we will simplified the design and implement two elements to railway signaling:
+In our simulation program, we will simplify the design by implementing two key elements of railway signaling:
 
-- **Train detection** : Which recognizes when a section of track is occupied by a train In the 2D physical world simulation program, we will add the "sensor" to do the pixel detection of the moving train on the track.
-- **Movement authority**: which gives a train permission to move to a particular location on the track. The train will receive the block entrance signal's pixel color to identify whether it is allowed to move into the block. 
+- **Train Detection** : This element recognizes when a section of track is occupied by a train. In the 2D physical world simulation program, we will add sensors to detect the presence of a moving train on the track.
+- **Movement authority**: dThis element grants a train permission to move to a particular location on the track. The train will identify block entrance signals by detecting the pixel color, determining whether it is allowed to move into the block.
 
-As shown below, we match the fixed block :
+As shown below, we match the fixed block signaling system to the 2D simulation program:
 
 ![](img/s_06.png)
 
-**Train detection Sensor**: in the 2D simulator, along the track each interval there will be a train detection sensor (small grey box), when a train (green rectangle) move over the sensor, the sensor will change to blue color and generate the simulated voltage change message. Sensor color code:
+**Train Detection Sensor:** In the 2D simulator, there will be train detection sensors (small grey boxes) placed at intervals along the tracks. When a train (green rectangles) moves over a sensor, the sensor will change color to blue and generate a simulated voltage change message. 
 
-- Green: no train is detected, generate sensor "voltage low" message to block controller input pin.
-- Blue: train is passing the sensor, generate sensor "voltage high" message to block controller input pin.
+The sensor color codes are:
 
-**Block Control Signal**: In the 2D simulator, next to the track near to each sensor, there will be a signal (big red/green box) controlled by the fixed blocking controller. The train will keep detection the front area (50 pixel), if it detect a signal is red, the train will brake to reduce the speed and stop before the signal. If the train detect the signal green color, it will pass through the signal area to enter the block.
+| Color Code | Physical World State          | Sensor data to PLC                                           |
+| ---------- | ----------------------------- | ------------------------------------------------------------ |
+| Green      | No train is detected          | Generate sensor "voltage low" message to controller input pin |
+| Blue       | A train is passing the sensor | Generate sensor "voltage high" message to controller input pin |
 
-- Red: Block controller output voltage high, track block after signal is locked and trains have no permission to move in the block. 
-- Green: block controller output voltage low, track block after signal is released, trains have permission to move in the block. 
+**Block Control Signal:** In the 2D simulator, signals (big red/green boxes) controlled by the fixed block controller will be placed next to the track near each sensor. The train will continuously detect the area 50 pixels ahead. If it detects a red signal, the train will brake to reduce speed and stop before the signal. If the signal is green, the train will proceed through the signal area to enter the block.
+
+The signal color codes are 
+
+| Color Code | Physical World State                                         | PLC to signal data             |
+| ---------- | ------------------------------------------------------------ | ------------------------------ |
+| Red        | Track block after signal is locked and trains have no permission to move in the block. | Controller output voltage high |
+| Green      | Track block after signal is released and trains have permission to move in the block. | Controller output voltage low  |
 
 
 
 #### Track Block Controller Design
 
-After finished the physical world components simulation we need to develop the automate block ATC control circuit. We use PLC to implement the block control circuit so the OT engineer can easily monitor the block state and over ride the block if some emergency situation happens.
+After completing the simulation of physical world components, we need to develop the track fixed block ATC control circuit. We use PLC to implement the block control circuit so that OT engineers can easily monitor the block state and override it in case of emergencies.
 
-Let analysis the sensor and signal state change first, for a signal it will be changed to "on"(red) state when the block sensor is triggered then keep at on state then triggered to "off" when the next block sensor is triggered and keep off state as shown in the below table:
+First, let's analyze the state changes of the sensors and signals. A signal will switch to the "on" (red) state when the block sensor(n) is triggered and remain "on" until the next block sensor(n+1) is triggered, after which it switches to the "off" state, as shown in the table below:
 
-| Train Status                             | Sensor(n) | Sensor(n+1) | Signal-n(t) | Signal-n(t+1) |
-| ---------------------------------------- | --------- | ----------- | ----------- | ------------- |
-| Before train enter track block           | 0         | 0           | 0           | 0             |
-| Train start enter block(passing sensor)  | 1         | 0           | 0           | 1             |
-| Train entered block (passed sensor)      | 0         | 0           | 1           | 1             |
-| Train leaving block(passing next sensor) | 0         | 1           | 1           | 0             |
-| Train left block and in next block       | 0         | 0           | 0           | 0             |
+| Train Status                              | Sensor(n) | Sensor(n+1) | Signal-n(t) | Signal-n(t+1) |
+| ----------------------------------------- | --------- | ----------- | ----------- | ------------- |
+| Before train enter track block            | 0         | 0           | 0           | 0             |
+| Train start enter block (passing sensor)  | 1         | 0           | 0           | 1             |
+| Train entered block (passed sensor)       | 0         | 0           | 1           | 1             |
+| Train leaving block (passing next sensor) | 0         | 1           | 1           | 0             |
+| Train left block and in next block        | 0         | 0           | 0           | 0             |
 
-Then if we can see the change can map to the Basic JK Flip-flop Circuit as shown below:
+These changes can be mapped to the basic JK flip-flop circuit, as shown below:
 
 ![](img/s_07.png)
 
 > Reference: https://www.electronics-tutorials.ws/sequential/toggle-flip-flop.html
 
-Now we need to find a way to generate the trigger clock. One solution is we add another senor behind the sensor(n) to create the clock, We can also use the sensor voltage change to build the clock cycle, but we can not connect both sensor(n) to J and Clk as when the clock is generated sensor(n)'s state is "unknown":
+To generate the trigger clock cycle, we can add another sensor behind sensor(n) and sensor(n+1) to create the clock. We can also use the sensor voltage change to build the clock cycle, but we cannot connect both sensor(n) to J and CLK directly, as when the clock is generated the state change and clock up pulse happen at the same time, sensor(n)'s state will be "unknown", the clock pulse need to be "later" than the J input changed (as shown below):
 
 ![](img/s_08.png)
 
-To shift the clock pulse right, we need to add a delay timer. The train will take about 10 sec to pass the sensor, so we delay the sensor 1 second. Then we use an or gate to combine the 2 sensors input. The final circuit design will be shown below:
+To shift the clock pulse correctly, we need to add a delay timer. The train takes about 10 seconds to pass the sensor, so we delay the sensor by 0.5 ~ 1 second. Then, we use an OR gate to combine the inputs from the two sensors. The final circuit design is shown below:
 
 ![](img/s_09.png)
 
-**Implement the circuit via PLC ladder diagram** 
+We will show how to use PLC to implement this circuit via `Ladder Logic Diagram` and `Structured Text Language`.
 
-After finished design the logic in PLC. In PLC we need two contact to get the 2 sensor's voltage and one coil to change the signal state. Most of the PLC ladder editor provides the flip flop module, you can also use the NAND gate to build one if you want
+
+
+**Implementing the Circuit via PLC Ladder Diagram**
+
+After designing the electrical circuit logic, we will implement it with a PLC ladder logic diagram. We need two PLC input contacts to read the voltage from the two sensors and one coil to change the signal state. Most PLC ladder editors provide `JK/T/SR-flip-flop` modules, but you can also use NAND gates to build one if needed.(As shown below)
 
 ![](img/s_10.png)
 
-If you want to build your own JK flip flop ladder diagram in PLC, you can follow this document: https://instrumentationtools.com/topic/j-k-flip-flop/ The PLC ladder logic is shown below: 
+> Reference: If you want to build your own JK flip flop ladder diagram in PLC, you can follow this document: https://instrumentationtools.com/topic/j-k-flip-flop/ 
+
+The PLC ladder logic diagram is shown below: 
 
 ![](img/s_11.png)
 
-Wire connection: 
+Wire connection of the PLC input contact and output coils: 
 
-- sensor(n) => I0.1 => HR1
-- sensor(n+1) => I0.2=>HR2
-- Signal(n) => Q0.1=> C0
+- sensor(n) => I0.1(PLC input contact) => HR1 (PLC internal holding register)
+- sensor(n+1) => I0.2 (PLC input contact) =>HR2 (PLC internal holding register)
+- Signal(n) => Q0.1(PLC output coil) => C0 (PLC output pin)
 
-**Implement the circuit via PLC ST(structure text) language**
+
+
+**Implement the Circuit via PLC ST(Structure Text) Language**
 
 We can also use the PLC ST program language to implement the circuit. 
 
-we create a JK flip flop function block fist: 
+We create a JK flip flop function block fist : 
 
 ```pascal
 FUNCTION_BLOCK JK_FlipFlop
@@ -193,11 +260,9 @@ last_CLK := CLK;
 END_FUNCTION_BLOCK
 ```
 
+Now we make a 1 sec timer module via ST language :
 
-
-Now we make a 1 sec timer via ST language
-
-```
+```pascal
 FUNCTION_BLOCK TON
 VAR_INPUT
     IN      : BOOL;   // Timer input
@@ -276,43 +341,56 @@ Q_output := flipflop.Q;
 
 > reference: https://forums.mrplc.com/index.php?/topic/39080-flip-flop-in-structured-text/
 
-Now we can link multiple tack block control logic together to build a single track's fixed block ATC system as shown below:
+
+
+Now after use the PLC built the block controller, we can link multiple tack block controllers together to build a single track's fixed block ATC system as shown below:
 
 ![](img/s_12.png)
 
-Remark: we can use one PLC to control multiple blocks, in the picture, we want to make the connection clear so each PLC control one Fixed block. 
+>  Remark: we can use one PLC to control multiple blocks, in the picture, we want to make the connection clear so each PLC control one Fixed block. 
 
 
 
-#### Multi Tracks Fixed Blocks Design 
+#### Multi-Tracks Fixed Blocks Design 
 
-With the previous section, we can build a single tracks with multiple fixed blocks. Now we can process a more complex scenario: Track Junctions. as shown below
+Building on the previous section where we implemented a single track with multiple fixed blocks, we can now handle a more complex scenario: track junctions. As illustrated below:
 
 ![](img/s_13.png)
 
-When the train on orange line passing the two junctions, we need to not only block the block on the orange line, we also need to block the 2 green line block which at the junction cross area to make sure only one train can be in the junction area and all the other trains can not enter the junction. The junction block control is shown below:
+When a train on the orange line passes through the two junctions, we need to not only lock the fix blocks on the orange line but also the two green line blocks at the junction cross area. This ensures that only one train can occupy the junction area at any time, preventing other trains from entering. The junction block control is illustrated below:
 
 ![](img/s_14.png)
 
-When a train on green track entering a ‘not hold’ junction, it will trigger the junction entrance senor, then the PLC will turn on signal to block the trains on yellow line to avoid them enter the junction. The junction will be changed to ‘hold’ state. 
+When a train on the green track enters a 'not lock' or 'free' junction, it triggers the junction entrance sensor. The PLC then activates the signal to block trains on the orange line from entering the junction, changing the junction state to 'locked'.
 
-When the train train has left the junction, it will trigger the junction exist sensor, then the PLC will turn off the signal to release entrance of the junction for yellow line. The junction will be change to ‘not hold’ state. 
+Once the train has left the junction, it triggers the junction exit sensor. The PLC then deactivates the signal, allowing trains on the yellow line to enter the junction, and changes the junction state to 'not hold.'
 
-Now we can combine the track block control and junction block control together:
+By combining track block control and junction block control, we achieve the following circuit setup:
 
 ![](img/s_15.png)
 
-Based on the complexity of the junction, each junction need 3 ~ 6 block controller to implement the ATC. 
+Given the complexity of the junction, each junction typically requires 3 to 6 block controllers to implement ATC effectively.
 
 
 
-#### Controller ATC Over Ride Design
+#### Controller ATC Override Design
 
-Some time when some emergency situation happen, the HQ operator may need to turn off the ATC for a while, as we are using the PLC, the Operator can use the HMI to change the PLC coils' state to change the signal. This may only work once, once one of the the JK-flip-flop input sensor triggered, the signal will be changed. So to make the over ride controllable , we need to an one more AND gate to enable or disable the clock. The circuit design is shown below :
+In emergency situations, the HQ operator may need to temporarily disable the ATC system. By using a PLC, the operator can use the track block HMI to change the state of the PLC coils, thus altering the signal. However, this might only work once, as any subsequent triggering of the JK flip-flop input sensor will change the signal again. To make the override controllable, we need to add an additional AND gate to enable or disable the clock. The circuit design is shown below:
 
  ![](img/s_16.png)
 
-As shown in the ladder logic, we connect the AND gate to a holding register HR3, then in the HMI, if the operator active the block over ride function, HR3 will change to 0, then the sensors will not generate and clock to the control circuit, now after the operator change the signal state, even the sensors are triggered, the signal's state will not change. 
+In the ladder logic, we connect the AND gate to a holding register, HR3. In the HMI, when the operator activates the block override function, HR3 is set to 0. This prevents the sensors from generating a clock signal to the control circuit. As a result, after the operator changes the signal state, the signal will remain unchanged even if the sensors are triggered.
 
 
 
+------
+
+### System Usage
+
+
+
+
+
+------
+
+> last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 20/07/2023 if you have any problem, please send me a message. 
