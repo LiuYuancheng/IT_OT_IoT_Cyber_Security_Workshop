@@ -1,8 +1,10 @@
-# How to Use PLC to Implement Land Based Railway Track Fixed Block Signaling System
+# How to Use PLC to Implement Land Based Railway Track Fixed Block Signaling OT System
 
-**Project design purpose**: We want to use PLC with sensor and signals to implement the operation of railway track fixed blocking signaling automated control system in the digital equivalent system or railway system module to show the logic of track fixed blocking ATC(Automatic Train Control) mechanism for training. 
+**Project Design Purpose:** This project aims to use Programmable Logic Controllers (PLC) with train detection sensors and train control signals to develop an automated control system for railway track fixed block signaling. The system will include a digital equivalent simulation to explain the logic of the track fixed block Automatic Train Control (ATC) mechanism for training purposes. In this article, we will introduce the design of the block controller's electrical circuit, then demonstrate how to implement this circuit using PLC ladder logic diagrams and Structured Text. Finally, we will show how to integrate the controllers to build an railway Automatic Train Protection (ATP) system capable of handling complex railway situations, such as controlling multi-track junctions and block override.
 
-> Important: The real world railway Automatic Train Control mechanism Automatic Train Protection(ATP) and Automatic Train Operation(ATO) are much more complex, we just simplified the general operation logic for OT training.
+
+
+> **Important:** Real-world railway Automatic Train Control mechanisms, including Automatic Train Protection (ATP) and Automatic Train Operation (ATO), are much more complex than what we introduced in the article. This project simplifies the general operation logic for training purposes only.
 
 ```
 # Version:     v0.1.3
@@ -17,11 +19,19 @@
 
 ### Introduction
 
-This document will show how to implement train fix blocking  Automatic Train Protection and Operation mechanism in a railway track digital simulation system. The implement includes 3 sub projects
+Fixed block signaling and moving block signaling are tow main railway signaling system in current world railway Automatic Train Control. **Fixed block signaling** is a traditional method used to manage train movements by dividing the railway track into discrete segments or blocks and **Moving block signaling** is a modern, more dynamic system that allows for real-time management of train movements, offering increased efficiency and flexibility. This document will show how to implement train fix blocking  Automatic Train Protection and Operation mechanism in a railway track digital simulation OT system. The implement includes 3 sub projects which cover 3 basic level of a OT system:
 
-1. Railway signaling system physical world simulator. 
-2. PLC simulator project.
-3. Railway block control HMI.  
+1. Railway signaling system physical world simulator [Private Project]. (OT-System-lvl0: Physical Process Field I/O device)
+2. Virtual PLC simulator lib project [Project link](https://github.com/LiuYuancheng/PLC_and_RTU_Simulator).(OT-System-lvl1: Controller LAN )
+3. Railway block control HMI [Private Project].(Control Center (HQ) Processing LAN)
+
+In this article, we will introduce some basic background knowledge about Railway Fixed/Moving block system,  railway Automatic Train Control(ATC), Automatic Train Protection(ATP) and ATO(Automatic Train Operation), then we will introduce the system design about physical world digital equivalent program, the fixed block controller, multi-track block control system and ATO over ride function design.  
+
+
+
+------
+
+### Background knowledge Introduction
 
 #### Introduction of Fixed Blocking System
 
@@ -45,11 +55,15 @@ Link: https://www.sgtrains.com/technology-signalling.html#atc
 
 
 
+------
 
 
-#### System Design
 
+------
 
+### System Design
+
+### 
 
 #### Physical World Simulation Design
 
@@ -292,7 +306,13 @@ Based on the complexity of the junction, each junction need 3 ~ 6 block controll
 
 
 
+#### Controller ATC Over Ride Design
 
+Some time when some emergency situation happen, the HQ operator may need to turn off the ATC for a while, as we are using the PLC, the Operator can use the HMI to change the PLC coils' state to change the signal. This may only work once, once one of the the JK-flip-flop input sensor triggered, the signal will be changed. So to make the over ride controllable , we need to an one more AND gate to enable or disable the clock. The circuit design is shown below :
+
+ ![](img/s_16.png)
+
+As shown in the ladder logic, we connect the AND gate to a holding register HR3, then in the HMI, if the operator active the block over ride function, HR3 will change to 0, then the sensors will not generate and clock to the control circuit, now after the operator change the signal state, even the sensors are triggered, the signal's state will not change. 
 
 
 
