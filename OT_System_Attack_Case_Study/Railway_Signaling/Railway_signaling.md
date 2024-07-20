@@ -260,6 +260,39 @@ flipflop();
 Q_output := flipflop.Q;
 ```
 
+> reference: https://forums.mrplc.com/index.php?/topic/39080-flip-flop-in-structured-text/
+
+Now we can link multiple tack block control logic together to build a single track's fixed block ATC system as shown below:
+
+![](img/s_12.png)
+
+Remark: we can use one PLC to control multiple blocks, in the picture, we want to make the connection clear so each PLC control one Fixed block. 
 
 
-Now we can link multiple tack block control logic together to build a single track's fixed block ATC system.
+
+#### Multi Tracks Fixed Blocks Design 
+
+With the previous section, we can build a single tracks with multiple fixed blocks. Now we can process a more complex scenario: Track Junctions. as shown below
+
+![](img/s_13.png)
+
+When the train on orange line passing the two junctions, we need to not only block the block on the orange line, we also need to block the 2 green line block which at the junction cross area to make sure only one train can be in the junction area and all the other trains can not enter the junction. The junction block control is shown below:
+
+![](img/s_14.png)
+
+When a train on green track entering a ‘not hold’ junction, it will trigger the junction entrance senor, then the PLC will turn on signal to block the trains on yellow line to avoid them enter the junction. The junction will be changed to ‘hold’ state. 
+
+When the train train has left the junction, it will trigger the junction exist sensor, then the PLC will turn off the signal to release entrance of the junction for yellow line. The junction will be change to ‘not hold’ state. 
+
+Now we can combine the track block control and junction block control together:
+
+![](img/s_15.png)
+
+Based on the complexity of the junction, each junction need 3 ~ 6 block controller to implement the ATC. 
+
+
+
+
+
+
+
