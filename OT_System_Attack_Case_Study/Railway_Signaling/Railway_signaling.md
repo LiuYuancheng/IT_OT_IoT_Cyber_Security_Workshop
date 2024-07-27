@@ -35,6 +35,9 @@
       - [Multi-Tracks Fixed Blocks Design](#multi-tracks-fixed-blocks-design)
       - [Controller ATC Override Design](#controller-atc-override-design)
     + [System Usage](#system-usage)
+        * [Usage of Railway Physical World Simulation Program UI](#usage-of-railway-physical-world-simulation-program-ui)
+        * [Usage of Railway Junction and Station Blocks Control HMI Program UI](#usage-of-railway-junction-and-station-blocks-control-hmi-program-ui)
+        * [Usage of Railway Track Blocks Control HMI Program UI](#usage-of-railway-track-blocks-control-hmi-program-ui)
 
 ------
 
@@ -141,9 +144,9 @@ To implement fixed block signaling, we need both trackside ATC and trainborne AT
 
 ![](img/s_05.png)
 
-` Figure-02: ERTMS 3 levels signalling technology explaination, version v1.3 (2024)`
+` Figure-02: ERTMS 3 levels signalling technology explanation, version v1.3 (2024)`
 
-> eference: https://medium.com/@POST_UK/moving-block-signalling-b9b0b9f498c2
+> Reference: https://medium.com/@POST_UK/moving-block-signalling-b9b0b9f498c2
 
 In our simulation program, we will simplify the design by implementing two key elements of railway signaling:
 
@@ -208,7 +211,7 @@ To shift the clock pulse correctly, we need to add a delay timer. The train take
 
 ![](img/s_09.png)
 
-` Figure-06: Block contoller circuit diagram, version v1.3 (2024)`
+` Figure-06: Block controller circuit diagram, version v1.3 (2024)`
 
 We will show how to use PLC to implement this circuit via `Ladder Logic Diagram` and `Structured Text Language`.
 
@@ -338,7 +341,7 @@ END_FUNCTION_BLOCK
 
 After build the 2 components module we can make our Main PLC ST program:
 
-```
+```pascal
 PROGRAM Main
 VAR
     timer      : TON;      // Instance of the TON function block
@@ -430,7 +433,17 @@ In the ladder logic, we connect the AND gate to a holding register, HR3. In the 
 
 ### System Usage
 
+##### Usage of Railway Physical World Simulation Program UI
 
+![](img/s_17.png)
+
+##### Usage of Railway Junction and Station Blocks Control HMI Program UI
+
+![](img/s_18.png)
+
+##### Usage of Railway Track Blocks Control HMI Program UI
+
+![](img/s_19.png)
 
 
 
