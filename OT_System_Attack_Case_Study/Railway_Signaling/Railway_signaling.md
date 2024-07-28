@@ -449,4 +449,5 @@ In the ladder logic, we connect the AND gate to a holding register, HR3. In the 
 
 ------
 
-> last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 20/07/2023 if you have any problem, please send me a message. 
+> last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 20/07/2024 if you have any problem, please send me a message. 
+
