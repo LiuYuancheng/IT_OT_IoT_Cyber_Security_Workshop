@@ -327,7 +327,7 @@ The execution log seen by Charlie presents false information, concealing the ins
 
 Upon enabling the "Real Action" flag of the fake update installer, the actual actions become visible:
 
-![](img/IT01_S2_05.png)
+![](img/IT01_S2_06.png)
 
 Inspecting Charlie's computer's background processes (railway-op-victim), it's evident that upon the installer's completion and exit, the backdoor trojan is injected into the system's bootup auto-run and begins operating:
 
