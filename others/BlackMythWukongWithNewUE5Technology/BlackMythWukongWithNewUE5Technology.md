@@ -18,4 +18,17 @@ The Niagara particle system in Unreal Engine 5 is a powerful and flexible tool f
 
 Example Use Cases in  [Black Myth: Wukong]
 
-In the game we can see serval 
+In the game we can see how the key feature are applied: 
+
+![](img/rm03.png)
+
+**Dynamic Environmental Effects**: Niagara can be used to create weather systems like rain, snow, and fog that interact with the environment and characters, enhancing the immersive experience.
+
+**Magic and Spell Effects**: In fantasy games, Niagara can generate visually stunning spell effects with intricate patterns, glowing lights, and dynamic animations.
+
+**Explosions and Debris**: For action sequences, Niagara is ideal for creating realistic explosions, with particles simulating debris, fire, and smoke that behave according to the laws of physics.
+
+**Fluid Simulations**: Niagara can simulate fluids like water or lava, complete with waves, splashes, and flowing dynamics that interact with other objects in the scene.
+
+
+
