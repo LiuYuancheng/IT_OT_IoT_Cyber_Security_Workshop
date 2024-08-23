@@ -1,15 +1,15 @@
-# New Ureal Engine 5 and Nvidia Technology used in game [Black Myth: Wukong]
+# New Unreal Engine 5 and Nvidia Technology in Black Myth: Wukong
 
-In this article we want to share the what we learn the new Ureal Engine 5 and Nvidia GPU technology which used in the popular 3A computer game Black Myth: Wukong to improve the Game graphics quality. We use the Interview article of Game Science Interactive Technology, the Geekerwan's experiment and the Nvidia GTX40xx office Black Myth: Wukong introduction as reference. As I am not a game development expert, our view may from the point of a "software engineer" and if there is any mistake, many thanks if you can point out and give some comment. The technical we share will includes 5 parts, we will use the game's picture to show how the technology improve the Game graphics quality.
+In this article, we explore the cutting-edge Unreal Engine 5 and Nvidia GPU technologies used in the highly anticipated AAA game *Black Myth: Wukong* this year to enhance its game graphical quality. Our insights are based on an interview article of the technical lead of Game Science Interactive Technology, Geekerwan's experimental analysis, and Nvidia's official *Black Myth: Wukong* showcase featuring the RTX 40xx series. As a software engineer, my perspective may differ from that of a game development expert and more focus on the "Software development", so I welcome any corrections or feedback.
 
-- Unreal engine 5 Niagara particle system 
-- Unreal Engine 5 Nanite Virtualized Geometry Technology
+The technical discussion is divided into four parts, each illustrated with in-game screenshots to show how these technologies elevate the game's visual quality:
+
+- Unreal Engine 5 Niagara Particle System
+- Unreal Engine 5 Nanite Virtualized Geometry
 - Unreal Engine 5 Lumen Global Illumination and Reflections
-- Nvidia RTX40 Deep Learning Super Sampling technology
+- Nvidia RTX 40 Series Deep Learning Super Sampling (DLSS)
 
-We will summarize the key features of these new technology and compare with Black Myth: Wukong's game picture to explain the advantage of these technology compare with the old solution and how these technology are applied in the game. 
-
-
+We will summarize the key features of these technologies based on what we learned, compare them with previous solutions, and explain how they are implemented in *Black Myth: Wukong* to achieve the superior graphics.
 
 **Table of Contents**
 
@@ -17,35 +17,34 @@ We will summarize the key features of these new technology and compare with Blac
 
 ------
 
-### Unreal engine 5 Niagara particle system 
+### Unreal Engine 5 Niagara Particle System
 
-The Niagara particle system in Unreal Engine 5 is a powerful and flexible tool for creating real-time visual effects, ranging from simple particles like smoke and fire to complex simulations such as fluid dynamics and advanced environmental effects. It is the successor to the older Cascade particle system, offering more control, scalability, and performance. 
+The Niagara particle system in Unreal Engine 5 is a powerful and versatile tool for creating real-time visual effects, ranging from simple particles like smoke and fire to complex simulations such as fluid dynamics and advanced environmental effects. As the successor to the older Cascade particle system, Niagara offers greater control, scalability, and performance.
 
-In computer game, the different use can observe is the particles now has physical interaction with the model and environment. For example in the scenario when the wind blow snow pass a character (the monkey in Black Myth: Wukong), for old cascade particle system, the wind will follow the physical effect simulation to by pass the model, but the particle effect (the snow) will follow the pre-config trajectory to pass through the model directly if the developer don't set the special configure effect moving route. But in the Niagara particle system, the particle has the physical “interact”  with other module or even materials.  as shown below:
+In *Black Myth: Wukong* game, Niagara's capabilities are evident in how particles interact with the environment and characters. Unlike the Cascade system, where particles might follow a predefined trajectory regardless of obstacles, Niagara allows particles to physically interact with models and materials. For example, in a scene where wind blows snow past a character (like the Monkey King in *Black Myth: Wukong*), the snow particles respond realistically—they are deflected by the character's body, with some snow particles sticking to the surface and others following the wind’s trajectory. This creates a more immersive and dynamic visual experience, as illustrated below:
 
 ![](img/rm02.png)
 
-The Snow particle effect trajectory will “interact” with the module, some snow follow the wind trajectory, some snow goes higher some snow stick on the model
+The snow particles in this scene dynamically interact with the model, with some snow following the wind's path, some rising higher, and some adhering to the character.
 
+#### Niagara Particle System Key Features
 
+- **Node-Based Workflow**: Niagara uses a node-based interface, allowing artists and developers to build complex effects visually without deep programming knowledge. This intuitive and modular workflow simplifies the creation and modification of effects.
+- **Customizable Emitters and Particles**: Niagara offers a high degree of customization, enabling users to control various particle properties, such as shape, size, velocity, color, and lifetime. Emitters can be set to spawn particles under specific conditions or in response to gameplay events.
+- **Data-Driven Simulations**: Niagara supports data-driven simulations, meaning you can use input from physics simulations or external data sources to dictate particle behavior, resulting in realistic and dynamic effects.
 
-The key feature includes:
+#### Example Use Cases in *Black Myth: Wukong*
 
-- **Node-Based Workflow**: Niagara uses a node-based interface, allowing artists and developers to build complex effects visually without deep programming knowledge. This workflow is intuitive and modular, making it easier to create and modify effects.
-- **Customizable Emitters and Particles**: Niagara allows for a high degree of customization, enabling users to control various properties of particles, such as their shape, size, velocity, color, and lifetime. You can create emitters that spawn particles under specific conditions or in response to gameplay events.
-- **Data-Driven Simulations**: Niagara supports data-driven simulations, meaning you can use data from various sources, such as physics simulations or external data files, to drive the behavior of particles. This allows for the creation of realistic and dynamic effects.
-
-**Example Use Cases in  [Black Myth: Wukong]**
-
-In the game we can see how the key feature are applied: 
+The game's use of Niagara demonstrates its key features as shown below:
 
 ![](img/rm03.png)
 
-- **Dynamic Environmental Effects**: Niagara can be used to create weather systems like rain, snow, and fog that interact with the environment and characters, enhancing the immersive experience.
-- **Magic and Spell Effects**: In fantasy games, Niagara can generate visually stunning spell effects with intricate patterns, glowing lights, and dynamic animations.
+- **Dynamic Environmental Effects**: Niagara enables the creation of weather systems like rain, snow, and fog that realistically interact with the environment and characters, enhancing the game's immersive quality.
+- **Magic and Spell Effects**: In fantasy settings, Niagara generates visually stunning spell effects with intricate patterns, glowing lights, and dynamic animations.
+- **Explosions and Debris**: For action-packed scenes, Niagara excels at creating realistic explosions, with particles simulating debris, fire, and smoke that behave according to the laws of physics.
+- **Fluid Simulations**: Niagara can simulate realistic fluids, such as water or lava, with waves, splashes, and flow dynamics that interact naturally with the environment.
 
-- **Explosions and Debris**: For action sequences, Niagara is ideal for creating realistic explosions, with particles simulating debris, fire, and smoke that behave according to the laws of physics.
-- **Fluid Simulations**: Niagara can simulate fluids like water or lava, complete with waves, splashes, and flowing dynamics that interact with other objects in the scene.
+This advanced particle system significantly enhances the visual fidelity and realism in *Black Myth: Wukong*, setting a new standard for real-time effects in modern games.
 
 
 
