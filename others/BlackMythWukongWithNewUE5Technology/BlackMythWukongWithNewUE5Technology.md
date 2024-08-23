@@ -4,7 +4,12 @@ In this article we want to share the what we learn the new Ureal Engine 5 and Nv
 
 - Unreal engine 5 Niagara particle system 
 - Unreal Engine 5 Nanite Virtualized Geometry Technology
-- Lumen Global Illumination and Reflections
+- Unreal Engine 5 Lumen Global Illumination and Reflections
+- Nvidia RTX40 AI DLSS technology
+
+We will summarize the key features of these new technology and compare with Black Myth: Wukong's game picture to explain the advantage of these technology compare with the old solution and how these technology are applied in the game. 
+
+
 
 **Table of Contents**
 
@@ -36,13 +41,11 @@ In the game we can see how the key feature are applied:
 
 ![](img/rm03.png)
 
-**Dynamic Environmental Effects**: Niagara can be used to create weather systems like rain, snow, and fog that interact with the environment and characters, enhancing the immersive experience.
+- **Dynamic Environmental Effects**: Niagara can be used to create weather systems like rain, snow, and fog that interact with the environment and characters, enhancing the immersive experience.
+- **Magic and Spell Effects**: In fantasy games, Niagara can generate visually stunning spell effects with intricate patterns, glowing lights, and dynamic animations.
 
-**Magic and Spell Effects**: In fantasy games, Niagara can generate visually stunning spell effects with intricate patterns, glowing lights, and dynamic animations.
-
-**Explosions and Debris**: For action sequences, Niagara is ideal for creating realistic explosions, with particles simulating debris, fire, and smoke that behave according to the laws of physics.
-
-**Fluid Simulations**: Niagara can simulate fluids like water or lava, complete with waves, splashes, and flowing dynamics that interact with other objects in the scene.
+- **Explosions and Debris**: For action sequences, Niagara is ideal for creating realistic explosions, with particles simulating debris, fire, and smoke that behave according to the laws of physics.
+- **Fluid Simulations**: Niagara can simulate fluids like water or lava, complete with waves, splashes, and flowing dynamics that interact with other objects in the scene.
 
 
 
@@ -77,4 +80,40 @@ In the game we can see how the key feature are applied:
 
 ![](img/rm06.png)
 
+**High-Detail Characters and Creatures**: Game developers can use Nanite to create highly detailed characters and creatures, complete with intricate textures and geometry, enhancing the visual fidelity of their games.
+
 Nanite Virtualized Geometry is a game-changer for artists and developers, enabling the creation of stunningly detailed worlds without compromising performance, paving the way for the next generation of real-time 3D graphics.
+
+
+
+------
+
+### Unreal Engine 5 Lumen Global Illumination and Reflections
+
+Lumen in Unreal Engine 5 is a dynamic global illumination and reflections system that transforms how light interacts with environments in real-time. It allows developers to create realistic lighting and reflections without the need for pre-baked lightmaps or complex setups. Compare with old Illumination solution which only calculates the light reflection once , the Lumen will calculate the reflections multiple times based on the user's GPU performance. (as shown in the example below)
+
+![](img/rm07.png)
+
+The key feature of Lumen includes:
+
+- **Dynamic Global Illumination**: Lumen provides fully dynamic global illumination, meaning that light bounces off surfaces and illuminates surrounding areas in real-time. This allows for realistic lighting scenarios where changes in the environment, such as moving objects or varying light sources, are accurately reflected in the lighting.
+- **Dynamic Reflections**: Lumen handles reflections dynamically, capturing the environment and reflecting it in surfaces like water, glass, or shiny metals. These reflections update in real-time, ensuring they are accurate to the current state of the scene.
+- **No Pre-Baking Required**: Unlike traditional global illumination methods, Lumen does not require pre-baked lightmaps or reflection captures. This drastically reduces the time spent on lighting setups and allows for more iterative and creative workflows.
+- **Supports Large-Scale Environments**: Lumen is designed to handle large, open-world environments effectively. It scales with the size of the environment, ensuring that lighting remains consistent and realistic across vast distances.
+- **Interactive Lighting**: With Lumen, light sources can be added, moved, or changed dynamically within the scene, and the lighting and reflections will adjust accordingly. This makes it ideal for creating interactive and immersive experiences where lighting plays a crucial role.
+
+
+
+**Example Use Cases in  [Black Myth: Wukong]**
+
+In the game we can see how the key feature are applied: 
+
+- **Day-Night Cycles**: Lumen allows developers to create seamless day-night cycles with changing sunlight and moonlight that naturally illuminate and shade the environment as time passes.
+
+  
+
+- **Interior Lighting**: In architectural visualization or interior design, Lumen can simulate how natural light enters through windows and interacts with various materials, giving a realistic preview of how spaces will look under different lighting conditions.
+
+- **Reflective Surfaces in Games**: Games that feature highly reflective surfaces, such as water bodies, mirrors, or polished floors, can use Lumen to achieve realistic and dynamic reflections that enhance immersion.
+
+Lumen Global Illumination and Refle
