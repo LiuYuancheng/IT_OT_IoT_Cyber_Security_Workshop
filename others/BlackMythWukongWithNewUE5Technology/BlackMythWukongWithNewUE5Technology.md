@@ -5,7 +5,7 @@ In this article we want to share the what we learn the new Ureal Engine 5 and Nv
 - Unreal engine 5 Niagara particle system 
 - Unreal Engine 5 Nanite Virtualized Geometry Technology
 - Unreal Engine 5 Lumen Global Illumination and Reflections
-- Nvidia RTX40 AI DLSS technology
+- Nvidia RTX40 Deep Learning Super Sampling technology
 
 We will summarize the key features of these new technology and compare with Black Myth: Wukong's game picture to explain the advantage of these technology compare with the old solution and how these technology are applied in the game. 
 
@@ -108,12 +108,43 @@ The key feature of Lumen includes:
 
 In the game we can see how the key feature are applied: 
 
-- **Day-Night Cycles**: Lumen allows developers to create seamless day-night cycles with changing sunlight and moonlight that naturally illuminate and shade the environment as time passes.
+- **Day-Night Cycles**: Lumen allows developers to create seamless day-night cycles with changing sunlight and moonlight that naturally illuminate and shade the environment as time passes. The light effect of sun and moon is shown below:
 
-  
+  ![](img/rm08.png)
 
 - **Interior Lighting**: In architectural visualization or interior design, Lumen can simulate how natural light enters through windows and interacts with various materials, giving a realistic preview of how spaces will look under different lighting conditions.
 
 - **Reflective Surfaces in Games**: Games that feature highly reflective surfaces, such as water bodies, mirrors, or polished floors, can use Lumen to achieve realistic and dynamic reflections that enhance immersion.
 
-Lumen Global Illumination and Refle
+The compare between lower Lumen Global Illumination and higher lumen Lumen Global Illumination level is shown below 
+
+![](img/rm09.png)
+
+Lumen Global Illumination and Reflections make it possible to achieve high-quality, realistic lighting in real-time, opening up new possibilities for interactive storytelling, immersive environments, and more efficient game development workflows.
+
+
+
+------
+
+### Nvidia RTX40 Deep Learning Super Sampling technology
+
+Nvidia Deep Learning Super Sampling (DLSS) is an AI-powered technology designed to boost the performance of graphics rendering in video games while maintaining high visual quality. DLSS leverages the power of neural networks and deep learning to upscale lower-resolution images to higher resolutions, allowing games to run smoothly at higher frame rates without sacrificing detail.
+
+**Key Features:**
+
+1. **AI-Powered Upscaling**: DLSS uses deep learning algorithms to analyze lower-resolution frames and generate high-resolution images. This process allows the game to render at a lower resolution, reducing the workload on the GPU, while still delivering a final image that looks as if it were rendered at a much higher resolution.
+2. **Performance Gains**: By rendering at a lower resolution and upscaling to a higher one, DLSS significantly improves game performance, allowing for higher frame rates, even in demanding games with complex graphics.
+3. **Image Quality**: Despite the performance boost, DLSS maintains high image quality, often producing visuals that are comparable to or even better than native resolution rendering. The AI algorithm can fill in details and reduce artifacts, such as jagged edges, that are common in traditional upscaling methods.
+4. **Multiple Quality Modes**: DLSS typically offers several modes, such as Performance, Balanced, and Quality, allowing users to choose between higher frame rates or better image quality based on their preference and hardware capabilities.
+5. **Real-Time Ray Tracing Compatibility**: DLSS works well with real-time ray tracing, a technology that simulates realistic lighting and reflections. By using DLSS in conjunction with ray tracing, players can enjoy visually stunning games without a significant performance hit.
+
+**Example Use Cases in  [Black Myth: Wukong]**
+
+- **4K Gaming**: DLSS allows gamers to experience 4K resolution gaming on hardware that might not otherwise be capable of rendering games at such high resolutions natively, delivering a smooth and immersive experience.
+- **Ray Tracing-Enhanced Games**: in Black Myth: Wukong if you turn on the Ray Tracing configuration, with the DLSS, it allows you to run at higher frame rates with ray tracing enabled, preserving both performance and visual fidelity.
+
+![](img/rm10.png)
+
+Reference: https://www.nvidia.com/en-sg/geforce/campaigns/black-myth-wukong-bundle/
+
+Nvidia DLSS is a key innovation in modern gaming, enabling stunning graphics and smooth gameplay on a wide range of hardware, making it a valuable tool for developers and players alike.
