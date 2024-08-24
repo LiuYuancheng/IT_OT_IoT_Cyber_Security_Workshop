@@ -1,5 +1,7 @@
 # New Unreal Engine 5 and Nvidia Technology in Black Myth: Wukong
 
+![](img/title.png)
+
 In this article, we explore the cutting-edge Unreal Engine 5 and Nvidia GPU technologies used in the highly anticipated AAA game *Black Myth: Wukong* this year to enhance its game graphical quality. Our insights are based on an interview article of the technical lead of Game Science Interactive Technology, Geekerwan's experimental analysis, and Nvidia's official *Black Myth: Wukong* showcase featuring the RTX 40xx series. As a software engineer, my perspective may differ from that of a game development expert and more focus on the "Software development", so I welcome any corrections or feedback.
 
 The technical discussion is divided into four parts, each illustrated with in-game screenshots to show how these technologies elevate the game's visual quality:
@@ -166,7 +168,17 @@ Nvidia Deep Learning Super Sampling (DLSS) V3 is an advanced AI-powered technolo
 
 Nvidia DLSS is a groundbreaking innovation in modern gaming, enabling stunning graphics and smooth gameplay across a wide range of hardware, making it an invaluable tool for both developers and players alike.
 
-> Reference: https://www.nvidia.com/en-sg/geforce/campaigns/black-myth-wukong-bundle/
+> Reference: https://www.nvidia.com/en-sg/geforce/technologies/dlss/
+
+
+
+------
+
+### Reference
+
+- Black Myth: Wukong Game performance Test Experiment [Geekwan]: https://youtu.be/S-HGvnExI4Y?si=mxB_WkuRLqcdMYmD
+-  Interview article of the technical lead of Game Science Interactive Technology: https://baijiahao.baidu.com/s?id=1807872892990050610&wfr=spider&for=pc
+- Nvidia Black Myth: Wukong Game Page: https://www.nvidia.com/en-sg/geforce/campaigns/black-myth-wukong-bundle/
 
 
 
