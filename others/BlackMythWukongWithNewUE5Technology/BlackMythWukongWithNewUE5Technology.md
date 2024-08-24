@@ -7,7 +7,7 @@ The technical discussion is divided into four parts, each illustrated with in-ga
 - Unreal Engine 5 Niagara Particle System
 - Unreal Engine 5 Nanite Virtualized Geometry
 - Unreal Engine 5 Lumen Global Illumination and Reflections
-- Nvidia RTX 40 Series Deep Learning Super Sampling (DLSS)
+- Nvidia RTX 40 Series Deep Learning Super Sampling (DLSS 3)
 
 We will summarize the key features of these technologies based on what we learned, compare them with previous solutions, and explain how they are implemented in *Black Myth: Wukong* to achieve the superior graphics.
 
@@ -33,7 +33,7 @@ The snow particles in this scene dynamically interact with the model, with some 
 - **Customizable Emitters and Particles**: Niagara offers a high degree of customization, enabling users to control various particle properties, such as shape, size, velocity, color, and lifetime. Emitters can be set to spawn particles under specific conditions or in response to gameplay events.
 - **Data-Driven Simulations**: Niagara supports data-driven simulations, meaning you can use input from physics simulations or external data sources to dictate particle behavior, resulting in realistic and dynamic effects.
 
-#### Example Use Cases in *Black Myth: Wukong*
+#### Niagara Use Cases Example in *Black Myth: Wukong*
 
 The game's use of Niagara demonstrates its key features as shown below:
 
@@ -46,42 +46,51 @@ The game's use of Niagara demonstrates its key features as shown below:
 
 This advanced particle system significantly enhances the visual fidelity and realism in *Black Myth: Wukong*, setting a new standard for real-time effects in modern games.
 
+> Reference link: 
+>
+> Doc: https://www.udemy.com/course/unreal-5-niagara-introduction-to-niagara/?couponCode=SKILLS4SALEA
+>
+> https://dev.epicgames.com/community/learning/tutorials/8B1P/unreal-engine-intro-to-niagara
+>
+> Video: https://www.youtube.com/watch?v=SAAZRWBry_I
+
 
 
 ------
 
-### Unreal Engine 5 Nanite Virtualized Geometry 
+### Unreal Engine 5 Nanite Virtualized Geometry
 
-Nanite Virtualized Geometry in Unreal Engine 5 is a groundbreaking technology that revolutionizes how detailed 3D models are rendered in real-time. Nanite allows developers to create and display incredibly complex scenes with billions of polygons without worrying about performance issues like draw calls or polygon budgets.
-
-- **Automatic Level of Detail (LOD)**: Nanite automatically adjusts the level of detail based on the camera's distance to objects. This means that high-detail models can be used throughout a scene without manually creating multiple LODs. The system dynamically streams in the appropriate amount of detail, ensuring optimal performance. as shown in the below example: 
+Nanite Virtualized Geometry in Unreal Engine 5 is a revolutionary technology that fundamentally changes how detailed 3D models are rendered in real-time. It allows developers to create and display incredibly complex scenes with billions of polygons, all while avoiding performance issues like draw calls or polygon budgets. The dynamic LOD technology highly improved the game 3D-model development efficiency.(as shown below)
 
 ![](img/rm04.png)
 
-Without Automatic Level of Detail, the developers need to build 4 different model manually. With UE5 Nanite automatically LOD, the engine will auto generate many different LOD based on the environment, camera view distance and convert them smoothly 
+Without automatic dynamic LOD, developers would need to manually create multiple versions of a model with varying levels of detail. With Nanite, Unreal Engine 5 automatically generates multiple LODs based on factors like the environment and camera distance, smoothly transitioning between them.
 
-- **Massive Polygon Counts**: Nanite enables the use of assets with massive polygon counts, such as those created from photogrammetry or high-detail sculpting software. This allows for an unprecedented level of detail in game environments, characters, and objects.
-- **Efficient Rendering**: By virtualizing geometry, Nanite efficiently handles the rendering of large numbers of triangles, optimizing memory and processing power. This makes it possible to achieve film-quality visuals in real-time without the need for traditional optimization techniques.
-- **No Need for Baking or Normal Maps**: With Nanite, developers can use high-resolution assets directly, eliminating the need for baking normal maps or other traditional methods used to simulate detail on low-poly models. This streamlines the workflow and reduces the time spent on asset preparation.
-- **Scalable Performance**: Nanite is designed to scale with different hardware capabilities, ensuring that games and applications can take advantage of the technology on both high-end and lower-end devices
+#### Nanite Virtualized Geometry Key Features
 
+- **Automatic Level of Detail (LOD)**: Nanite automatically adjusts the level of detail based on the camera's distance from objects. This means high-detail models can be used throughout a scene without the need for manually creating multiple LODs. The system dynamically streams in the appropriate amount of detail, ensuring optimal performance.
+- **Massive Polygon Counts**: Nanite supports assets with extremely high polygon counts, such as those created through photogrammetry or detailed sculpting software. This allows for unprecedented levels of detail in game environments, characters, and objects.
+- **Efficient Rendering**: By virtualizing geometry, Nanite optimizes memory and processing power usage, enabling the rendering of large numbers of triangles efficiently. This makes it possible to achieve film-quality visuals in real-time, without the need for traditional optimization techniques.
+- **No Need for Baking or Normal Maps**: With Nanite, developers can use high-resolution assets directly, eliminating the need for baking normal maps or employing other traditional methods to simulate detail on low-poly models. This streamlines workflows and reduces asset preparation time.
+- **Scalable Performance**: Nanite is designed to scale across different hardware capabilities, ensuring that both high-end and lower-end devices can benefit from the technology.
 
+#### Nanite Use Cases Example in *Black Myth: Wukong*
 
-**Example Use Cases in  [Black Myth: Wukong]**
+Nanite's key features are applied in *Black Myth: Wukong* in several ways:
 
-In the game we can see how the key feature are applied: 
-
-**Photorealistic Environments**: Nanite is ideal for creating photorealistic game environments with a high level of detail, such as dense forests, urban landscapes, or ancient ruins, where every object, down to the smallest pebble, is rendered with precision. In the game, the development team use the Nanite technology to rebuild the Dazu Rock Carvings in Chong Qing China, the compare between the game and the real world photo is shown below:
+- **Photorealistic Environments**: Nanite excels at creating photorealistic game environments with intricate detail, such as dense forests, urban landscapes, or ancient ruins. In *Black Myth: Wukong*, the development team utilized Nanite to recreate the Dazu Rock Carvings in Chongqing, China, with a level of detail that closely mirrors the real-world location. Below is a comparison between the game and a real-world photo:
 
 ![](img/rm05.png)
 
-**Complex Architectural Visualizations**: In architectural visualization, Nanite allows for the accurate rendering of detailed building models and interiors, providing clients with an immersive experience that closely mirrors the final construction. In the game you can find that the Black Myth: Wukong graphic card memory will be much lower than other 3D game with same Architectural complex level: 
+- **Complex Architectural Visualizations**: Nanite allows for the accurate rendering of detailed architectural models and interiors, providing an immersive experience that closely resembles final construction. In *Black Myth: Wukong*, the game's use of Nanite results in lower graphics card memory usage compared to other 3D games with similar architectural complexity:
 
 ![](img/rm06.png)
 
-**High-Detail Characters and Creatures**: Game developers can use Nanite to create highly detailed characters and creatures, complete with intricate textures and geometry, enhancing the visual fidelity of their games.
+- **High-Detail Characters and Creatures**: Developers can leverage Nanite to create highly detailed characters and creatures, complete with intricate textures and geometry, significantly enhancing the visual fidelity of the game.
 
-Nanite Virtualized Geometry is a game-changer for artists and developers, enabling the creation of stunningly detailed worlds without compromising performance, paving the way for the next generation of real-time 3D graphics.
+Nanite Virtualized Geometry is a game-changer for artists and developers, enabling the creation of stunningly detailed worlds without compromising performance, and paving the way for the next generation of real-time 3D graphics.
+
+> Reference Link: https://dev.epicgames.com/documentation/en-us/unreal-engine/nanite-virtualized-geometry-in-unreal-engine
 
 
 
@@ -89,21 +98,19 @@ Nanite Virtualized Geometry is a game-changer for artists and developers, enabli
 
 ### Unreal Engine 5 Lumen Global Illumination and Reflections
 
-Lumen in Unreal Engine 5 is a dynamic global illumination and reflections system that transforms how light interacts with environments in real-time. It allows developers to create realistic lighting and reflections without the need for pre-baked lightmaps or complex setups. Compare with old Illumination solution which only calculates the light reflection once , the Lumen will calculate the reflections multiple times based on the user's GPU performance. (as shown in the example below)
+Lumen in Unreal Engine 5 is a cutting-edge system for dynamic global illumination and reflections, fundamentally changing how light interacts with environments in real-time. It enables developers to create realistic lighting and reflections without relying on pre-baked lightmaps or complicated setups. Unlike older illumination solutions that calculate light reflection only once, Lumen continuously updates reflections multiple times based on the GPU's performance, ensuring highly realistic visuals, as shown in the example below:
 
 ![](img/rm07.png)
 
-The key feature of Lumen includes:
+#### Lumen Global Illumination Key Features
 
-- **Dynamic Global Illumination**: Lumen provides fully dynamic global illumination, meaning that light bounces off surfaces and illuminates surrounding areas in real-time. This allows for realistic lighting scenarios where changes in the environment, such as moving objects or varying light sources, are accurately reflected in the lighting.
-- **Dynamic Reflections**: Lumen handles reflections dynamically, capturing the environment and reflecting it in surfaces like water, glass, or shiny metals. These reflections update in real-time, ensuring they are accurate to the current state of the scene.
-- **No Pre-Baking Required**: Unlike traditional global illumination methods, Lumen does not require pre-baked lightmaps or reflection captures. This drastically reduces the time spent on lighting setups and allows for more iterative and creative workflows.
-- **Supports Large-Scale Environments**: Lumen is designed to handle large, open-world environments effectively. It scales with the size of the environment, ensuring that lighting remains consistent and realistic across vast distances.
-- **Interactive Lighting**: With Lumen, light sources can be added, moved, or changed dynamically within the scene, and the lighting and reflections will adjust accordingly. This makes it ideal for creating interactive and immersive experiences where lighting plays a crucial role.
+- **Dynamic Global Illumination**: Lumen offers fully dynamic global illumination, meaning light bounces off surfaces and illuminates surrounding areas in real-time. This results in realistic lighting scenarios where environmental changes, such as moving objects or shifting light sources, are accurately reflected in the scene.
+- **Dynamic Reflections**: Lumen handles reflections dynamically, capturing the environment and accurately reflecting it on surfaces like water, glass, or shiny metals. These reflections update in real-time, ensuring they remain consistent with the current state of the scene.
+- **No Pre-Baking Required**: Unlike traditional global illumination methods, Lumen eliminates the need for pre-baked lightmaps or reflection captures. This significantly reduces the time required for lighting setups, allowing for more iterative and creative workflows.
+- **Supports Large-Scale Environments**: Lumen is designed to handle large, open-world environments efficiently. It scales with the size of the environment, ensuring consistent and realistic lighting across vast distances.
+- **Interactive Lighting**: With Lumen, light sources can be dynamically added, moved, or altered within a scene, with the lighting and reflections adjusting in real-time. This makes Lumen ideal for creating interactive and immersive experiences where lighting plays a crucial role.
 
-
-
-**Example Use Cases in  [Black Myth: Wukong]**
+#### Lumen Use Cases Example in *Black Myth: Wukong*
 
 In the game we can see how the key feature are applied: 
 
@@ -111,39 +118,58 @@ In the game we can see how the key feature are applied:
 
   ![](img/rm08.png)
 
-- **Interior Lighting**: In architectural visualization or interior design, Lumen can simulate how natural light enters through windows and interacts with various materials, giving a realistic preview of how spaces will look under different lighting conditions.
+- **Interior Lighting**: In interior scenes, Lumen can simulate how natural light enters through windows and interacts with various materials, providing a realistic preview of how spaces will look under different lighting conditions.
+- **Reflective Surfaces in Games**: For surfaces like water, mirrors, or polished floors, Lumen delivers realistic and dynamic reflections that enhance immersion, making these elements more lifelike and engaging.
 
-- **Reflective Surfaces in Games**: Games that feature highly reflective surfaces, such as water bodies, mirrors, or polished floors, can use Lumen to achieve realistic and dynamic reflections that enhance immersion.
-
-The compare between lower Lumen Global Illumination and higher lumen Lumen Global Illumination level is shown below 
+The comparison between lower and higher levels of Lumen Global Illumination is shown below:
 
 ![](img/rm09.png)
 
-Lumen Global Illumination and Reflections make it possible to achieve high-quality, realistic lighting in real-time, opening up new possibilities for interactive storytelling, immersive environments, and more efficient game development workflows.
+Lumen Global Illumination and Reflections make it possible to achieve high-quality, realistic lighting in real-time, unlocking new possibilities for interactive storytelling, immersive environments, and more efficient game development workflows.
+
+> Reference : https://dev.epicgames.com/documentation/en-us/unreal-engine/lumen-global-illumination-and-reflections-in-unreal-engine
 
 
 
 ------
 
-### Nvidia RTX40 Deep Learning Super Sampling technology
+### Nvidia RTX40 Deep Learning Super Sampling Technology V3
 
-Nvidia Deep Learning Super Sampling (DLSS) is an AI-powered technology designed to boost the performance of graphics rendering in video games while maintaining high visual quality. DLSS leverages the power of neural networks and deep learning to upscale lower-resolution images to higher resolutions, allowing games to run smoothly at higher frame rates without sacrificing detail.
+Nvidia Deep Learning Super Sampling (DLSS) V3 is an advanced AI-powered technology designed to significantly enhance the performance of graphics rendering in video games while preserving or even improving visual quality. DLSS leverages neural networks and deep learning to upscale lower-resolution images to higher resolutions, enabling games to run smoothly at higher frame rates without sacrificing detail. DLSS V3 offers four key AI-assisted functions:
 
-**Key Features:**
+**DLSS Frame Generation**: DLSS analyzes sequential frames and motion data using the new Optical Flow Accelerator in GeForce RTX 40 Series GPUs, employing AI to create additional high-quality frames. For instance, if a game can only maintain 60 FPS at high settings, DLSS V3’s Frame Generation feature can analyze the previous frames and generate intermediate transition frames, effectively doubling the frame rate to 120 FPS, resulting in smoother gameplay. The effect is illustrated below:
 
-1. **AI-Powered Upscaling**: DLSS uses deep learning algorithms to analyze lower-resolution frames and generate high-resolution images. This process allows the game to render at a lower resolution, reducing the workload on the GPU, while still delivering a final image that looks as if it were rendered at a much higher resolution.
-2. **Performance Gains**: By rendering at a lower resolution and upscaling to a higher one, DLSS significantly improves game performance, allowing for higher frame rates, even in demanding games with complex graphics.
-3. **Image Quality**: Despite the performance boost, DLSS maintains high image quality, often producing visuals that are comparable to or even better than native resolution rendering. The AI algorithm can fill in details and reduce artifacts, such as jagged edges, that are common in traditional upscaling methods.
-4. **Multiple Quality Modes**: DLSS typically offers several modes, such as Performance, Balanced, and Quality, allowing users to choose between higher frame rates or better image quality based on their preference and hardware capabilities.
-5. **Real-Time Ray Tracing Compatibility**: DLSS works well with real-time ray tracing, a technology that simulates realistic lighting and reflections. By using DLSS in conjunction with ray tracing, players can enjoy visually stunning games without a significant performance hit.
+![](img/rm11.png)
 
-**Example Use Cases in  [Black Myth: Wukong]**
+**DLSS Ray Reconstruction**: This feature uses AI to generate additional pixels for scenes involving intensive ray tracing. For example, when a game renders mirror reflections or other complex surfaces, DLSS AI helps generate more detailed diffuse reflections based on the material’s properties, enhancing visual realism. As shown below:
 
-- **4K Gaming**: DLSS allows gamers to experience 4K resolution gaming on hardware that might not otherwise be capable of rendering games at such high resolutions natively, delivering a smooth and immersive experience.
-- **Ray Tracing-Enhanced Games**: in Black Myth: Wukong if you turn on the Ray Tracing configuration, with the DLSS, it allows you to run at higher frame rates with ray tracing enabled, preserving both performance and visual fidelity.
+![](img/rm12.png)
+
+**DLSS Super Resolution**: This function uses AI to output higher resolution frames from a lower resolution input. DLSS samples multiple lower-resolution images, using motion data and feedback from prior frames to reconstruct images that appear as if they were rendered at native resolution.
+
+**Deep Learning Anti-Aliasing (DLAA)**: DLAA uses the same Super Resolution technology as DLSS to reconstruct native resolution images, maximizing image quality by reducing visual artifacts such as jagged edges.
+
+#### DLSS V3 Key Features
+
+- **AI-Powered Upscaling**: DLSS employs deep learning algorithms to analyze lower-resolution frames and upscale them to high-resolution images. This allows the game to render at a lower resolution, reducing the GPU’s workload while still delivering visuals that look as though they were rendered at a much higher resolution.
+- **Performance Gains**: By rendering at a lower resolution and upscaling to a higher one, DLSS significantly boosts game performance, allowing for higher frame rates even in graphically demanding titles.
+- **Image Quality**: Despite the performance improvements, DLSS maintains high image quality, often producing visuals comparable to or better than native resolution rendering. The AI algorithm enhances details and minimizes artifacts, such as jagged edges, that are common in traditional upscaling methods.
+- **Multiple Quality Modes**: DLSS typically offers several modes—Performance, Balanced, and Quality—allowing users to choose between higher frame rates or better image quality, depending on their preference and hardware capabilities.
+- **Real-Time Ray Tracing Compatibility**: DLSS is optimized to work in conjunction with real-time ray tracing, a technology that simulates realistic lighting and reflections. By using DLSS alongside ray tracing, players can enjoy visually stunning games without a significant performance hit.
+
+#### DLSS V3 Use Cases in *Black Myth: Wukong*
+
+- **4K Gaming**: If run the game with GeForce RTX40x GPU card, DLSS enables gamers to experience 4K resolution gaming on hardware that might otherwise struggle to render games at such high resolutions natively, delivering a smooth and immersive experience.
+- **Ray Tracing-Enhanced Games**: In *Black Myth: Wukong*, turning on the Ray Tracing option with DLSS allows the game to run at higher frame rates with ray tracing enabled, preserving both performance and visual fidelity. the effect is shown below:
 
 ![](img/rm10.png)
 
-Reference: https://www.nvidia.com/en-sg/geforce/campaigns/black-myth-wukong-bundle/
+Nvidia DLSS is a groundbreaking innovation in modern gaming, enabling stunning graphics and smooth gameplay across a wide range of hardware, making it an invaluable tool for both developers and players alike.
 
-Nvidia DLSS is a key innovation in modern gaming, enabling stunning graphics and smooth gameplay on a wide range of hardware, making it a valuable tool for developers and players alike.
+> Reference: https://www.nvidia.com/en-sg/geforce/campaigns/black-myth-wukong-bundle/
+
+
+
+------
+
+> Last edit by LiuYuancheng(liu_yuan_cheng@hotmail.com) at 24/08/2024,  if you have any problem please free to message me.
