@@ -17,6 +17,22 @@ We will summarize the key features of these technologies based on what we learne
 
 [TOC]
 
+- [New Unreal Engine 5 and Nvidia Technology in Black Myth: Wukong](#new-unreal-engine-5-and-nvidia-technology-in-black-myth--wukong)
+    + [Unreal Engine 5 Niagara Particle System](#unreal-engine-5-niagara-particle-system)
+      - [Niagara Particle System Key Features](#niagara-particle-system-key-features)
+      - [Niagara Use Cases Example in *Black Myth: Wukong*](#niagara-use-cases-example-in--black-myth--wukong-)
+    + [Unreal Engine 5 Nanite Virtualized Geometry](#unreal-engine-5-nanite-virtualized-geometry)
+      - [Nanite Virtualized Geometry Key Features](#nanite-virtualized-geometry-key-features)
+      - [Nanite Use Cases Example in *Black Myth: Wukong*](#nanite-use-cases-example-in--black-myth--wukong-)
+    + [Unreal Engine 5 Lumen Global Illumination and Reflections](#unreal-engine-5-lumen-global-illumination-and-reflections)
+      - [Lumen Global Illumination Key Features](#lumen-global-illumination-key-features)
+      - [Lumen Use Cases Example in *Black Myth: Wukong*](#lumen-use-cases-example-in--black-myth--wukong-)
+    + [Nvidia RTX40 Deep Learning Super Sampling Technology V3](#nvidia-rtx40-deep-learning-super-sampling-technology-v3)
+      - [DLSS V3 Key Features](#dlss-v3-key-features)
+      - [DLSS V3 Use Cases in *Black Myth: Wukong*](#dlss-v3-use-cases-in--black-myth--wukong-)
+    + [Summary](#summary)
+    + [Reference](#reference)
+
 ------
 
 ### Unreal Engine 5 Niagara Particle System
@@ -169,6 +185,14 @@ Nvidia Deep Learning Super Sampling (DLSS) V3 is an advanced AI-powered technolo
 Nvidia DLSS is a groundbreaking innovation in modern gaming, enabling stunning graphics and smooth gameplay across a wide range of hardware, making it an invaluable tool for both developers and players alike.
 
 > Reference: https://www.nvidia.com/en-sg/geforce/technologies/dlss/
+
+
+
+------
+
+### Summary 
+
+*Black Myth: Wukong* leverages the latest advancements in Unreal Engine 5 and Nvidia technology to deliver groundbreaking visual experiences. The game utilizes Unreal Engine 5's Niagara Particle System for intricate real-time effects, Nanite Virtualized Geometry for rendering highly detailed environments, and Lumen for dynamic global illumination and reflections. Additionally, Nvidia’s DLSS V3 enhances performance through AI-driven upscaling, frame generation, and ray tracing. Together, these technologies create a visually stunning and immersive gaming experience, pushing the boundaries of what’s possible in modern game development.
 
 
 
