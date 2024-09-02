@@ -1,8 +1,30 @@
-# Apply LLM-AI on Solving Cyber Security Questions
+# Applying Large Language Models (LLMs) to Solve Cybersecurity Questions
 
 [TOC]
 
 ------
+
+### Introduction
+
+Large Language Models (LLMs) are increasingly used in education and research for tasks such as analyzing program code error logs, help summarize papers  and improving reports. In this project, we aim to evaluate the effectiveness of LLMs in solving cybersecurity-related questions, such as Capture The Flag (CTF) challenges, some cyber security ns, certification course exam question and homework assignments. Our approach involves using prompt engineering to test different types of questions, including knowledge-based, analysis-based, and experiment-based questions. We will then analyze the results to determine which types of cybersecurity questions are more easily solved by AI.
+
+xxx
+
+For the cyber security question categorization, we want to summarize the questions in 3 feature: 
+
+- knowledge-based Question: People need to know much branch of information and knowledge then they can fix the question. 
+- analysis-based Question: people needs to analysis the giving information then based on some basic knowledge then fix the question. 
+- experiment-based question: people need to create a program or login to some environment to do experiment and try to find the information and fix the questions.
+
+xxx
+
+Compared to answering questions in other fields, AI may sometimes refuse to provide answers to certain cybersecurity questions (e.g., if a user asks how to hack a website) due to policy settings. In cases where this occurs, we will explore the use of jailbreak prompts, such as the Always Intelligent and Machiavellian (AIM) chatbot prompts, to bypass these restrictions.
+
+In this project, we will evaluate the performance of ChatGPT and other AI-powered LLMs, such as Microsoft's New Bing and Google Bard, in addressing cybersecurity questions across various domains, including Forensics, Cryptography, Web Exploitation, Reverse Engineering, and Binary Exploitation.
+
+
+
+
 
 ### Introduction
 
