@@ -8,45 +8,36 @@
 
 Large Language Models (LLMs) are increasingly used in education and research for tasks such as analyzing program code error logs, help summarize papers  and improving reports. In this project, we aim to evaluate the effectiveness of LLMs in solving cybersecurity-related questions, such as Capture The Flag (CTF) challenges, some cyber security ns, certification course exam question and homework assignments. Our approach involves using prompt engineering to test different types of questions, including knowledge-based, analysis-based, and experiment-based questions. We will then analyze the results to determine which types of cybersecurity questions are more easily solved by AI.
 
-xxx
+To categorize cybersecurity questions, we classify them into three main types:
 
-For the cyber security question categorization, we want to summarize the questions in 3 feature: 
+![](img/rm_03.png)
 
-- knowledge-based Question: People need to know much branch of information and knowledge then they can fix the question. 
-- analysis-based Question: people needs to analysis the giving information then based on some basic knowledge then fix the question. 
-- experiment-based question: people need to create a program or login to some environment to do experiment and try to find the information and fix the questions.
-
-xxx
+- **Knowledge-Based Questions**: These questions require a broad range of information and knowledge to find the correct answer.
+- **Analysis-Based Questions**: These questions involve analyzing the given information and applying foundational knowledge to derive a solution.
+- **Experiment-Based Questions**: These questions require creating programs, accessing specific environments, or conducting experiments to discover the necessary information and solve the problem.
 
 Compared to answering questions in other fields, AI may sometimes refuse to provide answers to certain cybersecurity questions (e.g., if a user asks how to hack a website) due to policy settings. In cases where this occurs, we will explore the use of jailbreak prompts, such as the Always Intelligent and Machiavellian (AIM) chatbot prompts, to bypass these restrictions.
 
-In this project, we will evaluate the performance of ChatGPT and other AI-powered LLMs, such as Microsoft's New Bing and Google Bard, in addressing cybersecurity questions across various domains, including Forensics, Cryptography, Web Exploitation, Reverse Engineering, and Binary Exploitation.
+#### Performance Measurement
+
+In this project, we will evaluate the performance of ChatGPT and other AI-powered LLMs, such as Microsoft's New Bing and Google Bard, in addressing cybersecurity questions across various domains, including Forensics, Cryptography, Web Exploitation, Reverse Engineering, and Binary Exploitation. For the question type:
+
+| Cyber Security Type     | Question Feature               | Question Description                                         | Questions  solve technical                                   |
+| ----------------------- | ------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **Forensics**           | Analysis-and-Knowledge-Based   | Involves analyzing digital evidence to investigate cyber incidents, such as data breaches or malware infections. | It requires examining logs, memory dumps, or network traffic to identify and interpret relevant information. |
+| **Cryptography**        | Knowledge-based                | Focuses on understanding and breaking encryption algorithms or securing data through cryptographic techniques. | They require a deep understanding of cryptographic principles, algorithms, and methods to solve problems related to encryption or decryption. |
+| **Web Exploitation**    | Knowledge-and-Experiment Based | Involves identifying and exploiting vulnerabilities in web applications, such as SQL injection, XSS, or CSRF attacks. | They require interacting with a web application, running tests, and using tools or scripts to exploit vulnerabilities. |
+| **Reverse Engineering** | Analysis-and-Knowledge-Based   | Entails analyzing software, firmware, or binaries to understand their functionality, often to discover vulnerabilities or extract information | They involve deconstructing and interpreting the program's code or behavior to gain insights. |
+| **Binary Exploitation** | Experiment and analysis based  | Focuses on finding and exploiting flaws in compiled binaries, such as buffer overflows or format string vulnerabilities. | The require practical testing, debugging, and crafting specific payloads to exploit vulnerabilities within a binary. |
+
+To evaluate the performance of large language models (LLMs) and validate our findings, we will focus on the following criteria:
+
+1. Whether the LLM can accurately understand the cybersecurity question.
+2. Whether the LLM can provide a possible solution once it has understood the question.
+3. Whether the LLM can interpret and analyze the execution results, refine its solution, and ultimately arrive at the correct answer.
+4. Identifying the types of questions that are easily solved by the LLM, those that may cause confusion, and those that are challenging for the LLM to solve.
 
 
-
-
-
-### Introduction
-
-Currently the LLM are wildly used in education and research such as help analysis program code error log message, improve the report. We want to try to analysis the performance of applying LLM to solving the cyber security question such as the CTF challenges, exam questions or some home work assignment. We want to use AI prompt engineer to test different types of questions such as knowledge based question, analysis based questions and experiment base question and use the test result to summarized what kind of cyber security questions are easily to be solved by AI. 
-
-Compare with solving normal question in other field with LLM, AI may refuse give the cyber security question answer (such as if the user ask AI how to hack a website) based on its policy setting. If we meet this situation, we will use the Jailbreak Prompt such as Always Intelligent and Machiavellian chatbot prompt (AIM) to simplify the process or bypass some large language model's policy setting.
-
-In this project we will test ChatGPT or other AI-LLM (Microsoft New_Bing or Google Bard) 's performance on fixing cyber security question under Forensics, Cryptography, Web Exploitation, Reverse Engineering and Binary Exploitation field. 
-
-#### Performance Measurement 
-
-To measure the large language module's performance, improve and verify our test conclusion, we will focus below points:
-
-1. Whether large language model can understand the security question correctly. 
-
-2. After the large language model has understood the question, whether it can give the possible solution for the question. 
-
-3. Whether the large language module can understand and analyze the execution result and improve its solution then get the final correct answer. 
-
-4. What kind of question can be easily solved by the large language model , what kind of question may confuse the large language model and what kind of question is not easy solved by large language module. 
-
-   
 
 ------
 
