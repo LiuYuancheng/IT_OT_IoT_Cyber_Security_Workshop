@@ -1,6 +1,33 @@
 # Applying Large Language Models (LLMs) to Solve Cybersecurity Questions
 
+![](img/title.png)
+
+In this document, we will introduce some test, experiment and analysis conclusion about applying Large Language Models (LLMs) to solve cybersecurity questions. 
+
+**Table of Contents**
+
 [TOC]
+
+- [Applying Large Language Models (LLMs) to Solve Cybersecurity Questions](#applying-large-language-models--llms--to-solve-cybersecurity-questions)
+    + [Introduction](#introduction)
+      - [LLM Performance Measurement](#llm-performance-measurement)
+    + [Cybersecurity Question Solving Test Cases Basic Rule](#cybersecurity-question-solving-test-cases-basic-rule)
+      - [Rule to create LLM prompt question](#rule-to-create-llm-prompt-question)
+      - [Rule to determine problem solved](#rule-to-determine-problem-solved)
+      - [Rule to evaluate the LLM performance](#rule-to-evaluate-the-llm-performance)
+    + [Question Solving Test Case Details](#question-solving-test-case-details)
+      - [Test Case 1: Shell Shock Attack Question [CVE-2014-6271/CVE-2014-6278]](#test-case-1--shell-shock-attack-question--cve-2014-6271-cve-2014-6278-)
+      - [Test Case 2:  Buffer Overflow Attack Question [Compiled C Program]](#test-case-2---buffer-overflow-attack-question--compiled-c-program-)
+      - [Test Case 3: Brute Force Password Attack Question [Protected Zipped File]](#test-case-3--brute-force-password-attack-question--protected-zipped-file-)
+      - [Test Case 4: Command Injection Attack on Web CGI](#test-case-4--command-injection-attack-on-web-cgi)
+      - [Test Case 5: Library Hijacking Attack Question](#test-case-5--library-hijacking-attack-question)
+      - [Test Case 6: Reverse Engineering CTF Question](#test-case-6--reverse-engineering-ctf-question)
+      - [Test Case 7: Memory Dump Analysis Question (HTB - Reminiscent)](#test-case-7--memory-dump-analysis-question--htb---reminiscent-)
+      - [Test Case 8: 1000+ Cybersecurity Exam MCQ](#test-case-8--1000--cybersecurity-exam-mcq)
+    + [Test Case Result Analysis](#test-case-result-analysis)
+      - [Challenge/Question Types that AI Can Easily Solve](#challenge-question-types-that-ai-can-easily-solve)
+      - [Challenge/Question Types that are Difficult for AI to Solve](#challenge-question-types-that-are-difficult-for-ai-to-solve)
+    + [Summary](#summary)
 
 ------
 
@@ -11,6 +38,8 @@ Large Language Models (LLMs) are increasingly used in education and research for
 To categorize cybersecurity questions, we classify them into three main types:
 
 ![](img/rm_03.png)
+
+`Figure-01 Three main categories of  cybersecurity questions, version v0.1 (2024)`
 
 - **Knowledge-Based Questions**: These questions require a broad range of information and knowledge to find the correct answer.
 - **Analysis-Based Questions**: These questions involve analyzing the given information and applying foundational knowledge to derive a solution.
