@@ -104,3 +104,26 @@ Using the first scan bit, the PLC will synchronize the sensor and motor states d
 
 ------
 
+### SCADA HMI Integration and Alert Handling
+
+After finished connected the wire on the hardware and setup the PLC ladder logic, we will connect the PLC to the SCADA HMI to do the breaker control and monitor. The HMI will read the contact connected holding registers and the coils value regularly then shown in the power system display map: 
+
+![](img/s_08.png)
+
+Then when the user click the breaker on/off button, the HMI will send the coil set Modbus-TCP command to PLC to change the motor state. 
+
+After integrate the PLC with the SCADA-HMI, we need to add the breaker state exception detection logic in the HMI. As the coils state will be synchronized with the sensor state when PLC startup. So if the sensor state and the motor state are some thing unseal: either the HMI breaker change action failed or the breaker is flipped manually by some one or there is a power trip happened. 
+
+| PLC Holding Register Val | PLC Coil State | System Exception                                             |
+| ------------------------ | -------------- | ------------------------------------------------------------ |
+| 0                        | False          | Normal state, no error.                                      |
+| 1                        | True           | Normal state, no error.                                      |
+| 0                        | True           | Circuit breaker power trip or some people manually flip of the breaker. |
+| 1                        | False          | HMI breaker turn off action fail or some one flip on the breaker manually. |
+
+If the exception is detected the HMI will show the flash alert signal under the breaker to remind operator system got error and need to check. Then the operator needs to check the breaker state, then change the breaker to correct state to clear the alert.(AS shown in the below picture)
+
+![](img/s_09.png)
+
+------
+
