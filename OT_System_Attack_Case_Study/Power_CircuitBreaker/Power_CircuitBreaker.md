@@ -60,3 +60,47 @@ The hardware connection diagram is illustrated in the image below.
 ![](img/s_04.png)
 
 Since the `Schneider Electric Acti 9 ARA auto-recloser motor` operates at 48V, we need to use the 5V relay with 48V contacts to bridge the PLC’s 5V output coil with the 48V power supply, enabling the motor to flip the breaker on or off. The breaker state sensor can directly connect to the PLC's 5V input. However, if a 48V PLC extension module, such as the SR2D201BD, is used, the relay and sensor connections can be linked directly to the breaker sensor and control motor, bypassing the 5V relay configuration.
+
+
+
+------
+
+### PLC Ladder Logic Design 
+
+The breaker control motor operates by flipping on when it receives a low-to-high pulse and flipping off when it receives a high-to-low pulse. This means that the actual state of the motor might not always match the PLC coil state. For example, if the PLC coil sends a signal from low to high to turn the breaker on, but the breaker trips due to an overcurrent event, the breaker will flip the motor plastic handle ( [2] in below picture) and sensor handle ([3] in blow picture) to the off position. In this case, the PLC input contact will detect a low voltage (off) from the sensor, while the PLC coil still holds a high voltage (on) state.
+
+![](img/s_05.png)
+
+In typical ladder logic design for breaker control, no special logic is required. However, for a breaker that supplies power, we need to ensure that the PLC doesn’t interfere with the current state of the power supply when it reboots. Upon startup, all PLC outputs default to zero voltage. Therefore, the PLC output coil needs to synchronize with the current state of the breaker sensor during the initial startup.
+
+This synchronization can be illustrated as follows:
+
+| PLC Startup Input Contact State | PLC Startup Output Coil State | Coil Change                          |
+| ------------------------------- | ----------------------------- | ------------------------------------ |
+| Voltage-High                    | Voltage-Low                   | From Voltage Low to Voltage-High     |
+| Voltage-Low                     | Voltage-Low                   | Remain in current state Voltage -Low |
+
+Once this one-time synchronization occurs during the PLC startup, the sensor input will no longer affect the coil state. To implement this in the ladder diagram, we utilize the **PLC first scan bit**—a special internal bit or flag that is set to `true` only during the first scan cycle after the PLC powers up. This allows initialization logic, such as resetting variables, setting default values, or synchronizing states, to run only once during startup. It is typically used for initialization tasks like resetting variables, setting default values, or running startup procedures that only need to happen once.
+
+In most PLC programming environments, the first scan bit is built-in and commonly labeled as `First_Scan`, `S1`, or a similar identifier. For the M221 PLC, as per the programming guide [Modicon M221 Logic Controller Programming Guide](https://pneumatykanet.pl/pub/przekierowanie/Modicon-M221-Logic-Controller-Programming-Guide-EN.pdf), the first scan bit is `%S13`. The corresponding circuit diagram for this function is shown below : 
+
+![](img/s_06.png)
+
+The state table below illustrates how the first scan bit affects the synchronization process:
+
+| PLC State   | First Scan Bit | PLC Input Contact State | Current PLC Coil State | PLC Coil Change         |
+| ----------- | -------------- | ----------------------- | ---------------------- | ----------------------- |
+| PLC Startup | 0              | 0                       | 0                      | Remain in current state |
+| PLC Startup | 0              | 1                       | 0                      | Change from 0 to 1      |
+| PLC Running | 1              | 0 or 1                  | 0 or 1                 | Remain in current state |
+
+The corresponding ladder logic diagram rung is shown below:
+
+![](img/s_07.png)
+
+Using the first scan bit, the PLC will synchronize the sensor and motor states during startup, after which the sensor contact and motor control coil will operate independently from one another. This ensures stable and reliable operation without unintended state changes during normal operation.
+
+
+
+------
+
