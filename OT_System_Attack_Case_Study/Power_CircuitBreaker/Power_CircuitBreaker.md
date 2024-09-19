@@ -106,24 +106,30 @@ Using the first scan bit, the PLC will synchronize the sensor and motor states d
 
 ### SCADA HMI Integration and Alert Handling
 
-After finished connected the wire on the hardware and setup the PLC ladder logic, we will connect the PLC to the SCADA HMI to do the breaker control and monitor. The HMI will read the contact connected holding registers and the coils value regularly then shown in the power system display map: 
+Once the hardware connections are completed and the PLC ladder logic is set up, the next step is integrating the PLC with the SCADA HMI to enable control and monitoring of the circuit breaker. The HMI will continuously read the values from the PLC's holding registers and coil states, and these will be displayed on the power system's interface, as shown in the image below:
 
 ![](img/s_08.png)
 
-Then when the user click the breaker on/off button, the HMI will send the coil set Modbus-TCP command to PLC to change the motor state. 
+When the user interacts with the HMI by clicking the breaker on/off button, the HMI sends a Modbus-TCP command to the PLC, instructing it to change the motor state by updating the relevant coil.
 
-After integrate the PLC with the SCADA-HMI, we need to add the breaker state exception detection logic in the HMI. As the coils state will be synchronized with the sensor state when PLC startup. So if the sensor state and the motor state are some thing unseal: either the HMI breaker change action failed or the breaker is flipped manually by some one or there is a power trip happened. 
+After the integration, it's crucial to implement breaker state exception detection within the HMI. Since the PLC synchronizes the coil state with the sensor state during startup, discrepancies between the motor state and the sensor state could indicate a possible issue. These issues could be caused by a failed HMI command, manual breaker operation, or a power trip.
+
+The table below summarizes potential system exceptions:
 
 | PLC Holding Register Val | PLC Coil State | System Exception                                             |
 | ------------------------ | -------------- | ------------------------------------------------------------ |
 | 0                        | False          | Normal state, no error.                                      |
 | 1                        | True           | Normal state, no error.                                      |
-| 0                        | True           | Circuit breaker power trip or some people manually flip of the breaker. |
-| 1                        | False          | HMI breaker turn off action fail or some one flip on the breaker manually. |
+| 0                        | True           | Circuit breaker power trip or manual operation of the breaker. |
+| 1                        | False          | HMI breaker off action failed or manual operation turned the breaker on. |
 
-If the exception is detected the HMI will show the flash alert signal under the breaker to remind operator system got error and need to check. Then the operator needs to check the breaker state, then change the breaker to correct state to clear the alert.(AS shown in the below picture)
+When an exception is detected, the HMI will display a flashing alert signal next to the breaker icon to notify the operator that an error has occurred and needs attention. The operator will then need to investigate the breaker’s current state and manually correct it to clear the alert, as shown in the image below:![](img/s_09.png)
 
-![](img/s_09.png)
+This system ensures that any breaker state inconsistencies are promptly identified and addressed, enhancing the overall reliability of the power grid system.
+
+
 
 ------
+
+
 
