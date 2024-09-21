@@ -123,13 +123,97 @@ The table below summarizes potential system exceptions:
 | 0                        | True           | Circuit breaker power trip or manual operation of the breaker. |
 | 1                        | False          | HMI breaker off action failed or manual operation turned the breaker on. |
 
-When an exception is detected, the HMI will display a flashing alert signal next to the breaker icon to notify the operator that an error has occurred and needs attention. The operator will then need to investigate the breaker’s current state and manually correct it to clear the alert, as shown in the image below:![](img/s_09.png)
+When an exception is detected, the HMI will display a flashing alert signal next to the breaker icon to notify the operator that an error has occurred and needs attention. The operator will then need to investigate the breaker’s current state and manually correct it to clear the alert, as shown in the image below:
 
-This system ensures that any breaker state inconsistencies are promptly identified and addressed, enhancing the overall reliability of the power grid system.
+![](img/s_09.png)
+
+This system ensures that any breaker state inconsistencies are promptly identified and addressed, enhancing the overall reliability of the power grid system. In the HMI, a "Maintenance Flag" feature needs to be added. When electrical engineers perform circuit maintenance, they will physically lock the ARA automatic recloser, as shown below, to prevent anyone from accidentally turning on the breaker remotely:
+
+![](img/s_10.png)
+
+In this scenario, the **Maintenance Flag** in the HMI will be enabled to prevent the system from interpreting the situation as an exception. More importantly, when the Maintenance Flag is activated, the HMI will be prohibited from remotely turning on the breaker as an additional safety mechanism. This ensures that even if the engineer forgets to engage the physical padlock, the system will still remain secure.
+
+Once the maintenance is completed, the engineer will release the physical lock, manually flip the breaker to the desired position, and reset the PLC. Afterward, they will return to the control room, disable the HMI’s Maintenance Flag, and the system will resume normal operation with full remote control capabilities.
 
 
 
 ------
 
+### Digital Equivalent System Simulation
+
+If physical devices are not available and you need to simulate a circuit breaker in a virtual power grid environment, this can be easily implemented by defining the breaker as an object within the physical world simulator. The object will include two key parameters to represent the breaker's state [`self.breakerState`] and motor input power[`self.motorVoltage`]. A private function will be used to monitor the current value and trip the breaker if it exceeds the maximum current limit. Additionally, three public functions will be provided to interact with other components in the simulation:
+
+- `setCurrent()`: Called by other physical simulation devices to set the current flowing through the breaker.
+- `setMotor()`: Interacts with the PLC coil output to change the breaker's state.
+- `getSensorState()`: Interacts with the PLC contact input to report the breaker's state back to the PLC.
+
+A simple example of a breaker object class is shown below:
+
+```
+class AgentBreaker(AgentTarget):
+    """ Remote motor-controllable breaker class."""
+    def __init__(self, parent, tgtID, maxCrt, tType='BREAK'):
+        super().__init__(parent, tgtID, None, None, tType)
+        self.maxCurrent = maxCrt
+        self.current = 0
+        self.breakerState = False 
+        self.motorVoltage = 0
+
+    def _checkCurrent(self, currentVal):
+        """ Check if the current exceeds the maximum limit. Returns True if within the limit."""
+        if self.breakerState:
+            return currentVal < self.maxCurrent
+        return False
+
+    def setCurrent(self, currentVal):
+        if self._checkCurrent(currentVal):
+            self.current = currentVal
+            return True
+        else:
+            self.breakerState = False  # Circuit trips
+            self.current = 0
+            return False
+
+    def setMotor(self, motorVal):
+        if self.motorVoltage == motorVal:
+            return
+        elif self.motorVoltage == 0 and motorVal == 1:
+            # Simulate low-to-high pulse to turn on the breaker.
+            self.breakerState = True  # Circuit opens
+        elif self.motorVoltage == 1 and motorVal == 0:
+            # Simulate high-to-low pulse to turn off the breaker.
+            self.breakerState = False  # Circuit closes
+
+    def getSensorState(self):
+        return self.breakerState
+```
+
+For the virtual PLC simulator ladder logic design, you can include the first scan bit as a global value, initialized to 1, in the PLC simulation program:
+
+```
+	def runLadderLogic(self, regsList, coilList=None):
+		# sychronize the coil state with the real world at the 1st when PLC connected to physical world
+        if gv.firstScanbitt == 0: return None 
+        coilsRsl = []
+        if len(regsList) != 21:
+            gv.gDebugPrint('runLadderLogic(): input not valid', logType=gv.LOG_WARN)
+            gv.gDebugPrint("Input registers list: %s" %str(regsList))
+        else:
+            # direct connection copy the register state to coil directly:
+            coilsRsl = list(regsList).copy()
+            gv.firstScanbitt = 0
+        gv.gDebugPrint('Finished calculate all coils: %s' %str(coilsRsl), logType=gv.LOG_INFO)
+        return coilsRsl
+```
+
+The digital equivalent simulation work flow is shown below image:
 
 
+
+This system allows you to model the behavior of breakers, PLCs, and other components in a virtual environment, ensuring flexibility and ease of testing without the need for physical hardware.
+
+
+
+------
+
+> last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 20/09/2024 if you have any problem, please send me a message. 
