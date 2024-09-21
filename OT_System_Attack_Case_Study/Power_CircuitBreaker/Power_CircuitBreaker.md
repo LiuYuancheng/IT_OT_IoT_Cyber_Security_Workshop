@@ -2,9 +2,7 @@
 
 ### How to Use PLC to Remote Control Circuit Breaker in Power Grid System 
 
-
-
-
+![](img/title.png)
 
 **Project Design Purpose:**
 The goal of this project is to demonstrate how to utilize Programmable Logic Controllers (PLC) to remotely monitor and control circuit breakers within a power grid system. Using a Schneider circuit breaker and PLC hardware, the project will cover the physical hardware connections and provide a step-by-step guide for designing a PLC ladder diagram  to sense and control the breaker states. Additionally, the project will explain how to detect power system anomalies, such as power trips, based on the states of PLC contacts and coils from the power system control SCADA HMI. Finally, a digital power grid digital equivalent  simulation will be used to model and simulate the entire control sequence for the people who don't have the hardware.
@@ -16,9 +14,11 @@ The goal of this project is to demonstrate how to utilize Programmable Logic Con
 # License:     MIT License 
 ```
 
+**Table of Contents**
+
 [TOC]
 
- 
+
 
 ------
 
@@ -51,7 +51,7 @@ To build a PLC-controlled circuit breaker system, we will need five key componen
 
 - **5V Relay with 48V Contact**: This relay will interface with the PLC's 5V coil output to control the 48V DC supply for the breaker control motor. For this, we will use the `Weidmuller 2614860000 TOP 5VDC 48VDC 0.1A relay`. [Product link](https://catalog.weidmueller.com/catalog/Start.do?localeId=en&ObjectID=2614860000)
 - **High Voltage AC Circuit Breaker**: The AC circuit breaker will be responsible for controlling the on/off status of the AC power. We will use the `Schneider Electric A9F04206 MCB IC60N 2P, 6A C`. [Product link](https://www.se.com/sg/en/product/A9F04206/miniature-circuit-breaker-mcb-acti9-ic60n-2p-6a-c-curve-6000a-iec-608981-10ka-iec-609472-double-term-/)
-- **Breaker State Sensor**: This sensor detects the position of the circuit breaker (whether it's open or closed). We will use the `Schneider Electric A9A26924 Acti 9 Auxiliary contact iOF - 1 C/O - AC/DC`. [Product link](Schneider Electric A9A26924 Acti 9 Auxiliary contact iOF - 1 C/O - AC/DC)
+- **Breaker State Sensor**: This sensor detects the position of the circuit breaker (whether it's open or closed). We will use the `Schneider Electric A9A26924 Acti 9 Auxiliary contact iOF - 1 C/O - AC/DC`. [Product link](https://www.se.com/sg/en/product/A9A26924/acti-9-auxiliary-contact-iof-1-c-o-ac-dc/)
 - **Breaker Control Motor**: This motor module receives control signals from the PLC and operates the circuit breaker, switching it on or off. For this, we will use the `Schneider Electric Acti 9 ARA auto-recloser auxiliary module for iID 2P`. [Product link](https://www.se.com/sg/en/product/A9C70342/acti-9-ara-auto-recloser-aux-for-iid-2p-1-prog/)
 - **Programmable Logic Controller (PLC)**: The `Schneider Electric Modicon M221 PLC`, which supports Modbus TCP, will be used to control the entire system. [Product link](https://www.se.com/sg/en/product-range/62128-logic-controller-modicon-m221/#products)
 
@@ -208,9 +208,23 @@ For the virtual PLC simulator ladder logic design, you can include the first sca
 
 The digital equivalent simulation work flow is shown below image:
 
-
+![](img/s_11.png)
 
 This system allows you to model the behavior of breakers, PLCs, and other components in a virtual environment, ensuring flexibility and ease of testing without the need for physical hardware.
+
+
+
+------
+
+### Reference Link
+
+- **Power Grid Digital Equivalent System**: https://github.com/LiuYuancheng/Power_Grid_Simulation_System
+- **Python Victual PLC  Simulator**: https://github.com/LiuYuancheng/PLC_and_RTU_Simulator
+- **Weidmuller 2614860000 TOP 5VDC 48VDC 0.1A relay** : https://catalog.weidmueller.com/catalog/Start.do?localeId=en&ObjectID=2614860000
+- **Schneider Electric A9F04206 MCB IC60N 2P, 6A C**: https://www.se.com/sg/en/product/A9F04206/miniature-circuit-breaker-mcb-acti9-ic60n-2p-6a-c-curve-6000a-iec-608981-10ka-iec-609472-double-term-/
+- **Schneider Electric A9A26924 Acti 9 Auxiliary contact iOF - 1 C/O - AC/DC**: https://www.se.com/sg/en/product/A9A26924/acti-9-auxiliary-contact-iof-1-c-o-ac-dc/
+- **Schneider Electric Acti 9 ARA auto-recloser auxiliary module for iID 2P**: https://www.se.com/sg/en/product/A9C70342/acti-9-ara-auto-recloser-aux-for-iid-2p-1-prog/
+- **Schneider Electric Modicon M221 PLC**: https://www.se.com/sg/en/product-range/62128-logic-controller-modicon-m221/#products
 
 
 
