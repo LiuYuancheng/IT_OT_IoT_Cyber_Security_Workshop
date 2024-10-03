@@ -54,7 +54,7 @@ The dashboard consists of five key sections, designed to provide a comprehensive
 
 ### Scam Data Source
 
-For the scam event data source, you can build your own data base from the Incident Reports, Threat Intelligence Feeds, Security Bulletins , Historical Data (cyberattacks, ransomware incidents, phishing, etc.), User/Employee reports of suspicious activities or Industry-specific security audits and assessments. There are also serval free data source you can use: 
+To gather scam event data, you can build your own database by utilizing various sources such as **Incident Reports**, **Threat Intelligence Feeds**, **Security Bulletins**, **Historical Cyberattack Data** (e.g., ransomware, phishing), as well as **User/Employee Reports of Suspicious Activities**, and **Industry-Specific Security Audits and Assessments**. Additionally, there are several free resources that provide valuable datasets for scam event research, analysis, and visualization:
 
 | Source Name                                           | Scam Sector Covered                             | Description                                                  | Link                                                         |
 | ----------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -69,4 +69,16 @@ For the scam event data source, you can build your own data base from the Incide
 | OpenPhish                                             | Banking and Government                          | A threat intelligence platform focused on phishing, offering both free and premium feeds. | [OpenPhish](https://openphish.com/)                          |
 | CISA (Cybersecurity & Infrastructure Security Agency) | Energy, Transportation, and Government Services | The US government’s cybersecurity agency regularly publishes reports, alerts, and advisories on threats, including scams targeting critical infrastructure. | [CISA Alerts & Advisories](https://www.cisa.gov/news-events/cybersecurity-advisories) |
 | Ransomwhere                                           | Manufacturing, Energy, and Healthcare.          | A crowdsourced ransomware payment tracking site.             | [Ransomwhere](https://ransomwhe.re/)                         |
+
+These data sources provide a solid foundation for scam event tracking and analysis, enabling organizations to better monitor and understand cyber threats across critical infrastructure sectors.
+
+
+
+------
+
+### System/Program Design
+
+The system is designed as a Angular plugin and programed by type script, the back end database balancer is programmed Graphql + Javecript. We use the common Druid database cluster. The user can modify the backend data fetching with different kinds of data base. The dashboard data visualization workflow is shown below:
+
+![](img/s_04.png)
 
