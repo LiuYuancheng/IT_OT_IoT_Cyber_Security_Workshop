@@ -4,6 +4,13 @@
 
 In this document, we will introduce some test, experiment and analysis conclusion about applying Large Language Models (LLMs) to solve cybersecurity questions. 
 
+```
+# Version:     v0.0.2
+# Created:     2024/09/18
+# Copyright:   Copyright (c) 2024 LiuYuancheng
+# License:     MIT License 
+```
+
 **Table of Contents**
 
 [TOC]
