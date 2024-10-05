@@ -78,7 +78,53 @@ These data sources provide a solid foundation for scam event tracking and analys
 
 ### System/Program Design
 
-The system is designed as a Angular plugin and programed by type script, the back end database balancer is programmed Graphql + Javecript. We use the common Druid database cluster. The user can modify the backend data fetching with different kinds of data base. The dashboard data visualization workflow is shown below:
+The system is designed as an Angular plugin, programmed using `TypeScript`, with a back-end database balancer implemented in `GraphQL` and `JavaScript`. The back-end uses a `Druid database cluster` to manage and process data, alongside a data fetch module that integrates with various APIs to continuously pull scam event data from different sources. The system is flexible, allowing users to modify the data-fetching process and incorporate data from multiple sources.
+
+The dashboard data visualization workflow is as follows:
 
 ![](img/s_04.png)
+
+The dashboard contents 3 main part: Main Scam Analytics Dashboard, 
+
+##### Main Scam Analytics Dashboard
+
+The **Main Scam Analytics Dashboard** provides an overview of scam events across various critical infrastructure sectors. The interface contains several key elements:
+
+- A **timeline chart** at the top, displaying the number of scam events by date, allowing users to track scam activity throughout the month.
+- **16 small trend charts** to show the scam activity across different critical infrastructure sectors, includes: `1.Infocomm` , `2.Trade`, `3.Health and Social Services`, `4.Transportation Services`, `5.Banking and Finance`, `6.Real Estate`, `7.Construction`, `8.Government`, `9.Manufacturing`, `10.Water`, `11.Food and Beverage`, `12.Rental and Leasing`, `13.Accommodation`, `14.Land Transport`, `15.Legal` and `16.Energy`
+
+- A **Geographic Heatmap** to visualize the distribution of scam events across various countries.
+
+The Main Scam Analytics Dashboard is shown below: 
+
+![](img/s_05.png)
+
+
+
+##### Scam Event Breakdown Information Pop-Up Window
+
+When a user clicks on any of the 16 sector-specific trend charts, a detailed breakdown of scam events is presented in a pop-up window, as shown below:
+
+![](img/s_06.png)
+
+The breakdown includes four types of information for the selected sector:
+
+- A **pie chart** showing the geographic distribution of scams by country, indicating the percentage of scams occurring in each region.
+- A **pie chart** breaking down the different categories of scams within the sector, such as `Email Traps`, `Extortion Tactics`, `Tech Support Scams`, and `NSFW Phishing Scams`.
+- A **grid table** providing detailed descriptions of each scam category within the sector.
+- A **bar chart** displaying the monthly trend of scam events.
+
+
+
+##### Scam Source-Destination Relationship Graph
+
+The Scam Source-Destination Relationship Graph provides a visual representation of the connections between scam event sources and their respective targets. Built using **Cytoscape**, this graph displays the flow of scam events between entities, highlighting the number of events and the type of scams involved.
+
+The panel also includes a **filter function**, allowing users to customize the graph based on the number of scam threat events or other criteria. The graph is illustrated below:
+
+![](img/s_07.png)
+
+This relationship graph helps users analyze the source and target sectors, scam types, and event volumes to gain deeper insights into scam activities affecting critical infrastructure sectors.
+
+This dashboard offers a robust visualization tool to monitor, analyze, and explore scam events, providing a powerful aid in managing cybersecurity threats across various sectors.
 
