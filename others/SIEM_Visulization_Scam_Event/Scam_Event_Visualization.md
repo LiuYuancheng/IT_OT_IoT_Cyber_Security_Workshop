@@ -128,3 +128,154 @@ This relationship graph helps users analyze the source and target sectors, scam 
 
 This dashboard offers a robust visualization tool to monitor, analyze, and explore scam events, providing a powerful aid in managing cybersecurity threats across various sectors.
 
+
+
+#### Back-End Data Query Design
+
+The back-end query design leverages **Druid** for efficient data retrieval and processing of scam events. These queries are used to fetch, group, and filter data, providing actionable insights for visualization in the dashboard. Below are the key query designs for country code lookups, campaign breakdowns, and sector graphs.
+
+##### 1. Country Code Lookup Query
+
+To ensure accurate geographic representation of scam events, we perform a **country code lookup** for all IP addresses. This helps categorize threats based on their origin and provides data for geographic heatmaps.
+
+**1.1 Query to retrieve IP country codes**: This query finds all destination node IDs along with their respective country codes from the dataset:
+
+```sql
+SELECT dstNodeId, dstCountry
+FROM "ds-findings-scam-url-ioc-2019"
+GROUP BY dstNodeId, dstCountry
+```
+
+**1.2 Query using country code lookup**: This query filters results by a specific country (e.g., Singapore, "SG") and groups by the originating sector (`srcSector`). It counts the number of threats per sector, allowing us to see which sectors are being targeted:
+
+```sql
+SELECT srcSector, count(*) AS threatCount
+FROM "ds-findings-scams-matched-results"
+WHERE lookup(dstNodeId, 'lookup-ip-country') = 'SG'
+GROUP BY srcSector
+```
+
+##### 2. Campaign Breakdown Query
+
+To track the volume and timing of scam events, we can break down threat activity by time intervals, providing data for time-series visualizations such as timelines or trend charts.
+
+**2.1 Hourly campaign breakdown**: This query groups the data by hourly time intervals and counts the number of scam threats detected per hour, filtered by the country code:
+
+```sql
+SELECT DATE_TRUNC('hour', __time), count(*) AS threatCount
+FROM "ds-findings-scams-matched-results"
+WHERE lookup(dstNodeId, 'lookup-ip-country') = 'SG'
+GROUP BY DATE_TRUNC('hour', __time)
+```
+
+##### 3. Sector Graph Data Queries
+
+These queries help build the **source-destination relationship graph** for scam events. They provide a detailed view of how scams propagate between source enterprises and destination nodes, grouped by sector and country.
+
+**3.1 Query to create edges for sector graph**: This query retrieves connections between the source (`srcEnterpriseId`) and destination nodes (`dstNodeId`), grouping by sectors such as "INFOCOMM" and filtering by country:
+
+```sql
+SELECT dstNodeId, srcEnterpriseId, srcNodeId, lookup(dstNodeId, 'lookup-ip-country')
+FROM "ds-findings-scams-matched-results"
+WHERE srcSector = 'INFOCOMM'
+GROUP BY dstNodeId, srcEnterpriseId, srcNodeId, lookup(dstNodeId, 'lookup-ip-country')
+```
+
+**3.2 Query to create nodes for scam graph with country information**: This query generates nodes for the scam event graph, showing the relationship between the source (`srcEnterpriseId`), destination node, and the respective country. It also provides a threat count for each connection:
+
+```sql
+SELECT dstNodeId, srcEnterpriseId, srcNodeId, lookup(dstNodeId, 'lookup-ip-country'), count(*) AS threatCount
+FROM "ds-findings-scams-matched-results"
+WHERE lookup(dstNodeId, 'lookup-ip-country') = 'SG'
+GROUP BY dstNodeId, srcEnterpriseId, srcNodeId
+```
+
+These optimized queries ensure efficient data retrieval and processing for scam event visualization, supporting the front-end dashboard with actionable and interactive insights into threat activity across critical infrastructure sectors.
+
+
+
+#### Components Panel Design
+
+This design defines five key component panels used to create the dashboard webpage, providing users with a detailed and interactive way to visualize scam threats across various critical infrastructure sectors. Below are the descriptions of each component panel and its functionality.
+
+##### 1. Scam Threat Events Timeline Chart Panel
+
+This panel displays the total number of scam threats over time, allowing users to observe trends and patterns. Events are sorted chronologically by timestamp (e.g., daily or hourly), providing a clear view of when scam activities spike or decrease. This timeline chart is especially useful for tracking the frequency of scam threats over a specific period.
+
+![](img/s_08.png)
+
+##### 2. Event Source Heatmap
+
+The **World Heatmap** visually represents the geographical origins of scam threats by mapping the scam event count based on attacker locations. Each country is color-coded based on the intensity of scam activity originating from that region. This heatmap helps identify regions with high scam activity, allowing analysts to focus on specific threat sources globally.
+
+![](img/s_09.png)
+
+##### 3. Scam Destination Sector History Timeline Chart Panel
+
+This panel shows scam events targeting various sectors over time. Each sector’s historical data is displayed as a timeline chart, with an overlay of comparison summary results to visualize how different sectors are being impacted by scams. Users can compare scam activity across multiple sectors simultaneously, providing insights into sector-specific vulnerability trends.
+
+![](img/s_10.png)
+
+##### 4. Scam Breakdown Pop-Up Dialog Window
+
+When users click on a sector chart, a detailed **breakdown dialog** window appears. This pop-up displays:
+
+- **Country breakdown** showing which regions are involved in scam events within the selected sector.
+- **Campaign breakdown** providing details about specific scam campaigns.
+- **Scam type breakdown** showing categories like Email Traps, Extortion Tactics, Tech Support Scams, and NSFW Phishing Scams.
+- A **scannable timeline chart** of scam threats over the last month, enabling users to explore more recent trends in greater depth.
+
+This pop-up allows for a deeper analysis of individual scam events and their characteristics.
+
+![](img/s_11.png)
+
+##### 5. Scam Source-Destination Relationship Graph
+
+This **cytoscape graph** displays the relationships between scam sources and their targets. The graph visualizes how scam events propagate between various entities, such as enterprises or subscribers, and shows the flow of threats between source and destination nodes. It also includes a filter function that enables users to rebuild the graph based on scam event counts, making it easier to focus on high-priority events or regions.
+
+![](img/s_12.png)
+
+These components provide a comprehensive set of tools for scam event visualization, enabling cybersecurity professionals to explore the data from different perspectives—whether it's by time, geography, or sector-specific trends. The interactive design makes it easy to drill down into detailed scam event data for a more informed analysis.
+
+------
+
+### Program Setup and Usage
+
+This section outlines the program file structure, environment setup, and steps for executing the Scam Event Dashboard. Follow these instructions to correctly configure and run the system.
+
+Copy the file to your angular project: 
+
+| Program File/Folder                   | Execution Environment | Description                                                  |
+| ------------------------------------- | --------------------- | ------------------------------------------------------------ |
+| `src/sectorial/data/*.json`           | JSON                  | Country code matching JSON file used for geographical data lookup. |
+| `src/sectorial/scam/*`                | TypeScript            | Main program for building the webpage frame.                 |
+| `src/sectorial/scam-sector/card/*`    | TypeScript            | Component that displays each sector's historical timeline chart in card format. |
+| `src/dash-sector-details/*`           | TypeScript            | Component for the pop-up dialog displaying the detailed breakdown and source-destination relationship graph. |
+| `backEnd/threatEvents/resolvers/*.js` | JavaScript            | Backend resolver modules used for querying and balancing the data fetch process. |
+| `backEnd/threatEvents/schema/*.gql`   | GraphQL (gql)         | GraphQL schema and datatype definition files for handling scam event data queries. |
+
+#### Program Usage/Execution
+
+Copy Files to Appropriate Directories
+
+- **Frontend (UI) Files**: Copy the `src` folder into your project at `Project<fusion-cloudy>\src\app\pages`.
+- **Backend (GraphQL)**: Copy the `threatEvents` folder into your backend’s `graphql` folder.
+- **Routing Configuration**: Import the `graph-scam-component` into your project's routing module by modifying `app-routing.module.ts`.
+- **Command to Run the Program**: To start the development server and compile the project, use the following command `npm run dev`
+
+Access the Webpage:  you can directly access the dashboard at: http://localhost:4200/#/scam
+
+
+
+------
+
+### Reference
+
+- Angular High-chart word cloud: https://medium.com/@pmzubar/creating-awesome-word-clouds-using-highcarts-js-76967cb15c22
+- Angular tool-tip: https://material.angular.io/components/tooltip/overview
+- Angular Geo Map: https://leafletjs.com/
+- Angular Grid: https://www.jqwidgets.com/jquery-widgets-demo/demos/jqxgrid/index.htm
+
+------
+
+>  last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 05/10/2024 if you have any problem, please send me a message. 
