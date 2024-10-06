@@ -1,8 +1,12 @@
-# SIEM Big Data Visualization: Dashboard for Monitoring Scam Events in Critical Infrastructure
+# SIEM Big Data Visualization
+
+### Dashboard for Monitoring Scam Events in Critical Infrastructure
+
+![](img/title.png)
 
 **Project Design Purpose**:  In a Security Information and Event Management (SIEM) system, effective monitoring and visualization of scam events is crucial to detecting and responding to cyberattacks. Cybercriminals often use deceptive methods to exploit individuals or organizations, aiming to steal sensitive information, financial assets, or disrupt operations. This project seeks to develop a web plugin dashboard to help cybersecurity researchers and managers better understand the scope and impact of scam-related cyberattacks targeting critical infrastructure sectors such as `Government Services`, `InfoComm`, `Manufacturing, Energy`, `Transportation`, `Healthcare`, `Security and Emergency Services`, and `Banking and Finance`. By enabling real-time visualization of attack patterns, the dashboard will assist organizations in identifying trends, spotting anomalies, improving cybersecurity strategies, and making informed, data-driven decisions.
 
-```
+```python
 # Version:     v0.0.1
 # Created:     2024/10/01
 # Copyright:   Copyright (c) 2024 LiuYuancheng
@@ -13,6 +17,31 @@
 
 [TOC]
 
+- [SIEM Big Data Visualization](#siem-big-data-visualization)
+    + [Dashboard for Monitoring Scam Events in Critical Infrastructure](#dashboard-for-monitoring-scam-events-in-critical-infrastructure)
+    + [Introduction](#introduction)
+      
+      - [Dashboard Main UI View](#dashboard-main-ui-view)
+    + [Scam Data Source](#scam-data-source)
+    + [System/Program Design](#system-program-design)
+        * [Main Scam Event Analytics Dashboard](#main-scam-event-analytics-dashboard)
+        * [Scam Event Breakdown Information Pop-Up Window](#scam-event-breakdown-information-pop-up-window)
+        * [Scam Source-Destination Relationship Graph](#scam-source-destination-relationship-graph)
+      - [Back-End Data Query Design](#back-end-data-query-design)
+        * [1. Country Code Lookup Query](#1-country-code-lookup-query)
+        * [2. Campaign Breakdown Query](#2-campaign-breakdown-query)
+        * [3. Sector Graph Data Queries](#3-sector-graph-data-queries)
+      - [Components Panel Design](#components-panel-design)
+        * [1. Scam Threat Events Timeline Chart Panel](#1-scam-threat-events-timeline-chart-panel)
+        * [2. Event Source Heatmap](#2-event-source-heatmap)
+        * [3. Scam Destination Sector History Timeline Chart Panel](#3-scam-destination-sector-history-timeline-chart-panel)
+        * [4. Scam Breakdown Pop-Up Dialog Window](#4-scam-breakdown-pop-up-dialog-window)
+        * [5. Scam Source-Destination Relationship Graph](#5-scam-source-destination-relationship-graph)
+    + [Program Setup and Usage](#program-setup-and-usage)
+      
+      - [Program Usage/Execution](#program-usage-execution)
+    + [Reference](#reference)
+
 ------
 
 ### Introduction
@@ -21,31 +50,33 @@ This project aims to develop a dashboard that visualizes large datasets of scam 
 
 The dashboard will feature several key components: an `event count timeline panel`, a `scam event world heatmap`, `sector-specific line charts` displaying various scam threat types, and a `pop-up information dialog` for in-depth event breakdowns and graphical analysis.
 
-- Types of Cybersecurity Scams Visualized: `Phishing`, `Ransomware`, `Tech Support Scams`, `Business Email Compromise (BEC)`, `Investment or Charity Scams` and `Cryptocurrency Scams`. 
-- Critical Infrastructure Sectors Covered: `Government Services`, `InfoComm (Information and Communication)`, `Manufacturing-related Services`, `Energy Services (Utilities, Power)`, `Transportation Services`, `Health and Social Services`, `Security and Emergency Services`, `Banking and Finance`. 
-- Visualization Methods Applied: `Heatmaps` for geographical representation of incidents, `Bar/Pie Charts` for comparing scam events by type and sector, `Geographic Maps` for scam event locations, `Timeline Graphs` for visualizing trends over time. 
+- **Types of Cybersecurity Scams Visualized**: `Phishing`, `Ransomware`, `Tech Support Scams`, `Business Email Compromise (BEC)`, `Investment or Charity Scams` and `Cryptocurrency Scams`. 
+- **Critical Infrastructure Sectors Covered**: `Government Services`, `InfoComm (Information and Communication)`, `Manufacturing-related Services`, `Energy Services (Utilities, Power)`, `Transportation Services`, `Health and Social Services`, `Security and Emergency Services`, `Banking and Finance`. 
+- **Visualization Methods Applied**: `Heatmaps` for geographical representation of incidents, `Bar/Pie Charts` for comparing scam events by type and sector, `Geographic Maps` for scam event locations, `Timeline Graphs` for visualizing trends over time. 
 
 The project is divided into two main sections: **Front-End Web Host** and **Back-End Database Balancer**.
 
 - **Front-End**: The front-end is powered by an Angular web host that serves the user interface and handles HTTP requests. This allows users to interact with the dashboard, view visualizations, and explore the data.
 - **Back-End**: The back-end consists of a GraphQL query system that optimizes data retrieval from the database cluster. It efficiently handles multiple user queries by balancing request loads and converting GraphQL queries into native queries, while ensuring user data permissions and access limitations are respected.
 
-This integrated system will provide a powerful and user-friendly platform to monitor and analyze scam threats, helping to enhance cybersecurity strategies and decision-making for critical infrastructure protection.
+This integrated system will provide a powerful and user-friendly platform to monitor and analyze scam threats, helping to enhance cybersecurity strategies and decision-making for critical infrastructure protection. For the plugin demo, please refer to this video: https://youtu.be/Tq6_YjBabhM?si=EqmII7a5HBQpoiTx
 
 
 
 #### Dashboard Main UI View
 
-The dashboard layout is designed to offer an intuitive and data-driven experience, providing cybersecurity professionals with real-time insights into scam activities and their impact on critical infrastructure A preview of the Dashboard Webpage View is shown below:
+The plug-in dashboard layout is designed to offer an intuitive and data-driven experience, providing cybersecurity professionals with real-time insights into scam activities and their impact on critical infrastructure. A preview of the Dashboard Webpage is shown below:
 
 ![](img/s_03.gif)
+
+`Figure-01 Scam event analytics dashboard plugin webpage view, version v0.1 (2024)`
 
 The dashboard consists of five key sections, designed to provide a comprehensive view of scam threat data:
 
 - **Total Scam Threats Timeline Chart**: Displays the total count of scam events over time, with an adjustable time unit (e.g., daily, weekly, monthly) to allow for flexible time-based analysis.
 - **Scam Threats World Heatmap**: Visualizes the geographic distribution of scam sources (attackers), categorized by country, showing the intensity of scam activities across different regions.
 - **Sector-Specific Scam Timeline Panel**: Compares the historical scam activity targeting different critical infrastructure sectors, with a summary overlay that highlights key trends and sector-specific insights.
-- **Detailed Breakdown Pop-Up**: Provides in-depth analysis of scam events, including country-specific activity, sector targeting, campaign details, and scam types (e.g., **Email Traps**, **Extortion Tactics**, **Tech Support Scams**, **NSFW Phishing Scams**). It also includes a scannable timeline chart showing scam events for the most recent month.
+- **Detailed Breakdown Pop-Up**: Provides in-depth analysis of scam events, including country-specific activity, sector targeting, campaign details, and scam types (e.g., `Email Traps`, `Extortion Tactics`, `Tech Support Scams`, `NSFW Phishing Scams`). It also includes a scannable timeline chart showing scam events for the most recent month.
 - **Scam Source-Destination Relationship Graph**: Depicts the relationship between scam sources and targeted sectors or subscribers, with a filter function that allows users to rebuild the graph based on scam event count and other criteria.
 
 
@@ -84,9 +115,11 @@ The dashboard data visualization workflow is as follows:
 
 ![](img/s_04.png)
 
-The dashboard contents 3 main part: Main Scam Analytics Dashboard, 
+`Figure-02 System workflow diagram, version v0.1 (2024)`
 
-##### Main Scam Analytics Dashboard
+The dashboard contents 3 main parts: Main Scam Event  Analytics Dashboard, Scam Event Breakdown Information Pop-Up Window and Scam Source-Destination Relationship Graph display. 
+
+##### Main Scam Event Analytics Dashboard
 
 The **Main Scam Analytics Dashboard** provides an overview of scam events across various critical infrastructure sectors. The interface contains several key elements:
 
@@ -99,13 +132,15 @@ The Main Scam Analytics Dashboard is shown below:
 
 ![](img/s_05.png)
 
-
+`Figure-03 Main Scam Event Analytics Dashboard Screenshot, version v0.1 (2024)`
 
 ##### Scam Event Breakdown Information Pop-Up Window
 
 When a user clicks on any of the 16 sector-specific trend charts, a detailed breakdown of scam events is presented in a pop-up window, as shown below:
 
 ![](img/s_06.png)
+
+`Figure-04 Scam Event Breakdown Information Pop-Up Window Screenshot, version v0.1 (2024)`
 
 The breakdown includes four types of information for the selected sector:
 
@@ -123,6 +158,8 @@ The Scam Source-Destination Relationship Graph provides a visual representation 
 The panel also includes a **filter function**, allowing users to customize the graph based on the number of scam threat events or other criteria. The graph is illustrated below:
 
 ![](img/s_07.png)
+
+`Figure-05 Scam Source-Destination Relationship Graph Screenshot, version v0.1 (2024)`
 
 This relationship graph helps users analyze the source and target sectors, scam types, and event volumes to gain deeper insights into scam activities affecting critical infrastructure sectors.
 
@@ -200,9 +237,11 @@ This design defines five key component panels used to create the dashboard webpa
 
 ##### 1. Scam Threat Events Timeline Chart Panel
 
-This panel displays the total number of scam threats over time, allowing users to observe trends and patterns. Events are sorted chronologically by timestamp (e.g., daily or hourly), providing a clear view of when scam activities spike or decrease. This timeline chart is especially useful for tracking the frequency of scam threats over a specific period.
+This panel displays the total number of scam threats over time, allowing users to observe trends and patterns. Events are sorted chronologically by timestamp (e.g., daily or hourly), providing a clear view of when scam activities spike or decrease. This timeline chart is especially useful for tracking the frequency of scam threats over a specific period.(As shown below)
 
 ![](img/s_08.png)
+
+`Figure-06 Scam Threat Events Timeline Chart Panel Screenshot, version v0.1 (2024)`
 
 ##### 2. Event Source Heatmap
 
@@ -210,11 +249,15 @@ The **World Heatmap** visually represents the geographical origins of scam threa
 
 ![](img/s_09.png)
 
+`Figure-07 Event Source Heatmap Panel Screenshot, version v0.1 (2024)`
+
 ##### 3. Scam Destination Sector History Timeline Chart Panel
 
 This panel shows scam events targeting various sectors over time. Each sector’s historical data is displayed as a timeline chart, with an overlay of comparison summary results to visualize how different sectors are being impacted by scams. Users can compare scam activity across multiple sectors simultaneously, providing insights into sector-specific vulnerability trends.
 
 ![](img/s_10.png)
+
+`Figure-08 Scam Destination Sector History Timeline Chart Panel Screenshot, version v0.1 (2024)`
 
 ##### 4. Scam Breakdown Pop-Up Dialog Window
 
@@ -229,11 +272,15 @@ This pop-up allows for a deeper analysis of individual scam events and their cha
 
 ![](img/s_11.png)
 
+`Figure-09 Scam Breakdown Pop-Up Dialog Window Screenshot, version v0.1 (2024)`
+
 ##### 5. Scam Source-Destination Relationship Graph
 
 This **cytoscape graph** displays the relationships between scam sources and their targets. The graph visualizes how scam events propagate between various entities, such as enterprises or subscribers, and shows the flow of threats between source and destination nodes. It also includes a filter function that enables users to rebuild the graph based on scam event counts, making it easier to focus on high-priority events or regions.
 
 ![](img/s_12.png)
+
+`Figure-10  Scam Source-Destination Relationship Graph Screenshot, version v0.1 (2024)`
 
 These components provide a comprehensive set of tools for scam event visualization, enabling cybersecurity professionals to explore the data from different perspectives—whether it's by time, geography, or sector-specific trends. The interactive design makes it easy to drill down into detailed scam event data for a more informed analysis.
 
