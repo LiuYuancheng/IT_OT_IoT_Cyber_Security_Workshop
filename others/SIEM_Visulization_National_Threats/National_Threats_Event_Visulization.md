@@ -23,27 +23,16 @@ Key features include visual representations of total event counts over time, ide
 
 ### Project Introduction
 
-This project aims to develop a comprehensive dashboard plugin that visualizes large datasets of Singapore national cyber threat events, sourced from publicly available cybersecurity datasets. The dashboard is designed to offer real-time insights and an overview of cyber threats impacting various critical infrastructure sectors in Singapore. By leveraging data from trusted sources such as the Singapore Cyber Security Agency (CSA) Annual Cybersecurity Report and SingCERT (Singapore Computer Emergency Response Team) advisories, the dashboard provides a centralized view of national cyber threat activities.
+This project aims to develop a comprehensive dashboard plugin that visualizes large datasets of Singapore national cyber threat events, sourced from publicly available cybersecurity datasets. The dashboard is designed to offer real-time insights and an overview of cyber threats impacting various critical infrastructure sectors in Singapore. By leveraging data from trusted sources such as the Singapore Cyber Security Agency (CSA) Annual Cybersecurity Report and SingCERT (Singapore Computer Emergency Response Team) advisories, the dashboard provides a centralized view of national cyber threat activities. The key features includes:
+
+- **Threat Event Summary**: Overview of total detected events within a specified period (e.g., daily, weekly, monthly), with a timeline displaying event trends.
+- **Top-N Threats and Actors**: Identification and ranking of the most frequent threats and threat actors, along with information on their types and methods.
+- **Sector-Specific Analysis**: Categorization of threats based on critical infrastructure sectors (e.g., Government, Energy, Health), with breakdowns of how each sector is impacted.
+- **Threat Actor Profiles**: Detailed information about known cybercriminal groups, APTs (Advanced Persistent Threats), and their typical behaviors, attack vectors, and patterns.
+- **Event Timeline Visualization**: A graphical timeline showing the volume and frequency of cyber events, enabling the identification of spikes and anomalies over time.
+- **Threat Type Distribution**: Pie charts or bar graphs illustrating the distribution of different types of threats (e.g., phishing, ransomware, malware) to help understand the prevalence of specific attack vectors.
 
 The Singapore National Cyber Threat Dashboard Plugin is a vital tool for enhancing situational awareness of the cybersecurity landscape within Singapore’s critical infrastructure sectors. By offering a range of intuitive visualizations and real-time data, the dashboard aids in early threat detection, trend analysis, and informed decision-making. It bridges the gap between raw data and actionable insights, empowering researchers, security professionals, and policy makers to mitigate risks and improve national cybersecurity defenses.
-
-#### Dashboard Structure
-
-The dashboard is organized into a grid structure, providing a clear and user-friendly interface for visualizing key information. Below is the layout of the dashboard:
-
-| **Dashboard Title**                                  |                                                         |                                                     |                                                  |
-| ---------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------ |
-| Total Threat Count Line-Area High-Chart              |                                                         |                                                     |                                                  |
-| Top-N Threat Names Word Cloud High-Chart (Count)     | Top-N Threat Actors Pie High-Chart (Percentage)         | Top-N Threat Sectors Pie High-Chart (Percentage)    |                                                  |
-| Sector Line-Area High-Chart: GOVERNMENT              | Sector Line-Area High-Chart: INFOCOMM                   | Sector Line-Area High-Chart: MANUFACTURING          | Sector Line-Area High-Chart: ENERGY              |
-| Sector Line-Area High-Chart: TRANSPORTATION SERVICES | Sector Line-Area High-Chart: HEALTH AND SOCIAL SERVICES | Sector Line-Area High-Chart: SECURITY AND EMERGENCY | Sector Line-Area High-Chart: BANKING AND FINANCE |
-
-Key visual elements include:
-
-- **Total Threats Count**: A line-area chart depicting the overall count of detected threats over a specific period.
-- **Top-N Threat Names**: A word cloud chart highlighting the most frequently detected threat names.
-- **Top-N Threat Actors and Sectors**: Pie charts illustrating the distribution of threats by actors and affected sectors.
-- **Sector-Specific Analysis**: Individual line-area charts for each critical sector, offering a detailed view of threat trends and activities in specific areas such as Government, InfoComm, Manufacturing, Energy, Transportation, Health and Social Services, Security and Emergency, and Banking and Finance.
 
 #### Dashboard UI View 
 
@@ -69,9 +58,9 @@ The project consists of two main components: the **Front-End Web Host** and the 
 
 ##### Back-End: GraphQL Query Program
 
-- The back-end is powered by a GraphQL query engine designed to optimize data fetching for multiple concurrent users.
+- The back-end is powered by a `GraphQL` query engine designed to optimize data fetching for multiple concurrent users.
 - It efficiently manages requests by queuing and filtering based on user data permissions and access limitations, ensuring secure and scalable data retrieval.
-- The system converts GraphQL queries into native database queries, pulling data from a database cluster to serve up-to-date, accurate information.
+- The system converts `GraphQL` queries into native database queries, pulling data from a database cluster to serve up-to-date, accurate information.
 
 The dashboard is equipped with various data visualizations that summarize and categorize threats, allowing security professionals, researchers, and policy makers to identify trends, monitor real-time threat events, and enhance their understanding of Singapore's cybersecurity landscape.
 
@@ -79,3 +68,43 @@ The dashboard is equipped with various data visualizations that summarize and ca
 
 ------
 
+### Threats Data Source Available 
+
+For detailed and sector-specific cybersecurity threat data for Singapore, particularly focused on critical infrastructure sectors, three are several raw data you can download and insert in your data base:
+
+**Singapore Cyber Security Agency (CSA) Annual Cybersecurity Report**
+
+- CSA publishes an annual report that highlights the key cybersecurity threats faced by Singapore. The report typically covers various critical sectors, including Government, Healthcare, Financial Services, and others. It provides insights into significant incidents, trends, and sector-specific threats.
+- Link: https://www.csa.gov.sg/Tips-Resource/publications/2024/singapore-cyber-landscape-2023
+
+**SingCERT (Singapore Computer Emergency Response Team) Advisories**
+
+- SingCERT, under CSA, provides advisories on cybersecurity threats and incidents affecting Singapore. While it may not always break down threats by specific sectors, it highlights incidents of national importance that may impact critical infrastructure.
+- Link: https://www.csa.gov.sg/faqs/singcert
+
+**Global Resilience Federation (GRF) - Asia Pacific (APAC) Cyber Information Sharing**
+
+- GRF offers sector-specific threat intelligence sharing, focusing on cybersecurity and resilience across critical infrastructure sectors, including Banking, Healthcare, and Energy. They collaborate with companies in Singapore and other APAC regions to disseminate threat data.
+- Link: https://www.grf.org/newsletter
+
+
+
+------
+
+#### Dashboard Structure
+
+The dashboard is organized into a grid structure, providing a clear and user-friendly interface for visualizing key information. Below is the layout of the dashboard:
+
+| **Dashboard Title**                                  |                                                         |                                                     |                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------ |
+| Total Threat Count Line-Area High-Chart              |                                                         |                                                     |                                                  |
+| Top-N Threat Names Word Cloud High-Chart (Count)     | Top-N Threat Actors Pie High-Chart (Percentage)         | Top-N Threat Sectors Pie High-Chart (Percentage)    |                                                  |
+| Sector Line-Area High-Chart: GOVERNMENT              | Sector Line-Area High-Chart: INFOCOMM                   | Sector Line-Area High-Chart: MANUFACTURING          | Sector Line-Area High-Chart: ENERGY              |
+| Sector Line-Area High-Chart: TRANSPORTATION SERVICES | Sector Line-Area High-Chart: HEALTH AND SOCIAL SERVICES | Sector Line-Area High-Chart: SECURITY AND EMERGENCY | Sector Line-Area High-Chart: BANKING AND FINANCE |
+
+Key visual elements include:
+
+- **Total Threats Count**: A line-area chart depicting the overall count of detected threats over a specific period.
+- **Top-N Threat Names**: A word cloud chart highlighting the most frequently detected threat names.
+- **Top-N Threat Actors and Sectors**: Pie charts illustrating the distribution of threats by actors and affected sectors.
+- **Sector-Specific Analysis**: Individual line-area charts for each critical sector, offering a detailed view of threat trends and activities in specific areas such as Government, InfoComm, Manufacturing, Energy, Transportation, Health and Social Services, Security and Emergency, and Banking and Finance.
