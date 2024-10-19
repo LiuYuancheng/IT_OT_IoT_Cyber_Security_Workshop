@@ -1,12 +1,16 @@
 # SIEM Big Data Visualization [02]
 
-### Dashboard for Summarizing SG National Cyber Threads in Critical Infrastructure
+### Dashboard for Summarizing SG National Cyber Threats in Critical Infrastructure
+
+![](img/title.png)
 
 **Program Design Purpose**: 
 
 The purpose of this program is to develop a comprehensive angular web dashboard plugin for a Security Information and Event Management (SIEM) system, focusing on the effective monitoring, categorization, summarization, and visualization of cyber threat events targeting Singapore's critical infrastructure. This dashboard will provide researchers and security managers with a clear, concise view of national cybersecurity threats, enabling them to quickly detect and respond to potential cybercriminal activities and Advanced Persistent Threats (APTs) within a short timeframe.
 
 Key features include visual representations of total event counts over time, identification of top-N threats, actors, and affected sectors, as well as categorization of threat actors across eight critical service sectors: `Government Service`, `InfoComm`, `Manufacturing-Related Service`, `Energy Service`, `Transportation Service`, `Health and Social Services`, `Security and Emergency Services`, and `Banking and Finance Service`. This tool will facilitate a better understanding of cybersecurity threats and help prioritize mitigation strategies across different sectors.
+
+The program demo video: https://youtu.be/fCrS79RXoik?si=3CqP23KeM8QrgbCe
 
 ```
 # Version:     v0.0.2
@@ -87,20 +91,44 @@ For detailed and sector-specific cybersecurity threat data for Singapore, partic
 - GRF offers sector-specific threat intelligence sharing, focusing on cybersecurity and resilience across critical infrastructure sectors, including Banking, Healthcare, and Energy. They collaborate with companies in Singapore and other APAC regions to disseminate threat data.
 - Link: https://www.grf.org/newsletter
 
+> If you have any other data source can be used, many thanks if you can share ~
+
 
 
 ------
 
-#### Dashboard Structure
+### System/Program Design
+
+The system consists of a **front-end web host program** developed using **Angular and TypeScript**, and a **back-end database balancer** programmed with **GraphQL and JavaScript**. The underlying data storage is managed by a **Druid cluster**, which handles large datasets effectively. the system diagram is shown below:
+
+![](img/s_04.png)
+
+As illustrated in the diagram, the system workflow involves several key components:
+
+1. **Front-End Web Host**: The user interface facilitates interaction between security managers and the dashboard, allowing them to send requests and receive packaged data for visual analysis. The front-end handles user authorization, data requests, and displays key information through an intuitive graphical interface.
+2. **Network Communication**: Requests from the front-end are processed and transmitted over a network, facilitating communication between the front-end and back-end systems.
+3. **Back-End Database Balancer**: The back-end utilizes GraphQL to parse and optimize user queries. It manages authorization, ensuring data access permissions are verified before any data retrieval. It converts GraphQL queries to native database queries, filters results, and fetches data efficiently from the Druid database cluster.
+4. **Data Source Integration**: The system integrates with various data sources, including the **CSA Annual Cybersecurity Report**, **SingCERT Advisories**, and **Asia Pacific (APAC) Cyber Information Sharing**, providing a comprehensive view of current cyber threats.
+5. **Data Combination and Processing**: After retrieving data from the Druid cluster, the system combines and processes this information, packaging it into a format suitable for visualization on the dashboard.
+
+This architecture ensures a smooth flow of data from multiple sources to a centralized dashboard, empowering users with critical insights and timely information to detect and mitigate cyber threats.
+
+
+
+#### Dashboard UI Structure and Design 
 
 The dashboard is organized into a grid structure, providing a clear and user-friendly interface for visualizing key information. Below is the layout of the dashboard:
 
-| **Dashboard Title**                                  |                                                         |                                                     |                                                  |
+| **Dashboard Plug-in Title**                          |                                                         |                                                     |                                                  |
 | ---------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------ |
 | Total Threat Count Line-Area High-Chart              |                                                         |                                                     |                                                  |
 | Top-N Threat Names Word Cloud High-Chart (Count)     | Top-N Threat Actors Pie High-Chart (Percentage)         | Top-N Threat Sectors Pie High-Chart (Percentage)    |                                                  |
 | Sector Line-Area High-Chart: GOVERNMENT              | Sector Line-Area High-Chart: INFOCOMM                   | Sector Line-Area High-Chart: MANUFACTURING          | Sector Line-Area High-Chart: ENERGY              |
 | Sector Line-Area High-Chart: TRANSPORTATION SERVICES | Sector Line-Area High-Chart: HEALTH AND SOCIAL SERVICES | Sector Line-Area High-Chart: SECURITY AND EMERGENCY | Sector Line-Area High-Chart: BANKING AND FINANCE |
+
+The main UI is shown below:
+
+![](img/s_05.png)
 
 Key visual elements include:
 
@@ -108,3 +136,108 @@ Key visual elements include:
 - **Top-N Threat Names**: A word cloud chart highlighting the most frequently detected threat names.
 - **Top-N Threat Actors and Sectors**: Pie charts illustrating the distribution of threats by actors and affected sectors.
 - **Sector-Specific Analysis**: Individual line-area charts for each critical sector, offering a detailed view of threat trends and activities in specific areas such as Government, InfoComm, Manufacturing, Energy, Transportation, Health and Social Services, Security and Emergency, and Banking and Finance.
+
+Pop-up threats count time-line detail dialog :
+
+![](img/s_06.png)
+
+When the user click the detailed words, sector on the panel in the main UI, the detail threats count time line dialog will pop-up. 
+
+#### Components and Backend Query  Design
+
+The front-end dashboard is composed of multiple components, each responsible for a specific aspect of data visualization. The back-end will fetch data from the Druid database using GraphQL queries. The backend acts as a balancer, parsing user requests, applying authorization, and converting GraphQL queries into native SQL queries to optimize data retrieval. The work flow is shown below: 
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Front End 
+    participant Back End
+    participant Druid Data Base
+    User->>Front End:Web Data View Action
+    Front End->>Back End:GraphQL function call
+    Back End->>Druid Data Base: Druid DB SQL
+    Druid Data Base->>Back End: SG Threats Data
+    Back End->>Front End:GraphQL function response
+    Front End->>User:Webpage data visulization
+```
+
+##### Total Threats Count Timeline Panel
+
+Panel displays a timeline chart showing the total count of threat events, sorted by timestamps (day/hour). The UI is shown below:
+
+![](img/s_07.png)
+
+BE GraphQL Query:
+
+```javascript
+threatEvents_nationalCount(dimension:"All")
+```
+
+BE Druid SQL (Total Threat Count):
+
+```sql
+SELECT
+DATE_TRUNC('hour', __time), count(*) as threatCount
+FROM "ds-suspected-ip-2021"
+GROUP BY DATE_TRUNC('hour', __time)
+```
+
+
+
+##### Top-N Threats Name Display Panel
+
+Panel displays the top N threads Name based on the user's section in the drop down menu during the time period. The UI is shown below:
+
+![](img/s_08.png)
+
+BE GraphQL Query:
+
+```
+threatEvents_nationalTopN(dimension:"threatName", filterVal:"Name", topN:10)
+```
+
+BE Druid SQL (Total Threat Count):
+
+```sql
+SELECT
+threatName, count(*) as threatCount
+FROM "ds-suspected-ip-2021"
+GROUP BY threatName
+ORDER BY threatCount DESC
+LIMIT 10
+```
+
+
+
+##### Top-N Threats Actor Display Panel
+
+Pie chart Panel displays the top N threads actors  based on the user's section in the drop down menu, showing percentage distribution. The UI is shown below:
+
+![](img/s_09.png)
+
+BE GraphQL Query:
+
+```
+threatEvents_nationalCount(queryType:"All")
+threatEvents_nationalTopN(dimension:"threatActor", filterVal:"percentage", topN:10)
+```
+
+BE Druid SQL (Total Threat Count):
+
+```
+SELECT
+threatActor, count(*) as threatCount
+FROM "ds-suspected-ip-2021"
+GROUP BY threatName
+ORDER BY count DESC
+LIMIT 10
+```
+
+Then in EB device the return list by total to calculate the percentage data.
+
+
+
+##### Top-N Threats Sector Display Panel
+
+ Pie chart displays the top-N threat sectors based on user selection, showing percentage distribution. Focus on threats defined as `IntrusionSet`. The UI is shown below:
+
