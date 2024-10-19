@@ -186,13 +186,13 @@ GROUP BY DATE_TRUNC('hour', __time)
 
 ##### Top-N Threats Name Display Panel
 
-Panel displays the top N threads Name based on the user's section in the drop down menu during the time period. The UI is shown below:
+Word cloud chart panel displays the top N threads Name based on the user's section in the drop down menu during the time period. The UI is shown below:
 
 ![](img/s_08.png)
 
 BE GraphQL Query:
 
-```
+```javascript
 threatEvents_nationalTopN(dimension:"threatName", filterVal:"Name", topN:10)
 ```
 
@@ -217,14 +217,14 @@ Pie chart Panel displays the top N threads actors  based on the user's section i
 
 BE GraphQL Query:
 
-```
+```javascript
 threatEvents_nationalCount(queryType:"All")
 threatEvents_nationalTopN(dimension:"threatActor", filterVal:"percentage", topN:10)
 ```
 
 BE Druid SQL (Total Threat Count):
 
-```
+```sql
 SELECT
 threatActor, count(*) as threatCount
 FROM "ds-suspected-ip-2021"
@@ -233,7 +233,7 @@ ORDER BY count DESC
 LIMIT 10
 ```
 
-Then in EB device the return list by total to calculate the percentage data.
+Then in BE divide the return list by total to calculate the percentage data.
 
 
 
@@ -241,3 +241,147 @@ Then in EB device the return list by total to calculate the percentage data.
 
  Pie chart displays the top-N threat sectors based on user selection, showing percentage distribution. Focus on threats defined as `IntrusionSet`. The UI is shown below:
 
+![](img/s_10.png)
+
+BE GraphQL Query:
+
+```javascript
+threatEvents_nationalTopN(dimension:"threatName", filterDimension:"threatType", filterVal:"IntrusionSet", topN:10)
+```
+
+BE Druid SQL:
+
+```sql
+SELECT
+threatName, count(*) as threatCount
+FROM "ds-suspected-ip-2019"
+WHERE threatType='IntrusionSet'
+GROUP BY threatName
+ORDER BY threatCount DESC
+LIMIT 10
+```
+
+
+
+##### Sector Threats Count Time Period Panel 
+
+Panel displays a time series line chart for threat counts within sectors over a period of 3-5 days, sorted by hour. The UI is shown below:
+
+![](img/s_11.png)
+
+Sectors Category:
+
+```json
+["GOVERNMENT", "INFOCOMM", "MANUFACTURING", "ENERGY", "TRANSPORTATION SERVICES", "HEALTH AND SOCIAL SERVICES", "SECURITY AND EMERGENCY", "BANKING AND FINANCE"]
+```
+
+BE GraphQL Query:
+
+```javascript
+threatEvents_nationalCount(queryType:"threatSector", fieldStr:"GOVERNMENT", threatType:"All")
+```
+
+BE Druid SQL:
+
+```sql
+SELECT
+DATE_TRUNC('hour', __time), count(*) as threatCount
+FROM "ds-suspected-ip-2021"
+WHERE srcSector='GOVERNMENT'
+GROUP BY DATE_TRUNC('hour', __time)
+ORDER BY DATE_TRUNC('hour', __time)
+```
+
+
+
+##### Dashboard Pop-Up Dialog
+
+A pop-up dialog that appears when users select specific items, showing a comparative area chart for `Intrusion Set` and `Malware` and providing detailed descriptions. The UI is shown below:
+
+![](img/s_12.png)
+
+Input:
+
+- `popupName`: `[<threatName>/<threatSector>]`
+- `popupType`: `['Sector', 'Name', 'Actor']`
+
+BE GraphQL Query:
+
+```javascript
+threatEvents_nationalCount(queryType:"threatSector", fieldStr:"GOVERNMENT", threatType:"IntrusionSet", limitVal:1000)
+profile_threatName(threatName:"APT37")
+```
+
+BE Druid SQL Example:
+
+```sql
+SELECT
+DATE_TRUNC('hour', __time), count(*) as threatCount
+FROM "ds-suspected-ip-2021"
+WHERE srcSector='GOVERNMENT' and threatType='IntrusionSet'
+GROUP BY DATE_TRUNC('hour', __time)
+ORDER BY DATE_TRUNC('hour', __time)
+```
+
+```sql
+SELECT
+DATE_TRUNC('hour', __time), count(*) as threatCount
+FROM "ds-suspected-ip-2021"
+WHERE threatType='IntrusionSet' and threatName='Silence'
+GROUP BY DATE_TRUNC('hour', __time)
+ORDER BY DATE_TRUNC('hour', __time)
+```
+
+
+
+------
+
+### Program Setup and Usage
+
+This section outlines the program file structure, environment setup, and steps for executing the National Threat Display Dashboard. Follow these instructions to correctly configure and run the system.
+
+##### Program Files List 
+
+| Program file/folder                    | Execution Env | Description                                                  |
+| -------------------------------------- | ------------- | ------------------------------------------------------------ |
+| `src/dash-national/*`                  | Typescript    | This components will show the main dashboard web page.       |
+| `src/dash-national-actors/*`           | Typescript    | This components will show a mat-card to display the top N threats actor/type in a highchart pie chart. |
+| `src/dash-national-name/*`             | Typescript    | This components will show a mat-card to display the top N threat  name in a highchart word cloud. |
+| `src/dash-national-popup/*`            | Typescript    | This components will show a pop-up dialog in the mid of the page with a count area chart of the item selected by user on the left side and item description text on the right side. |
+| `src/dash-national-sector/*`           | Typescript    | This components will show a mat-card to display the sectors threat timeseries hour count in a highchart line-area chart. |
+| `backEnd/threatEvents/resolvers/ *.js` | JavaScript    | All the backend balancer resolvers modules.                  |
+| `backEnd/threatEvents/schema/ *.gql`   | gql           | All the graphql query/datatype definition.                   |
+
+#### Program Usage/Execution
+
+Copy Files to Appropriate Directories
+
+- **Frontend (UI) Files**: Copy the `src` folder into your project at `<ProjectRoot>/src/app/pages`.
+- **Backend (GraphQL)**: Copy the `threatEvents` folder into your backend’s `<ProjectRoot>/graphql/threatEvents` folder.
+- **Routing Configuration**: Import the `graph-national-component` into your project's routing module by modifying `app-routing.module.ts`.
+- **Command to Run the Program**: To start the development server and compile the project, use the following command `npm run dev`
+
+Access the Webpage:  you can directly access the dashboard at: http://localhost:4200/#/national
+
+------
+
+### Reference
+
+- Graphql tutorial link: https://www.tutorialspoint.com/graphql/graphql_environment_setup.htm
+- Druid console link: http://druid.cdl.telco.lan/unified-console.html
+
+- Native queries: https://druid.apache.org/docs/latest/querying/querying.html
+
+- Angular function handle input https://stackoverflow.com/questions/42287304/pass-variable-to-custom-component
+
+- Angular High chart word cloud: https://medium.com/@pmzubar/creating-awesome-word-clouds-using-highcarts-js-76967cb15c22
+
+- Angular Check box event: https://www.concretepage.com/angular-material/angular-material-checkbox-change-event
+
+- Angular tool tip: https://material.angular.io/components/tooltip/overview
+
+- P-card detail: https://www.bookstack.cn/read/PrimeNG/e455a9cbe0018c68.md
+
+------
+
+>  last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 19/10/2024 if you have any problem, please send me a message. 
