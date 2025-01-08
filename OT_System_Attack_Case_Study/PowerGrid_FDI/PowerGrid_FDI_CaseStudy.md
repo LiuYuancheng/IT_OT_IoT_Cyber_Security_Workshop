@@ -27,7 +27,11 @@ We are glad to share the [Power Grid Simulation System](https://www.linkedin.com
 
 ### Introduction
 
-The case study will demo an attacker took 7 steps to implement the Siemens-S7comm False Data Injection (FDI) attack on a power grid system, leading to a power failure for one of the level 0 power distribution customer (critical infrastructure)  which is the land based railway simulation system. 
+The case study will demo an attacker took 7 steps to implement the Siemens-S7comm False Data Injection (FDI) attack on a power grid system, leading to a power failure for one of the level 0 power distribution customer (critical infrastructure)  which is the land based railway simulation system. The cyber attack case study overview is shown below:
+
+![](img/title.png)
+
+For the case study attack demo video, please refer to this link: https://youtu.be/INDEzA4qk7I?si=eG4ahl96KFb_Hv6u. 
 
 In this study case, we envision a scenario where a red team attacker/hacker has successfully implants one spy trojan program via an IT-Attack, such as employing a phishing email, targeting one of the maintenance computers in the SCADA supervision network. The attack study case will illustrate how a red team attacker use the spy trojan C2 system to plant a S7comm False data injection script to the victim machine in the SCADA network and launch the attack to the power grid RTU. Then use the exception data to bypass the data verification function and trigger the power grid system's protection mechanism and finally cased the power station cut off the transformer's energy flow for the power customer. In the cause study there are three project are included:
 
@@ -39,4 +43,9 @@ In this case study, we will follow below flow diagram to draft the document.
 
 ![](img/s_03.png)
 
-We will also provide detailed step-by-step instructions for deploying and using the Power_Grid_OT_Simulation_System in your environment.
+We will introduce the digital twin system used in the case study, then list the related link about the attack vectors and vulnerability background knowledge link. Then we will provide detailed step-by-step instructions for deploying and using the Power_Grid_OT_Simulation_System in your environment and show the attack demo. Then map the system vulnerability to the MITRE CWE frame work and the attack path to the MITRE ATT&CK frame work if some one want to integrate the case study as part of their training.  
+
+
+
+------
+
