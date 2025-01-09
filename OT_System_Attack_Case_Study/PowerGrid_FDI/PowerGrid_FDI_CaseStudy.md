@@ -117,3 +117,49 @@ To check the detail, please refer to this link: https://github.com/LiuYuancheng/
 
 ------
 
+### Attack Scenario Design
+
+The attack scenario demonstrates a **False Data Injection (FDI) attack** on a power grid system, leading to a power failure for the railway system. In this section, we will introduce the targeted vulnerable point of the system which used by the attacker and the attack path (lateral movement) of the attacker.
+
+#### Attack Vulnerability Background 
+
+As shown in the background knowledge section, the FDI focuses on manipulating the data flowing through the system to deceive decision-making processes. In the case study, the attack will aim on the power grid operating data collection and the exception situation handling part. The table below outlines the **normal operating ranges** for voltage and current across various power loads and customers within the power grid system. Each type of energy source has specific voltage and current thresholds that ensure safe and efficient operation.
+
+| Energy Source                  | Connected System        | Voltage Range | Current Range |
+| ------------------------------ | ----------------------- | ------------- | ------------- |
+| High Voltage Transmission Line | Distribution Substation | 0 - 150 kV    | 0 - 120 A     |
+| Level 0 Step-Down Transformer  | Railway System          | 0 - 80 kV     | 0 - 100 A     |
+| Level 1 Step-Down Transformer  | Smart Factory           | 0 - 15 kV     | 0 - 90 A      |
+| Level 2 Step-Down Transformer  | Smart Home              | 0 - 220 V     | 0 - 40 A      |
+
+The following table provides details on the **RTU memory addresses index**(from `0x00000000`)  used to store power load data received from Metering Units (MUs). Each address corresponds to specific metering data for voltage and current, stored as integer values.
+
+| MU Components                                          | Memory Address Index | Address      | Byte Index | Data Type |
+| ------------------------------------------------------ | -------------------- | ------------ | ---------- | --------- |
+| Distribution Substation Voltage                        | 6                    | `0x00000006` | 4          | Int       |
+| Distribution Substation Current                        | 6                    | `0x00000006` | 6          | Int       |
+| Level 0 Step-Down Transformer (Railway System) Voltage | 7                    | `0x00000007` | 4          | Int       |
+| Level 0 Step-Down Transformer (Railway System) Current | 7                    | `0x00000007` | 6          | Int       |
+| Level 1 Step-Down Transformer (Smart Factory) Voltage  | 8                    | `0x00000008` | 0          | Int       |
+| Level 1 Step-Down Transformer (Smart Factory) Current  | 8                    | `0x00000008` | 2          | Int       |
+| Level 2 Step-Down Transformer (Smart Home) Voltage     | 8                    | `0x00000008` | 4          | Int       |
+| Level 2 Step-Down Transformer (Smart Home) Current     | 8                    | `0x00000008` | 6          | Int       |
+
+These configurations ensure that the RTU correctly interprets and processes the data from the MUs, enabling efficient monitoring and control of power distribution across various systems. The attacker will use the above 2 functions as the vulnerable points then try to use the error data to overwrite the data saved in the related memory address to trigger the  transformers' voltage limitation feature. 
+
+
+
+#### Attack Path Introduction
+
+The process consists of 7 steps, as illustrated in the attack path diagram below.
+
+![](img/s_07.png)
+
+- **Step-01** : After successfully infiltrating the OT production network, the red team attacker discovers that the RTU can accept memory value modification commands via the `Siemens-S7Comm` protocol. The attacker then creates an S7Comm client program to continuously inject a high voltage value (100kV) into a specific RTU address which store the measured transformer's output voltage to the railway system, overriding the legitimate readings from the railway transformer’s metering unit.
+- **Step-02** : The **Power Grid HMI** regularly reads data from the RTU. Each reading has an acceptable range, and if a value falls outside this range, the HMI will interpret it as an incorrect reading or a system error.
+- **Step-03** : When the HMI detects a reading of 100kV for the railway operating voltage, which is outside the safety range of 0-72kV, it triggers an alert for the power grid operator to investigate.
+- **Step-04** : If the power grid operator does not address the alert and the abnormal voltage reading persists three times consecutively, the SCADA-HMI will treat as a real system error and try activate its circuit protection mechanism. Typically, if the voltage or current is out of range, the circuit breaker trips immediately. However, if the high value persists for a period, it suggests a potential jammed of the breaker. After three alerts indicating high voltage, the HMI confirms an power error in the railway power system and initiates an automatic safety control to disconnect the railway transformer’s output, protecting the overall system.
+- **Step-05** : The HMI sends a **Modbus-TCP command** to the PLC to remotely control the motorized circuit closer linked to the circuit breaker. For details on the design of the remote-controllable circuit breaker, refer to the following link: [Remote Controllable Circuit Breaker Design](https://github.com/LiuYuancheng/IT_OT_IoT_Cyber_Security_Workshop/blob/main/OT_System_Attack_Case_Study/Power_CircuitBreaker/Power_CircuitBreaker.md). Consequently, the physical circuit breaker in the power grid simulator is turned off, cutting off energy transmission to the railway system interface, resulting in 0V, 0A output.
+- **Step_06** : The power grid physical simulator sends a **power cut-off message** to the railway system physical world simulator via the power link.
+- Step_07 : Upon receiving the power state update from the power link, the **railway system physical simulator** triggers power outage situation:  an emergency stop for all trains due to the loss of power. All trackers switch to a power failure state (red color), and the railway system displays a power outage alert.
+
