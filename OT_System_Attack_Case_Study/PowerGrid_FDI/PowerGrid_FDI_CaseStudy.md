@@ -209,7 +209,7 @@ The FDI OT Attack  process consists of 7 steps, as illustrated in the attack pat
 
 In the attack demonstration we will show the steps to deploy the environment for green team then show the detailed red team attack steps. 
 
-#### Power_Grid_OT_Simulation_System Deployment
+#### Case Study System Deployment
 
  To deploy the Power_Grid_OT_Simulation_System system with one power customer, a minimum of seven virtual machines (VMs) or physical machine are required, along with two isolated networks connected through one network switches. 
 
@@ -243,6 +243,73 @@ For details on the required modules, refer to the **Program File List** section 
 **Deploy Power Customer Railway System VM**
 
 - Copy the needed program module and Update the Application Configuration File, since the railway system acts as the power customer in this deployment, update the configuration file to enable test mode by setting the flag to `True` (line 9). 
-- Run the main execution file `RailwayPWSimuRun.py` and the railway system UI will appear as shown below:
+- Run the main execution file `RailwayPWSimuRun.py` and the railway physical world simulator UI will appear as shown below:
 
 ![](img/s_08.png)
+
+` Figure-08: Screen shot of railway system physical world simulator, version v_0.1.4 (2025)`
+
+**Deploy Power Grid Physical World Simulator VM**
+
+- Copy the needed program module and Update the Application Configuration File, Ensure the test mode flag (`TEST_MD`) is set to `False` to enable PLC-controlled signals.
+- Run the main execution file `PowerGridPWRun.py` and the power grid system physical world simulator UI will appear as shown below:
+
+![](img/s_09.png)
+
+` Figure-09: Screen shot of power grid system physical world simulator, version v_0.1.4 (2025)`
+
+**Deploy Power Grid Weather Fetcher VM**
+
+- Copy the needed program module and manually modify lines 28–32 in the `weatherFetcher.py` file to specify the desired city and network parameters Update the code as shown below:
+
+```python
+# Set the city string to your location.
+CityStr = 'Singapore'
+# Set the UDP port to the physical world simulation program.
+PW_IP = '10.107.109.8'
+PW_PORT = 3001
+```
+
+- Run the main execution file `weatherFetcher.py` 
+
+**Deploy Power Link Program VM**
+
+- Copy the needed program module and Update the Application Configuration File added the 2 physical world simulators' IP in the config file.
+- Run the main execution file `PowerLinkRun.py`, then check whether the power link icon on the power grid  and power customer are changed to green color as shown below image:
+
+![](img/s_10.png)
+
+` Figure-10:Physical world simulators power link connection, version v_0.1.4 (2025)`
+
+**Deploy SCADA-PLC Emulator VM**
+
+- Copy the needed program module and Update the Application Configuration File. 
+- Run the main execution file `plcSimulatorPwr.py`, When the PLC simulation program connected the the power grid physical world simulator, the PLC Icon and connection situation on power grid physical simulator user interface will be change to green color as shown below:
+
+![](img/s_11.png)
+
+` Figure-11:SCADA-PLC Emulatorconnection indicator, version v_0.1.4 (2025)`
+
+**Deploy SCADA-RTU Emulator VM**
+
+- Copy the needed program module and Update the Application Configuration File. 
+- Run the main execution file `rtuSimulatorPwr.py`, When the RTU simulation program connected the the power grid physical world simulator, the RTU Icon and connection situation on power grid physical simulator user interface will be change to green color as shown below:
+
+![](img/s_12.png)
+
+` Figure-12:SCADA-RTU Emulatorconnection indicator, version v_0.1.4 (2025)`
+
+**Deploy SCADA-HMI Program VM**
+
+- Copy the needed program module and Update the Application Configuration File. 
+- Run the main execution file `ScadaHMIRun.py`, Verify that the RTU and PLC are connected properly as shown below (Connection indicator shows connected and green color) :
+
+![](img/S_13.png)
+
+` Figure-13:Screen shot of power grid system SCADA-HMI, version v_0.1.4 (2025)`
+
+#### Case Study Attack Demo Steps
+
+The following steps demonstrate how to implement a False Data Injection (FDI) attack on the RTU to trigger a power outage scenario.
+
+Step 1: Confirm System Connectivity
