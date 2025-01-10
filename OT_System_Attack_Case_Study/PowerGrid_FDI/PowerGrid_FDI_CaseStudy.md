@@ -1,10 +1,10 @@
 # Power Grid Simulation System 02 : FDI Power Outage Attack Case Study
 
-We are excited to share that the [Power Grid Simulation System](https://www.linkedin.com/pulse/power-grid-ot-simulation-system-yuancheng-liu-dpplc/?trackingId=hN%2Ftqii0T5yoT12GO8pJZg%3D%3D) we developed  is used as part of the red team's targeted critical infrastructure system the cyber exercise [Crossed Swords 2024](https://ccdcoe.org/exercises/crossed-swords/) which conducted in December 2024. 
+We are excited to share that the [Power Grid Simulation System](https://www.linkedin.com/pulse/power-grid-ot-simulation-system-yuancheng-liu-dpplc/?trackingId=hN%2Ftqii0T5yoT12GO8pJZg%3D%3D) we developed was used as part of one red team's targeted critical infrastructure system the international cyber exercise [Crossed Swords 2024](https://ccdcoe.org/exercises/crossed-swords/) which conducted in December 2024. In this article, we will introduce one power outage attack case study which use the Power Grid Simulation System as the demo platform for OT cyber security workshop.
 
 ![](img/logo_small.png)
 
-**Project Design Purpose**: This case study demonstrates using the Power Grid Simulation System as a platform to showcase the implementation of a **False Data Injection (FDI) attack** on the Metering Unit (MU) readings of a power grid's Remote Terminal Unit (RTU). The attack scenario focuses on manipulating voltage or current readings by overwriting specific memory addresses within the RTU, thereby triggering the safety protection mechanisms of the SCADA HMI system. This process ultimately leads to a power cut-off for the railway system connected to the grid's Level 0 step-down transformer. 
+**Project Design Purpose**: This case study demonstrates using the Power Grid Simulation System as a target critical infrastructure to showcase the implementation of a **False Data Injection (FDI) attack** on the electricity Electrical Metering Unit (MU) readings of a power grid's Remote Terminal Unit (RTU). The attack scenario focuses on manipulating voltage or current reading value by overwriting the specific memory addresses data within the RTU, thereby triggering the safety protection mechanisms of the SCADA system. This process ultimately leads to a power cut-off for a primary power customer which is the railway system connected to the grid's Level 0 step-down transformer. 
 
 This particular attack scenario is proposed as one of the demonstration cases for the Crossed Swords 2024 Test-Run, serving as a live demonstration of how an IT intrusion can disrupt and potentially paralyze critical OT infrastructure. It highlights the devastating consequences of cyberattacks on industrial control systems and emphasizes the importance of robust cybersecurity measures for safeguarding critical infrastructure.
 
@@ -12,11 +12,11 @@ This particular attack scenario is proposed as one of the demonstration cases fo
 - **Matched MIRTE-CWD**:
 - **Mapped MITRE-ATT&CK-TTP**:
 
-> Important : The demonstrated attack case is used for education and training for different level of IT-OT cyber security ICS course, please don't apply it on any real world system.
+> Important : The demonstrated attack case is only used for education and training for different level of IT-OT cyber security ICS course, please don't apply it on any real world system.
 
 ```
 # Created:     2025/01/08
-# Version:     v_0.1.3
+# Version:     v_0.1.4
 # Copyright:   Copyright (c) 2025 LiuYuancheng
 # License:     GNU Affero General Public License v3.0  
 ```
@@ -29,9 +29,16 @@ This particular attack scenario is proposed as one of the demonstration cases fo
 
 ### Introduction
 
-This case study demonstrates the execution of a **Siemens-S7Comm False Data Injection (FDI) attack** on a power grid system, illustrating how an attacker can exploit vulnerabilities to cause a power failure for a critical infrastructure client: a land-based railway simulation system connected to the Level 0 power distribution system. The attack sequence involves seven key steps, as outlined in the case study overview diagram below:
+This case study demonstrates the execution of a **Siemens-S7Comm False Data Injection (FDI) attack** on a power grid system's SCADA network, illustrating how an attacker can exploit vulnerabilities to cause a power failure for a critical infrastructure client: a land-based railway simulation system connected to the Level 0 power distribution system. The attack process is divided into two main phases:
+
+- **IT System Attack**: This phase covers how the attacker uses a trojan to achieve lateral movement, evade intrusion detection systems (IDS), and deliver the OT attack payload (FDI script) to a compromised machine with access to the SCADA network. 
+- **OT System Attack**:  This phase illustrates how the FDI script manipulates the power grid RTU’s memory, causing system errors that trigger the safety protection mechanisms, ultimately cutting off power to the critical infrastructure.
+
+The attack progresses through nine key steps, as outlined in the case study overview diagram below:
 
 ![](img/title.png)
+
+
 
 For the case study attack demo video, please refer to this link: https://youtu.be/INDEzA4qk7I?si=eG4ahl96KFb_Hv6u. 
 
@@ -39,19 +46,19 @@ For the case study attack demo video, please refer to this link: https://youtu.b
 
 In this case study, we envision a scenario where a red team attacker infiltrates the OT-System SCADA supervision network by implanting a **spy trojan** via an IT-based attack, such as a phishing email targeting a maintenance engineer's laptop. The attacker uses this trojan’s Command-and-Control (C2) capabilities to deliver a Siemens-S7Comm FDI script to a compromised machine within the SCADA network. The attack proceeds by:
 
-1. Exploiting the spy trojan to inject false data into the power system RTU’s memory.
-2. Bypasses verification functions and manipulating voltage or current readings to generate exception data.
+1. Exploiting the spy trojan to download FDI attack script into a victim node which can connect to the power system RTU.
+2. Bypasses verification functions and manipulating voltage or current reading value to generate exception data.
 3. Triggering the power grid system’s protection mechanism, leading to the disconnection of the transformer’s energy supply to the critical infrastructure customer.
 
 This case study incorporates three key sub-projects:
 
-- **Mini OT-Energy-System Cyber Security Digital Twin** : The primary demo platform used for attack execution, data collection, and visualization of the exception scenario.
-- **Land Based Railway IT-OT System Cyber Security Test Platform** : A simulation of a Level 0 power distribution customer, representing critical infrastructure which drain 69kV AC with a maximum current of 100A for operation.
-- **Ninja_C2_Malware_Simulation_System** : An agent based spy trojan attack monitor and control system used to control simulate the attack progress. 
+- **Mini OT-Energy-System Cyber Security Digital Twin** : The primary demo platform used for attack execution, data collection, and visualization of the exception scenario demonstration .
+- **Land Based Railway IT-OT System Cyber Security Digital Twin** : A railway digital twin simulate the Level 0 primary power distribution customer of the power grid, which drains 69kV AC with a maximum current of 100A for operation and used for show case the effect when the power outage attack happens.
+- **Ninja_C2_Malware_Simulation_System** : An agent based trojan attack monitor and control system (includes the spy-trojan and the C2 Hub) used to control simulate the attack progress. 
 
 #### Case Study Structure Introduction
 
-In this case study, we will follow below flow diagram to draft the document. Beginning by introducing the digital twin systems used in the case study and providing related links for attack vectors and vulnerability background knowledge. Then show the attack demonstrate and introduce the attack observation with the attack path. Finally we will map the system vulnerabilities to the MITRE CWE framework, and align the attack path with the MITRE ATT&CK framework for those looking to integrate this case study into their cybersecurity training programs.
+In this case study, we will follow below flow diagram to draft the article. Beginning by introducing the digital twin systems used in the case study with background information to give a general overview. Then after providing related links for attack vectors and vulnerability, we will show the attack demonstrate and introduce the attack observation with the attack path. Finally we will map the system vulnerabilities to the MITRE CWE framework, and align the attack path with the MITRE ATT&CK framework for those looking to integrate this case study into their cybersecurity training programs.
 
 ![](img/s_03.png)
 
@@ -160,6 +167,10 @@ The process consists of 7 steps, as illustrated in the attack path diagram below
 - **Step-03** : When the HMI detects a reading of 100kV for the railway operating voltage, which is outside the safety range of 0-72kV, it triggers an alert for the power grid operator to investigate.
 - **Step-04** : If the power grid operator does not address the alert and the abnormal voltage reading persists three times consecutively, the SCADA-HMI will treat as a real system error and try activate its circuit protection mechanism. Typically, if the voltage or current is out of range, the circuit breaker trips immediately. However, if the high value persists for a period, it suggests a potential jammed of the breaker. After three alerts indicating high voltage, the HMI confirms an power error in the railway power system and initiates an automatic safety control to disconnect the railway transformer’s output, protecting the overall system.
 - **Step-05** : The HMI sends a **Modbus-TCP command** to the PLC to remotely control the motorized circuit closer linked to the circuit breaker. For details on the design of the remote-controllable circuit breaker, refer to the following link: [Remote Controllable Circuit Breaker Design](https://github.com/LiuYuancheng/IT_OT_IoT_Cyber_Security_Workshop/blob/main/OT_System_Attack_Case_Study/Power_CircuitBreaker/Power_CircuitBreaker.md). Consequently, the physical circuit breaker in the power grid simulator is turned off, cutting off energy transmission to the railway system interface, resulting in 0V, 0A output.
-- **Step_06** : The power grid physical simulator sends a **power cut-off message** to the railway system physical world simulator via the power link.
-- Step_07 : Upon receiving the power state update from the power link, the **railway system physical simulator** triggers power outage situation:  an emergency stop for all trains due to the loss of power. All trackers switch to a power failure state (red color), and the railway system displays a power outage alert.
+- **Step-06** : The power grid physical simulator sends a **power cut-off message** to the railway system physical world simulator via the power link.
+- **Step_07** : Upon receiving the power state update from the power link, the **railway system physical simulator** triggers power outage situation:  an emergency stop for all trains due to the loss of power. All trackers switch to a power failure state (red color), and the railway system displays a power outage alert.
+
+
+
+------
 
