@@ -38,7 +38,7 @@ The attack progresses through nine key steps, as outlined in the case study over
 
 ![](img/title.png)
 
-
+` Figure-01: Power Outage Attack Case Study Overview Diagram, version v_0.1.4 (2025)`
 
 For the case study attack demo video, please refer to this link: https://youtu.be/INDEzA4qk7I?si=eG4ahl96KFb_Hv6u. 
 
@@ -62,7 +62,11 @@ In this case study, we will follow below flow diagram to draft the article. Begi
 
 ![](img/s_03.png)
 
-The case study document also includes the guidance for green team engineers deploying the simulation system's modules across various virtual machines (VMs) or physical devices. 
+` Figure-02: Case Study Workflow diagram, version v_0.1.4 (2025)`
+
+The case study document also includes the guidance for green team engineers deploying the simulation system's modules across various virtual machines (VMs) or physical nodes.
+
+
 
 ------
 
@@ -70,13 +74,17 @@ The case study document also includes the guidance for green team engineers depl
 
 Within this section, we aim to provide fundamental, general knowledge about each respective system and elucidate the Tactics, Techniques, and Procedures (TTP) associated with the attack vectors. This foundational information will serve as a primer for understanding the intricate details of the systems involved and the methodologies employed in the attack scenarios.
 
+
+
 #### Power Grid Simulation System Over View
 
-The **Mini OT Power Grid Simulation System** is a digital equivalent software platform designed to simulate the core operations of a hybrid power grid system, including hybrid power generation (natural gas power plants, solar power plants, and wind turbine farms), high-voltage power transmission and a three-level step-down power distribution system. The simulation integrates a SCADA system that incorporates PLCs for remote system control, RTUs and MUs for real-time data monitoring, and an HMI interface for operators to manage the grid. The system structure is shown below:
+The **Mini OT Power Grid Simulation System** is a digital equivalent platform designed to simulate the core operations of a hybrid power grid system, including hybrid power generation (natural gas power plants, solar power plants, and wind turbine farms), high-voltage power transmission and a three-level step-down power distribution system. The simulation integrates a SCADA system that incorporates PLCs for remote system control, RTUs and MUs for real-time data monitoring, and an HMI interface for operators to manage the grid. The system structure is shown below:
 
 ![](img/s_04.png)
 
-To check the detail please refer to this link: [System introduction link](https://www.linkedin.com/pulse/power-grid-ot-simulation-system-yuancheng-liu-dpplc/?trackingId=hN%2Ftqii0T5yoT12GO8pJZg%3D%3D)
+` Figure-03:Power Grid Simulation System structure diagram, version v_0.1.4 (2025)`
+
+To check the detail please refer to this document link : https://www.linkedin.com/pulse/power-grid-ot-simulation-system-yuancheng-liu-dpplc/?trackingId=hN%2Ftqii0T5yoT12GO8pJZg%3D%3D
 
 
 
@@ -86,9 +94,20 @@ The land-based railway system is a miniature cyber range capable of providing a 
 
 ![](img/s_05.png)
 
+` Figure-03:Land Based Railway IT-OT System structure diagram, version v_0.1.4 (2025)`
+
+The railway cyber range will offer several different modules to simulate Level 0 (Physical Process Field I/O device) to Level 5 (Internet DMZ Zone) of an IT-OT environment, as illustrated on the above diagram, The platform comprises six primary components which cover different levels of the system requirement: 
+
+- **Level 0 [OT]** : 2D Railway System Physical-world Simulation (digital equivalent).
+- **Level 1 [OT]** :Railway OT-Field-Controller Simulation (PLC & RTU) System.
+- **Level 2 [OT]** : Railway HQ Supervisory Control and Data Acquisition (SCADA) System.
+- **Level 3 [OT&IT]** : Railway System Operations Management Zone
+- **Level 4 [IT]** : Railway Company's Corporate Environment Simulation System.
+- **Level 5 [IT]** : Company Internet and Service Zone.
 
 
-#### False Data Injection (FDI) and False Command Injection (FCI)
+
+#### OT Attack Vector: FDI and FCI
 
 Both FDI and FCI attacks target OT systems, FDI focuses on manipulating the data flowing through the system to deceive decision-making processes, while FCI involves injecting false commands to manipulate the actions of the control systems. Both types of attacks can have serious consequences, potentially leading to operational disruptions, safety hazards, or damage to critical infrastructure. Security measures, such as network segmentation, encryption, and intrusion detection systems, are crucial for protecting OT systems from these types of attacks.
 
@@ -118,6 +137,8 @@ The system structure is shown below:
 
 ![](img/s_06.png)
 
+` Figure-05: Ninja_C2_Malware_Simulation_System structure diagram, version v_0.1.4 (2025)`
+
 To check the detail, please refer to this link: https://github.com/LiuYuancheng/Ninja_C2_Malware_Simulation_System
 
 
@@ -126,11 +147,16 @@ To check the detail, please refer to this link: https://github.com/LiuYuancheng/
 
 ### Attack Scenario Design
 
-The attack scenario demonstrates a **False Data Injection (FDI) attack** on a power grid system, leading to a power failure for the railway system. In this section, we will introduce the targeted vulnerable point of the system which used by the attacker and the attack path (lateral movement) of the attacker.
+The attack scenario section outlines the targeted system vulnerabilities exploited by the attacker, the lateral movement of the attacker and the detailed possible effect can be observed when the attack happens.
 
 #### Attack Vulnerability Background 
 
-As shown in the background knowledge section, the FDI focuses on manipulating the data flowing through the system to deceive decision-making processes. In the case study, the attack will aim on the power grid operating data collection and the exception situation handling part. The table below outlines the **normal operating ranges** for voltage and current across various power loads and customers within the power grid system. Each type of energy source has specific voltage and current thresholds that ensure safe and efficient operation.
+As detailed in the background knowledge section, the FDI attack focuses on manipulating system data to deceive decision-making processes. Specifically, this attack targets two critical components of the power grid system:
+
+- **Power Grid Operating Data Collection**: The attacker manipulates real-time voltage and current data transmitted by Metering Units (MUs) to Remote Terminal Units (RTUs).
+- **Exception Handling Mechanism**: By injecting erroneous data, the attacker triggers safety protection protocols, leading to system shutdowns or power cut-offs.
+
+The table below summarizes the **normal operating ranges** for voltage and current across various power loads and customers within the power grid system. These thresholds are essential for maintaining safe and efficient system operations:
 
 | Energy Source                  | Connected System        | Voltage Range | Current Range |
 | ------------------------------ | ----------------------- | ------------- | ------------- |
@@ -152,15 +178,20 @@ The following table provides details on the **RTU memory addresses index**(from 
 | Level 2 Step-Down Transformer (Smart Home) Voltage     | 8                    | `0x00000008` | 4          | Int       |
 | Level 2 Step-Down Transformer (Smart Home) Current     | 8                    | `0x00000008` | 6          | Int       |
 
-These configurations ensure that the RTU correctly interprets and processes the data from the MUs, enabling efficient monitoring and control of power distribution across various systems. The attacker will use the above 2 functions as the vulnerable points then try to use the error data to overwrite the data saved in the related memory address to trigger the  transformers' voltage limitation feature. 
+Mapping to the two critical components we introduced in the beginning of this section, The attacker exploits the following vulnerabilities:
+
+- **Memory Data Manipulation**: Using an FDI attack, the attacker injects erroneous voltage and current data into specific memory addresses within the RTU.
+- **Triggering System Protection Mechanisms**: The erroneous data activates the transformer’s voltage limitation feature, leading to a shutdown of energy flow to the railway system.
 
 
 
 #### Attack Path Introduction
 
-The process consists of 7 steps, as illustrated in the attack path diagram below.
+The FDI OT Attack  process consists of 7 steps, as illustrated in the attack path diagram below.
 
 ![](img/s_07.png)
+
+` Figure-06: Detailed OT Attack path diagram, version v_0.1.4 (2025)`
 
 - **Step-01** : After successfully infiltrating the OT production network, the red team attacker discovers that the RTU can accept memory value modification commands via the `Siemens-S7Comm` protocol. The attacker then creates an S7Comm client program to continuously inject a high voltage value (100kV) into a specific RTU address which store the measured transformer's output voltage to the railway system, overriding the legitimate readings from the railway transformer’s metering unit.
 - **Step-02** : The **Power Grid HMI** regularly reads data from the RTU. Each reading has an acceptable range, and if a value falls outside this range, the HMI will interpret it as an incorrect reading or a system error.
@@ -168,9 +199,50 @@ The process consists of 7 steps, as illustrated in the attack path diagram below
 - **Step-04** : If the power grid operator does not address the alert and the abnormal voltage reading persists three times consecutively, the SCADA-HMI will treat as a real system error and try activate its circuit protection mechanism. Typically, if the voltage or current is out of range, the circuit breaker trips immediately. However, if the high value persists for a period, it suggests a potential jammed of the breaker. After three alerts indicating high voltage, the HMI confirms an power error in the railway power system and initiates an automatic safety control to disconnect the railway transformer’s output, protecting the overall system.
 - **Step-05** : The HMI sends a **Modbus-TCP command** to the PLC to remotely control the motorized circuit closer linked to the circuit breaker. For details on the design of the remote-controllable circuit breaker, refer to the following link: [Remote Controllable Circuit Breaker Design](https://github.com/LiuYuancheng/IT_OT_IoT_Cyber_Security_Workshop/blob/main/OT_System_Attack_Case_Study/Power_CircuitBreaker/Power_CircuitBreaker.md). Consequently, the physical circuit breaker in the power grid simulator is turned off, cutting off energy transmission to the railway system interface, resulting in 0V, 0A output.
 - **Step-06** : The power grid physical simulator sends a **power cut-off message** to the railway system physical world simulator via the power link.
-- **Step_07** : Upon receiving the power state update from the power link, the **railway system physical simulator** triggers power outage situation:  an emergency stop for all trains due to the loss of power. All trackers switch to a power failure state (red color), and the railway system displays a power outage alert.
+- **Step-07** : Upon receiving the power state update from the power link, the **railway system physical simulator** triggers power outage situation:  an emergency stop for all trains due to the loss of power. All trackers switch to a power failure state (red color), and the railway system displays a power outage alert.
 
 
 
 ------
 
+### OT Attack Demonstration
+
+In the attack demonstration we will show the steps to deploy the environment for green team then show the detailed red team attack steps. 
+
+#### Power_Grid_OT_Simulation_System Deployment
+
+ To deploy the Power_Grid_OT_Simulation_System system with one power customer, a minimum of seven virtual machines (VMs) or physical machine are required, along with two isolated networks connected through one network switches. 
+
+- The **Power_Grid_Physical World Network** hosts all physical-world simulation programs, including the power grid physical world simulator, weather data fetcher, power link connector, and power customer modules. This network is exclusively accessible to the green and blue teams.
+- The **Power_Grid_System SCADA Network** contains OT supervisory control and data acquisition components, such as one or multiple PLC simulators,  one or multiple RTU simulators, and a human-machine interface (HMI) program. This network can be accessed by the green, blue, and red teams.
+
+The network configuration diagram is shown below:
+
+![](img/um_s03.png)
+
+` Figure-07: Power_Grid_OT_Simulation_System Network Configuration Diagram , version v_0.1.4 (2025)`
+
+Each PLC and RTU VM is configured with dual network interfaces to enable communication across both networks.
+
+The recommended operating system for the Power Customer VM, Power Grid VM, and SCADA-HMI VMs is **Windows 11**, while **Ubuntu 22.04** is recommended for all other VMs to ensure compatibility with the required modules and libraries.
+
+Deployment should follow the sequence outlined in the table below:
+
+| VM Name          | Deploy Seq | OS Type | Physical World IP | SCADA IP     | Program/Module Needed                |
+| ---------------- | ---------- | ------- | ----------------- | ------------ | ------------------------------------ |
+| **PW-Railway**   | 1          | Win11   | 10.107.109.7      | N.A          | `lib` , `<Railway>PhysicalWorldSimu` |
+| **PW-PowerGrid** | 2          | Win11   | 10.107.109.8      | N.A          | `lib`, `<Powergrid>PhysicalWorldEmu` |
+| **PW-PowerLink** | 3          | Ubuntu  | 10.107.109.5      | N.A          | `powerlink`                          |
+| **PW-Weather**   | 4          | Ubuntu  | 10.107.109.6      | N.A          | `weatherFetcher`                     |
+| **SCADA-PLC**    | 5          | Ubuntu  | 10.107.109.9      | 10.107.108.3 | `lib`, `plcCtrl`                     |
+| **SCADA-RTU**    | 6          | Ubuntu  | 10.107.109.10     | 10.107.108.4 | `lib`, `rtuCtrl`                     |
+| **SCADA-HMI**    | 7          | Win11   | N.A               | 10.107.108.5 | `lib`, `ScadaHMI`                    |
+
+For details on the required modules, refer to the **Program File List** section in the system setup portion of the **README** file. Each VM must also have the necessary libraries installed according to the setup instructions provided.
+
+**Deploy Power Customer Railway System VM**
+
+- Copy the needed program module and Update the Application Configuration File, since the railway system acts as the power customer in this deployment, update the configuration file to enable test mode by setting the flag to `True` (line 9). 
+- Run the main execution file `RailwayPWSimuRun.py` and the railway system UI will appear as shown below:
+
+![](img/s_08.png)
