@@ -1,0 +1,49 @@
+{
+    "ScenarioName": "scenario.txt",
+    "ReportType": "ATT&CK",
+    "AttackBehaviors": [
+        "1. Infiltrating the OT-System SCADA supervision network by implanting a spy trojan via an IT-based attack.",
+        "2. Exploiting the spy trojan to download an FDI attack script into a victim node within the SCADA network.",
+        "3. Bypassing verification functions and manipulating voltage or current reading values to generate exception data.",
+        "4. Triggering the power grid system's protection mechanism by causing the voltage reading to fall outside the acceptable range.",
+        "5. Initiating an automatic safety control to disconnect the railway transformer's output, protecting the overall system.",
+        "6. Sending a Modbus-TCP command to the PLC to remotely control the circuit breaker and turn it off.",
+        "7. Cutting off energy transmission to the railway system interface, resulting in a power outage.",
+        "8. Triggering a power outage situation in the railway system, leading to an emergency stop for all trains."
+    ],
+    "tactic: Initial Access": {
+        "technique: Spearphishing Attachment (T1566.001)": {
+            "match": true,
+            "detail": "explanation: The scenario mentions that the attacker infiltrates the OT-System SCADA supervision network by implanting a spy trojan via an IT-based attack, such as a phishing email targeting a maintenance engineer's laptop. This aligns with the Spearphishing Attachment technique, where the attacker uses a malicious attachment in a phishing email to gain initial access to the target network."
+        },
+        "technique: Exploit Public-Facing Application (T1190)": {
+            "match": false,
+            "detail": "explanation: The given scenario does not involve exploiting a public-facing application. It focuses on infiltrating the OT-System SCADA supervision network through a spy trojan and manipulating voltage readings to trigger a power grid protection mechanism."
+        }
+    },
+    "tactic: Defense Evasion": {
+        "technique: Indicator Removal on Host (T1070)": {
+            "match": false,
+            "detail": "explanation: The scenario description does not mention any actions related to indicator removal on a host."
+        }
+    },
+    "tactic: Impact": {
+        "technique: Manipulate Control Devices (T1567)": {
+            "match": true,
+            "detail": "explanation: The Manipulate Control Devices technique matches with Step-01 of the scenario description where the attacker creates an S7Comm client program to inject a high voltage value into a specific RTU address, manipulating the control device to override legitimate readings."
+        },
+        "technique: Physical Destruction (T1485)": {
+            "match": true,
+            "detail": "explanation: The Physical Destruction technique involves causing physical damage or destruction to a system or infrastructure. In the given scenario, the attacker triggers the power grid system's protection mechanism, leading to the disconnection of the transformer's energy supply to the critical infrastructure customer. This action can be considered as physical destruction as it results in the loss of power and the emergency stop of all trains in the railway system."
+        },
+        "technique: Remote Control": {
+            "match": true,
+            "detail": "explanation: The scenario describes a step where the HMI sends a Modbus-TCP command to the PLC to remotely control the motorized circuit closer linked to the circuit breaker. This matches the concept of remote control, where an attacker can gain unauthorized access to a system and manipulate it remotely."
+        },
+        "technique: Disrupt Energy Supply (T1490)": {
+            "match": true,
+            "detail": "explanation: The given technique \"Disrupt Energy Supply\" matches with Step-05 of the scenario description. In this step, the attacker uses the HMI to send a Modbus-TCP command to the PLC to remotely control the motorized circuit closer linked to the circuit breaker. This action results in the physical circuit breaker being turned off, cutting off energy transmission to the railway system interface and disrupting the energy supply."
+        }
+    },
+    "Time": "2025_01_11_16_16_33"
+}

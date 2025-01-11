@@ -310,15 +310,13 @@ PW_PORT = 3001
 
 #### Case Study Attack Demo Steps
 
-The following steps demonstrate how the red team attacker implement a False Data Injection (FDI) attack on the RTU to trigger a power outage scenario.
+The following steps detail how the red team attacker implements a **False Data Injection (FDI) attack** on the RTU to simulate a power outage scenario.
 
-##### Attack Step 1 : Custom FDI Attack Script
+##### Attack Step 1: Develop Customized FDI Attack Script
 
-The attacker get the RTU ip address in the SCADA network via data leakage, he tried the false command injection attack on PLC but as the victim machine is not in the PLC allow read and write list, the false command injection attack failed. Base on the RTU ip address, he build the false data injection attack script. 
+The attacker identifies the RTU's IP address within the SCADA network through data leakage. An initial attempt to perform a false command injection (FCI) attack on the PLC fails because the victim machine's IP is not in the PLC's allow read/write access control list. Armed with the RTU's IP address, the attacker develops a customized FDI attack script tailored to exploit vulnerabilities in the Siemens S7Comm protocol used by the RTU.
 
-The RTU use Siemens S7Comm protocol, to write the  own attack script, refer to this S7Comm client example:: https://github.com/LiuYuancheng/PLC_and_RTU_Simulator/blob/main/S7Comm_RTU_Simulator/src/snap7Comm.py
-
-The key attack loop part is shown below
+The critical attack loop in the script to inject the out of range voltage value is shown below:
 
 ```python
 #-----------------------------------------------------------------------------
@@ -332,38 +330,48 @@ if connection:
         print("Attack: Start inject out of MU measurement range false voltrage value (100kV) \nto lvl0 Transformer RTU-MU reading")
         client.setAddressVal(7, 4, 100, dataType=INT_TYPE)
         time.sleep(0.1)
-        print("Inject finished!")
+        print("False data Inject finished!")
 ```
 
+To create the custom script, the attacker references the S7Comm client example: https://github.com/LiuYuancheng/PLC_and_RTU_Simulator/blob/main/S7Comm_RTU_Simulator/src/snap7Comm.py
 
+##### Attack Step 2: Lateral Movement to Transfer the FDI Attack Script
 
-##### Attack Step 2 : Lateral Movement to transfer the FDI Attack Script
+Once the attack script is prepared, the attacker uses a spy trojan and a Command and Control (C2) system to transfer the script to the victim machine within the SCADA network. The Step-by-Step process is shown below :
 
-The attack make the attack script local, now he need to transfer the attack script to the victim machine in the SCADA network by the spy trojan and C2 system. 
-
-Upload the attack script from red team local machine to the cloud C2 Hub as shown in the below image:
+- **Upload Script to C2 Hub** : The attacker uploads the python FDI attack script `attackScript_FDI.py` from their local machine to the C2 hub, as shown below:
 
 ![](img/s_14.png)
 
-Select the spy trojan to go the the trojan function control page, select function 03 `Inject file from C2-DB to victim` to download the attack script from C2 hub into the victim machine as shown below:
+` Figure-14:Upload FDI Attack Script to C2 Hub , version v_0.1.4 (2025)`
+
+- **Inject Script into Victim Machine** : From the C2 system, the attacker uses the C2 spy trojan control function-03 "Inject file from C2-DB to victim" function to download the script from the C2 hub to the victim machine as shown below:
 
 ![](img/s_15.png)
 
-Then the attack script is injected in the victim machine. 
+` Figure-15:Inject FDI Attack Script into Victim Machine , version v_0.1.4 (2025)`
+
+At this stage, the attack script resides on the victim machine, ready for execution.
 
 
 
-##### Attack Step 3: Execute False Data Injection Attack
+##### **Attack Step 3: Execute False Data Injection Attack**
 
-Based on the background information, the goal is to inject a voltage value of `100 kV` to the RTU at memory index `7`, byte `4`. Now from the C2 hub, the attack select function 01. Run commands on victim to execute the FDI attack script as shown below:
+The attacker executes the FDI attack script remotely via the C2 hub. The goal is to inject a `100 kV` voltage value into the RTU at memory index `7`, byte `4`.  The Step-by-Step process is shown below :
+
+- **Run Attack Script via C2 Hub** : The attacker selects the function 01 "Run commands on victim" function to execute the FDI attack script as shown below:
 
 ![](img/s_16.png)
 
-When the script is executing, from C2, the attacker can see the task is being executed as shown below:
+` Figure-16: Remote execute Attack Script via C2 Hub on Victim Machine , version v_0.1.4 (2025)`
+
+- **Monitor Script Execution in Real-Time** : When the script is executing, from C2, the attacker can see the task is being executed as shown below:
 
 ![](img/s_17.png)
 
-**Remark**:  if the the attack node (Ubuntu system) didn't install the `python-snap7` library version 1.3 using the following commands to install the lib 1st :
+` Figure-17 : Monitor Script Execution in Real-Time from C2, version v_0.1.4 (2025)`
+
+**Remark**: If the attack node (Ubuntu system) lacks the `python-snap7` library version 1.3, install it using the following commands from C2 function-01:
 
 ```
 $ sudo apt-get install software-properties-common
@@ -373,43 +381,46 @@ $ sudo apt-get install libsnap7-1 libsnap7-dev
 $ pip install python-snap7==1.3
 ```
 
-If the Attack script connects to the RTU, you will see the following log from the victim machine:
+When the script successfully connects to the RTU, the victim machine logs will display the following:
 
 ![](img/s_18.png)
 
-
+` Figure-18 : FDI attack script execition log, version v_0.1.4 (2025)`
 
 ##### Attack Step 4: Verify the Impact of the FDI Attack
 
-When the FDI attack happening, from the blue team, then can observe below effects.
+The blue team can observe the following effects during and after the attack:
 
-**Monitor HMI for Alerts:**
-
-After the attack script has been running, check if the HMI displays a red alert, indicating that it has detected abnormal voltage values:
+- **Monitor HMI for Alerts** : After the attack script has been running, the power grid SCADA-HMI displays red alerts indicating abnormal voltage values:
 
 ![](img/s_19.png)
 
-**Observe Circuit Protection Mechanism Activation:**
+` Figure-19 : Alert detection diplay on SCADA-HMI, version v_0.1.4 (2025)`
 
-When the circuit protection mechanism activates, check the logs from the HMI UI Log text field about the action :
+- **Observe Circuit Protection Mechanism Activation** :  After continuous detect the  abnormal voltage values 3 times, the circuit protection mechanism triggers, cutting off power. The HMI logs the protective action in its UI log:
 
 ![](img/s_20.png)
 
-**Inspect the Power Grid Physical Simulator:**
+` Figure-20 : Circuit Protection Mechanism Activation Log display, version v_0.1.4 (2025)`
 
-Switch to the Power Grid physical simulator (`10.107.[ team_nr ].09.7`). Verify that the circuit breaker `Railway-SW` has been turned off and the current has dropped to `0.0 A`:
+**Inspect the Power Grid Physical Simulator** : The circuit breaker for the railway system (`Railway-SW`) switches off, and the current drops to `0.0 A` as shown below 
 
 ![](img/s_21.png)
 
-**Check Railway System Simulator for Power Failure:**
+` Figure-21 : Power cut off on Power Grid Physical World simulator, version v_0.1.4 (2025)`
 
-Lastly, observe the Railway system physical simulator. You should see that the railway system has experienced a power failure, as shown below:
+**Check Railway System Simulator for Power Failure**  : The railway system physical simulator shows that power has failed, completing the scenario (As shown below)
 
 ![](img/s_22.png)
 
-Then the power outage attack has happened. 
+` Figure-22 : Power outage attack happens on the Railway physical world simulator, version v_0.1.4 (2025)`
+
+At this point, the FDI attack successfully demonstrates its ability to disrupt critical infrastructure by manipulating RTU data and triggering protection mechanisms.
 
 
 
 ------
 
+### MITRE CWE Matching and ATT&CK Mapping
+
+#### MITRE CWE(Common Weakness Enumeration) Matching

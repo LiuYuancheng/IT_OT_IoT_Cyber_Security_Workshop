@@ -1,0 +1,61 @@
+{
+    "ScenarioName": "scenario.txt",
+    "ReportType": "CWE",
+    "CWE-611": {
+        "CWE_Name": "Information Exposure Through Query Strings in GET Request",
+        "vulnerability": [
+            "The attacker is able to download the FDI attack script into a victim node by exploiting the spy trojan. This indicates that the attacker is able to manipulate the GET request and potentially expose sensitive information through the query strings."
+        ]
+    },
+    "CWE-798": {
+        "CWE_Name": "Use of Hard-coded Credentials",
+        "vulnerability": [
+            "The attacker is able to infiltrate the OT production network by implanting a spy trojan via an IT-based attack, such as a phishing email targeting a maintenance engineer's laptop. This suggests that the attacker may have obtained hard-coded credentials or used default credentials to gain unauthorized access.",
+            "The HMI sends a Modbus-TCP command to the PLC to remotely control the motorized circuit closer linked to the circuit breaker. If the HMI is using hard-coded credentials or default credentials to authenticate with the PLC, it can be exploited by an attacker to gain unauthorized control over the circuit breaker."
+        ]
+    },
+    "CWE-284": {
+        "CWE_Name": "Improper Access Control",
+        "vulnerability": [
+            "The attacker is able to continuously inject a high voltage value into a specific RTU address, overriding the legitimate readings from the railway transformer's metering unit. This indicates a lack of proper access control mechanisms in place to prevent unauthorized modification of data.",
+            "The power grid physical simulator is able to send a power cut-off message to the railway system physical world simulator. If there is a lack of proper access control mechanisms in place, an attacker could potentially send unauthorized power cut-off messages, leading to disruptions in the railway system."
+        ]
+    },
+    "CWE-347": {
+        "CWE_Name": "Improper Verification of Cryptographic Signature",
+        "vulnerability": [
+            "The attacker is able to bypass verification functions and manipulate voltage or current reading values to generate exception data. This suggests that there is a lack of proper verification of cryptographic signatures to ensure the integrity and authenticity of the data."
+        ]
+    },
+    "CWE-693": {
+        "CWE_Name": "Protection Mechanism Failure",
+        "vulnerability": [
+            "The attacker is able to trigger the power grid system's protection mechanism, leading to the disconnection of the transformer's energy supply to the critical infrastructure customer. This indicates a failure in the protection mechanism to properly detect and respond to abnormal conditions."
+        ]
+    },
+    "CWE-829": {
+        "CWE_Name": "Inclusion of Functionality from Untrusted Control Sphere",
+        "vulnerability": [
+            "The attacker is able to deliver a Siemens-S7Comm FDI script to a compromised machine within the SCADA network. This suggests that the script includes functionality from an untrusted control sphere, which can lead to unauthorized access and manipulation of the SCADA system."
+        ]
+    },
+    "CWE-209": {
+        "CWE_Name": "Information Exposure Through an Error Message",
+        "vulnerability": [
+            "The HMI interprets a reading of 100kV for the railway operating voltage, which is outside the safety range of 0-72kV, as an incorrect reading or a system error. This can potentially expose sensitive information about the system's voltage levels to an attacker."
+        ]
+    },
+    "CWE-400": {
+        "CWE_Name": "Uncontrolled Resource Consumption",
+        "vulnerability": [
+            "The attacker is able to continuously inject a high voltage value into a specific RTU address, potentially leading to uncontrolled resource consumption and overload of the system."
+        ]
+    },
+    "CWE-362": {
+        "CWE_Name": "Concurrent Execution using Shared Resource with Improper Synchronization ('Race Condition')",
+        "vulnerability": [
+            "The attacker is able to continuously inject a high voltage value into a specific RTU address, potentially leading to a race condition where multiple processes or threads access and modify the same shared resource concurrently without proper synchronization. This can result in unpredictable and unintended behavior of the system."
+        ]
+    },
+    "Time": "2025_01_11_16_13_51"
+}
