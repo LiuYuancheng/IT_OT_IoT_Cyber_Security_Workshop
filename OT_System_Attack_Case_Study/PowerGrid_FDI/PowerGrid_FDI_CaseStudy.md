@@ -310,6 +310,106 @@ PW_PORT = 3001
 
 #### Case Study Attack Demo Steps
 
-The following steps demonstrate how to implement a False Data Injection (FDI) attack on the RTU to trigger a power outage scenario.
+The following steps demonstrate how the red team attacker implement a False Data Injection (FDI) attack on the RTU to trigger a power outage scenario.
 
-Step 1: Confirm System Connectivity
+##### Attack Step 1 : Custom FDI Attack Script
+
+The attacker get the RTU ip address in the SCADA network via data leakage, he tried the false command injection attack on PLC but as the victim machine is not in the PLC allow read and write list, the false command injection attack failed. Base on the RTU ip address, he build the false data injection attack script. 
+
+The RTU use Siemens S7Comm protocol, to write the  own attack script, refer to this S7Comm client example:: https://github.com/LiuYuancheng/PLC_and_RTU_Simulator/blob/main/S7Comm_RTU_Simulator/src/snap7Comm.py
+
+The key attack loop part is shown below
+
+```python
+#-----------------------------------------------------------------------------
+# Attack loop example 
+RTU_IP= '10.107.108.4' # change this IP to the Power grid RTU02 IP address
+
+client = snap7Comm.s7CommClient(RTU_IP, rtuPort=102, snapLibPath=libpath)
+connection = client.checkConn()
+if connection:
+    while True:
+        print("Attack: Start inject out of MU measurement range false voltrage value (100kV) \nto lvl0 Transformer RTU-MU reading")
+        client.setAddressVal(7, 4, 100, dataType=INT_TYPE)
+        time.sleep(0.1)
+        print("Inject finished!")
+```
+
+
+
+##### Attack Step 2 : Lateral Movement to transfer the FDI Attack Script
+
+The attack make the attack script local, now he need to transfer the attack script to the victim machine in the SCADA network by the spy trojan and C2 system. 
+
+Upload the attack script from red team local machine to the cloud C2 Hub as shown in the below image:
+
+![](img/s_14.png)
+
+Select the spy trojan to go the the trojan function control page, select function 03 `Inject file from C2-DB to victim` to download the attack script from C2 hub into the victim machine as shown below:
+
+![](img/s_15.png)
+
+Then the attack script is injected in the victim machine. 
+
+
+
+##### Attack Step 3: Execute False Data Injection Attack
+
+Based on the background information, the goal is to inject a voltage value of `100 kV` to the RTU at memory index `7`, byte `4`. Now from the C2 hub, the attack select function 01. Run commands on victim to execute the FDI attack script as shown below:
+
+![](img/s_16.png)
+
+When the script is executing, from C2, the attacker can see the task is being executed as shown below:
+
+![](img/s_17.png)
+
+**Remark**:  if the the attack node (Ubuntu system) didn't install the `python-snap7` library version 1.3 using the following commands to install the lib 1st :
+
+```
+$ sudo apt-get install software-properties-common
+$ sudo add-apt-repository ppa:gijzelaar/snap7
+$ sudo apt-get update
+$ sudo apt-get install libsnap7-1 libsnap7-dev
+$ pip install python-snap7==1.3
+```
+
+If the Attack script connects to the RTU, you will see the following log from the victim machine:
+
+![](img/s_18.png)
+
+
+
+##### Attack Step 4: Verify the Impact of the FDI Attack
+
+When the FDI attack happening, from the blue team, then can observe below effects.
+
+**Monitor HMI for Alerts:**
+
+After the attack script has been running, check if the HMI displays a red alert, indicating that it has detected abnormal voltage values:
+
+![](img/s_19.png)
+
+**Observe Circuit Protection Mechanism Activation:**
+
+When the circuit protection mechanism activates, check the logs from the HMI UI Log text field about the action :
+
+![](img/s_20.png)
+
+**Inspect the Power Grid Physical Simulator:**
+
+Switch to the Power Grid physical simulator (`10.107.[ team_nr ].09.7`). Verify that the circuit breaker `Railway-SW` has been turned off and the current has dropped to `0.0 A`:
+
+![](img/s_21.png)
+
+**Check Railway System Simulator for Power Failure:**
+
+Lastly, observe the Railway system physical simulator. You should see that the railway system has experienced a power failure, as shown below:
+
+![](img/s_22.png)
+
+Then the power outage attack has happened. 
+
+
+
+------
+
