@@ -9,8 +9,8 @@ We are excited to share that the [Power Grid Simulation System](https://www.link
 This particular attack scenario is proposed as one of the demonstration cases for the Crossed Swords 2024 Test-Run, serving as a live demonstration of how an IT intrusion can disrupt and potentially paralyze critical OT infrastructure. It highlights the devastating consequences of cyberattacks on industrial control systems and emphasizes the importance of robust cybersecurity measures for safeguarding critical infrastructure.
 
 - **Attacker Vector** :  ` Siemens-S7comm Protocol False Data` , `Command Injection` , `Powe outage attack`
-- **Matched MIRTE-CWD**:
-- **Mapped MITRE-ATT&CK-TTP**:
+- **Matched MIRTE-CWD** : `CWE-284`, `CWE-693`, `CWE-829`, `CWE-400`
+- **Mapped MITRE-ATT&CK-TTP** : `T1566.001`, `T1567`, `T1485`, `T1490`
 
 > Important : The demonstrated attack case is only used for education and training for different level of IT-OT cyber security ICS course, please don't apply it on any real world system.
 
@@ -25,6 +25,29 @@ This particular attack scenario is proposed as one of the demonstration cases fo
 
 [TOC]
 
+- [Power Grid Simulation System 02 : FDI Power Outage Attack Case Study](#power-grid-simulation-system-02---fdi-power-outage-attack-case-study)
+    + [Introduction](#introduction)
+      - [Scenario Overview Introduction](#scenario-overview-introduction)
+      - [Case Study Structure Introduction](#case-study-structure-introduction)
+    + [Background Knowledge](#background-knowledge)
+      - [Power Grid Simulation System Over View](#power-grid-simulation-system-over-view)
+      - [Land Based Railway IT-OT System Cyber Security Test Platform](#land-based-railway-it-ot-system-cyber-security-test-platform)
+      - [OT Attack Vector: FDI and FCI](#ot-attack-vector--fdi-and-fci)
+      - [Ninja_C2_Malware_Simulation_System](#ninja-c2-malware-simulation-system)
+    + [Attack Scenario Design](#attack-scenario-design)
+      - [Attack Vulnerability Background](#attack-vulnerability-background)
+      - [Attack Path Introduction](#attack-path-introduction)
+    + [OT Attack Demonstration](#ot-attack-demonstration)
+      - [Case Study System Deployment](#case-study-system-deployment)
+      - [Case Study Attack Demo Steps](#case-study-attack-demo-steps)
+        * [Attack Step 1: Develop Customized FDI Attack Script](#attack-step-1--develop-customized-fdi-attack-script)
+        * [Attack Step 2: Lateral Movement to Transfer the FDI Attack Script](#attack-step-2--lateral-movement-to-transfer-the-fdi-attack-script)
+        * [Attack Step 3: Execute False Data Injection Attack](#attack-step-3--execute-false-data-injection-attack)
+        * [Attack Step 4: Verify the Impact of the FDI Attack](#attack-step-4--verify-the-impact-of-the-fdi-attack)
+    + [MITRE CWE Matching and ATT&CK Mapping](#mitre-cwe-matching-and-att-ck-mapping)
+      - [MITRE CWE(Common Weakness Enumeration) Matching](#mitre-cwe-common-weakness-enumeration--matching)
+      - [MITRE ATT&CK (Adversarial Tactics, Techniques, and Common Knowledge) Mapping](#mitre-att-ck--adversarial-tactics--techniques--and-common-knowledge--mapping)
+
 ------
 
 ### Introduction
@@ -38,7 +61,7 @@ The attack progresses through nine key steps, as outlined in the case study over
 
 ![](img/title.png)
 
-` Figure-01: Power Outage Attack Case Study Overview Diagram, version v_0.1.4 (2025)`
+` Figure-00: Power Outage Attack Case Study Overview Diagram, version v_0.1.4 (2025)`
 
 For the case study attack demo video, please refer to this link: https://youtu.be/INDEzA4qk7I?si=eG4ahl96KFb_Hv6u. 
 
@@ -62,7 +85,7 @@ In this case study, we will follow below flow diagram to draft the article. Begi
 
 ![](img/s_03.png)
 
-` Figure-02: Case Study Workflow diagram, version v_0.1.4 (2025)`
+` Figure-01: Case Study Workflow diagram, version v_0.1.4 (2025)`
 
 The case study document also includes the guidance for green team engineers deploying the simulation system's modules across various virtual machines (VMs) or physical nodes.
 
@@ -82,7 +105,7 @@ The **Mini OT Power Grid Simulation System** is a digital equivalent platform de
 
 ![](img/s_04.png)
 
-` Figure-03:Power Grid Simulation System structure diagram, version v_0.1.4 (2025)`
+` Figure-02:Power Grid Simulation System structure diagram, version v_0.1.4 (2025)`
 
 To check the detail please refer to this document link : https://www.linkedin.com/pulse/power-grid-ot-simulation-system-yuancheng-liu-dpplc/?trackingId=hN%2Ftqii0T5yoT12GO8pJZg%3D%3D
 
@@ -355,7 +378,7 @@ At this stage, the attack script resides on the victim machine, ready for execut
 
 
 
-##### **Attack Step 3: Execute False Data Injection Attack**
+##### Attack Step 3: Execute False Data Injection Attack
 
 The attacker executes the FDI attack script remotely via the C2 hub. The goal is to inject a `100 kV` voltage value into the RTU at memory index `7`, byte `4`.  The Step-by-Step process is shown below :
 
@@ -385,7 +408,7 @@ When the script successfully connects to the RTU, the victim machine logs will d
 
 ![](img/s_18.png)
 
-` Figure-18 : FDI attack script execition log, version v_0.1.4 (2025)`
+` Figure-18 : FDI attack script execution log, version v_0.1.4 (2025)`
 
 ##### Attack Step 4: Verify the Impact of the FDI Attack
 
@@ -395,7 +418,7 @@ The blue team can observe the following effects during and after the attack:
 
 ![](img/s_19.png)
 
-` Figure-19 : Alert detection diplay on SCADA-HMI, version v_0.1.4 (2025)`
+` Figure-19 : Alert detection display on SCADA-HMI, version v_0.1.4 (2025)`
 
 - **Observe Circuit Protection Mechanism Activation** :  After continuous detect the  abnormal voltage values 3 times, the circuit protection mechanism triggers, cutting off power. The HMI logs the protective action in its UI log:
 
@@ -403,7 +426,7 @@ The blue team can observe the following effects during and after the attack:
 
 ` Figure-20 : Circuit Protection Mechanism Activation Log display, version v_0.1.4 (2025)`
 
-**Inspect the Power Grid Physical Simulator** : The circuit breaker for the railway system (`Railway-SW`) switches off, and the current drops to `0.0 A` as shown below 
+- **Inspect the Power Grid Physical Simulator** : The circuit breaker for the railway system (`Railway-SW`) switches off, and the current drops to `0.0 A` as shown below 
 
 ![](img/s_21.png)
 
@@ -423,4 +446,50 @@ At this point, the FDI attack successfully demonstrates its ability to disrupt c
 
 ### MITRE CWE Matching and ATT&CK Mapping
 
+In this section, we will map the system vulnerabilities to the MITRE CWE framework, and align the attack path with the MITRE ATT&CK framework for those looking to integrate this case study into their cybersecurity training programs.
+
+
+
 #### MITRE CWE(Common Weakness Enumeration) Matching
+
+**CWE-284** : Improper Access Control 
+
+- **Matched vulnerability** : The attacker is able to continuously inject a high voltage value into a specific RTU address, overriding the legitimate readings from the railway transformer's metering unit. This indicates a lack of proper access control mechanisms in place to prevent unauthorized modification of data
+
+**CWE-693** : Protection Mechanism Failure
+
+- **Matched vulnerability** : The attacker is able to trigger the power grid system's protection mechanism, leading to the disconnection of the transformer's energy supply to the critical infrastructure customer. This indicates a failure in the protection mechanism to properly detect and respond to abnormal conditions
+
+**CWE-829** : Inclusion of Functionality from Untrusted Control Sphere
+
+- **Matched vulnerability** : The attacker is able to deliver a Siemens-S7Comm FDI script to a compromised machine within the SCADA network. This suggests that the script includes functionality from an untrusted control sphere, which can lead to unauthorized access and manipulation of the SCADA system. 
+
+**CWE-400** : Uncontrolled Resource Consumption
+
+- **Matched vulnerability** : The attacker is able to continuously inject a high voltage value into a specific RTU address, potentially leading to uncontrolled resource consumption and overload of the system.
+
+
+
+#### MITRE ATT&CK (Adversarial Tactics, Techniques, and Common Knowledge) Mapping
+
+**T1566.001** : Spearphishing Attachment
+
+- The scenario mentions that the attacker infiltrates the OT-System SCADA supervision network by implanting a spy trojan via an IT-based attack, such as a phishing email targeting a maintenance engineer's laptop. This aligns with the Spearphishing Attachment technique, where the attacker uses a malicious attachment in a phishing email to gain initial access to the target network.
+
+**T1567** : Manipulate Control Devices 
+
+- The Manipulate Control Devices technique matches with Step-01 of the scenario description where the attacker creates an S7Comm client program to inject a high voltage value into a specific RTU address, manipulating the control device to override legitimate readings
+
+**T1485** : Physical Destruction
+
+- The Physical Destruction technique involves causing physical damage or destruction to a system or infrastructure. In the given scenario, the attacker triggers the power grid system's protection mechanism, leading to the disconnection of the transformer's energy supply to the critical infrastructure customer. This action can be considered as physical destruction as it results in the loss of power and the emergency stop of all trains in the railway system.
+
+**T1490** : Disrupt Energy Supply 
+
+- The given technique \"Disrupt Energy Supply\" matches with Step-05 of the scenario description. In this step, the attacker uses the HMI to send a Modbus-TCP command to the PLC to remotely control the motorized circuit closer linked to the circuit breaker. This action results in the physical circuit breaker being turned off, cutting off energy transmission to the railway system interface and disrupting the energy supply.
+
+
+
+------
+
+> Last edit by LiuYuancheng(liu_yuan_cheng@hotmail.com) at 11/01/2025, if you have any problem, please send me a message.  Copyright (c) 2025 LiuYuancheng
