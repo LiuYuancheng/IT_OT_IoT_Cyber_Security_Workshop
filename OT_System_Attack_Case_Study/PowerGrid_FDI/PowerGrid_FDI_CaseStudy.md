@@ -59,7 +59,7 @@ This case study demonstrates the execution of a **Siemens-S7Comm False Data Inje
 
 The attack progresses through nine key steps, as outlined in the case study overview diagram below:
 
-![](img/title.png)
+![](img/Title.png)
 
 ` Figure-00: Power Outage Attack Case Study Overview Diagram, version v_0.1.4 (2025)`
 
@@ -320,7 +320,7 @@ PW_PORT = 3001
 
 ![](img/s_12.png)
 
-` Figure-12:SCADA-RTU Emulatorconnection indicator, version v_0.1.4 (2025)`
+` Figure-12:SCADA-RTU Emulator connection indicator, version v_0.1.4 (2025)`
 
 **Deploy SCADA-HMI Program VM**
 
@@ -432,7 +432,7 @@ The blue team can observe the following effects during and after the attack:
 
 ` Figure-21 : Power cut off on Power Grid Physical World simulator, version v_0.1.4 (2025)`
 
-**Check Railway System Simulator for Power Failure**  : The railway system physical simulator shows that power has failed, completing the scenario (As shown below)
+- **Check Railway System Simulator for Power Failure**  : The railway system physical simulator shows that power has failed, completing the scenario (As shown below)
 
 ![](img/s_22.png)
 
