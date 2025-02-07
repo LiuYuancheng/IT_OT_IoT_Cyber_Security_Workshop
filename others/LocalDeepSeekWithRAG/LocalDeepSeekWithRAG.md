@@ -119,9 +119,11 @@ ollama pull nomic-embed-text
 
 ------
 
+### Install AnythingLLM and Deploy RAG
 
+Go to the anythingLLM web download page to download the installer based on your system:
 
-
+![](img/s_08.png)
 
 
 
