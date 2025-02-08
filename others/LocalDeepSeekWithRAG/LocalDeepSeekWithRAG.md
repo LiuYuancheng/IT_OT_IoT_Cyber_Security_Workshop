@@ -189,9 +189,18 @@ After finished the configuration now, we can start to load data and test. We pre
 
 ![](img/s_14.png)
 
-The power grid simulation system introduction document and the user manual. 
+The power grid simulation system introduction document and the user manual:
+
+- PowerGrid_introduction.pdf : A introduction document about the Power_Grid_OT_Simulation_System Mini OT-Energy-System Cyber Security Digital Twin includes the overview, system structure,  subsystem design. 
+- PowerGrid_UsageManual.pdf : A software usage manual about the Power_Grid_OT_Simulation_System includes the system configuration, setup and usage.
 
 The Cluster user action emulation (CUE) system introduction document and library API document. 
+
+
+
+
+
+
 
 **4.1 Load the power grid data** 
 
@@ -255,15 +264,20 @@ If we run the same question to the LLM with RAG,  the result is shown below,
 
 ![](img/s_22.png)
 
-As you can see the AI use the correct lib module provide in the API document and build the script
+As you can see the AI use the correct lib module provide in the API document and build the script. For the ping action code, it find the correct API function and used correctly. For the SSH action, it find the correct API but didn't init the object correctly:
 
-
-
-
+![](img/s_23.png)
 
 
 
 ------
 
+Reference: 
+
 https://www.bilibili.com/video/BV16RF5eaEML/?spm_id_from=333.788.recommend_more_video.2
 
+
+
+------
+
+>  last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 08/02/2025 if you have any problem, please send me a message. 
