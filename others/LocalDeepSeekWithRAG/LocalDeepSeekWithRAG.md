@@ -56,7 +56,7 @@ The work flow of RAS is shown below:
 ![](img/s_03.png)
 
 - In the **Normal LLM Question-Answer Flow** , when a user asks a question. Thee LLM processes the input and generates an answer **only based on its pre-trained knowledge**. There is no external data retrieval, meaning outdated or missing information cannot be corrected.
-- In the **LLM with RAG Question-Answer Flow**, when a user asks a questions. The The system first retrieves relevant information from external sources (databases, documents, APIs, or the web). The retrieved data is fed into the LLM along with the original question, then the LLM generates an answer based on both **pre-trained knowledge and retrieved data**, leading to **more accurate and up-to-date responses**.
+- In the **LLM with RAG Question-Answer Flow**, when a user asks a questions. The The system first retrieves relevant information from external sources (databases, documents, APIs, or the web). The retrieved data is fed into the LLM along with the original question, then the LLM generates an answer based on both pre-trained knowledge and retrieved data, leading to more accurate and up-to-date responses.
 
 Reference link : https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/
 
@@ -64,54 +64,64 @@ Reference link : https://blogs.nvidia.com/blog/what-is-retrieval-augmented-gener
 
 ------
 
-### Deploy DeepSeek-R1 Model on your Local machine
+### Step 1 : Deploy DeepSeek-R1 Model on Your Local Machine
 
-To setup the  DeepSeek-R1 Model on you Local, you need to install the Ollama Tool which is a lightweight, extensible framework for building and running language models on the local machine. Then download the related DeepSeek-R1 Model based on your hardware. 
+To set up the **DeepSeek-R1** model locally, you first need to install Ollama, a lightweight, extensible framework for running large language models on your machine. Then, you will download the appropriate DeepSeek-R1 model based on your hardware specifications.
 
-To download the Ollama, go to https://ollama.com/download and select the installation based on your OS: 
+**1.1 Install Ollama**
+
+Download **Ollama** from the official website: https://ollama.com/download, and select the installation package for your operating system:
 
 ![](img/s_04.png)
 
-After installed the Ollama, open a terminal to verify the installation is successful with the version check cmd:
+Once the installation is complete, verify that Ollama is properly installed by running the following command in a terminal:
 
 ```
 ollama --version
 ```
 
-If the version number shows, which means the ollama is ready for use:
+If the version number shows, which means the Ollama is ready for use:
 
 ![](img/s_041.png)
 
-Now you can start the ollama service with cmd:
+Next, start the Ollama service by running:
 
 ```
 ollama serve
 ```
 
-Then in the Models search and find the deepseek model, there are different size models' ranging from compact 1.5 billion-parameter versions to the massive 671 billion-parameter model. Depending on the size of the model you intend to deploy and the hardware (especial GPU memory) you have, you can choose the one suitable for you.  We have list down the minimum requirements for hardware deploying different models below, you can also deploy a bigger model on low performance hardware by using the the hardware performance optimization tool such as LMStudio (https://lmstudio.ai/) , then the "thinking" time will be longer.
+**1.2 Choose the Right DeepSeek-R1 Model**
+
+DeepSeek-R1 offers models ranging from a compact 1.5 billion-parameter version to a massive 671 billion-parameter model. The model size you choose should match your GPU memory (VRAM) and system resources. In Ollama web, select models then search deepseek as shown below:
 
 ![](img/s_05.png)
 
-DeepSeek-R1Hardware requirement
+Below is a hardware requirement table to help you decide which model to deploy. If your hardware is below the recommended specs, you can still run a larger model by using hardware optimization tools like LMStudio (https://lmstudio.ai/), but this will increase processing time. DeepSeek-R1 Hardware Requirements : 
 
-| Module Name      | Model Type Level | GPU VRAM                          | CPU                                                          | RAM         | Disk   |
-| ---------------- | ---------------- | --------------------------------- | ------------------------------------------------------------ | ----------- | ------ |
-| deepseek-r1:1.5b | Accessible       | No dedicated GPU or VRAM required | CPU no older than 10 years                                   | 8 GB        | 1.1 GB |
-| deepseek-r1:7b   | Lightweight      | 8 GB of VRAM                      | Single CPU such as i5                                        | 8 GB        | 4.7 GB |
-| deepseek-r1:8b   | Lightweight      | 8 GB of VRAM                      | Single CPU such as i5, i7                                    | 8 GB        | 4.9 GB |
-| deepseek-r1:14b  | Mid-Range        | 12 - 16 GB of VRAM                | Single CPU such as i7, i9 or duel CPU such as Xeon silver 4114 x 2 | 16-32 GB    | 9.0 GB |
-| deepseek-r1:32b  | Mid-range        | At least 24 GB of VRAM            | duel CPU such as Xeon silver 4114 x 2                        | 32 - 64 GB  | 20 GB  |
-| deepseek-r1:70b  | Large-Scale      | 48 GB of VRAM                     | duel CPU such as Xeon gold 6130 x 2                          | 128-256 GB  | 43 GB  |
-| deepseek-r1:671b | Large-Scal       | 480 GB of VRAM                    | duel CPU such as Xeon gold 6142 x 2                          | 512-1024 GB | 404 GB |
+| Module Name      | Model Type Level | GPU VRAM                          | CPU                                                  | RAM         | Disk   |
+| ---------------- | ---------------- | --------------------------------- | ---------------------------------------------------- | ----------- | ------ |
+| deepseek-r1:1.5b | Accessible       | No dedicated GPU or VRAM required | CPU no older than 10 years                           | 8 GB        | 1.1 GB |
+| deepseek-r1:7b   | Lightweight      | 8 GB of VRAM                      | Single CPU such as i5                                | 8 GB        | 4.7 GB |
+| deepseek-r1:8b   | Lightweight      | 8 GB of VRAM                      | Single CPU such as i5, i7                            | 8 GB        | 4.9 GB |
+| deepseek-r1:14b  | Mid-Range        | 12 - 16 GB of VRAM                | Single CPU (i7/i9) or dual CPU (Xeon Silver 4114 x2) | 16-32 GB    | 9.0 GB |
+| deepseek-r1:32b  | Mid-range        | 24 GB of VRAM                     | Dual CPU (Xeon Silver 4114 x2)                       | 32 - 64 GB  | 20 GB  |
+| deepseek-r1:70b  | Large-Scale      | 48 GB of VRAM                     | Dual CPU (Xeon Gold 6130 x2)                         | 128-256 GB  | 43 GB  |
+| deepseek-r1:671b | Enterprise       | 480 GB of VRAM                    | Dual CPU (Xeon Gold 6142 x2)                         | 512-1024 GB | 404 GB |
 
-For 671b model: approximately 480 GB of VRAM. Multi-GPU setups are mandatory, with configurations such as:
+For 671b model,  approximately 480 GB of VRAM. Multi-GPU setups are mandatory, with configurations such as:
 
 - 20 Nvidia RTX 3090 GPUs (24 GB each)
 - 10 Nvidia RTX A6000 GPUs (48 GB each)
 
-Reference: https://www.geeky-gadgets.com/hardware-requirements-for-deepseek-r1-ai-models/, https://youtu.be/5RhPZgDoglE?si=xnHo9a9v7tvVd5sz
+Reference:
 
-For my local configuration, I use a 3060GPU(12GB), so I can try the 7b. Then I can use the deepseek-r1:7b model, we can use the `ollama pull to down load the model`  or just use the run command, if the module is not download, ollama will auto download it:
+- https://www.geeky-gadgets.com/hardware-requirements-for-deepseek-r1-ai-models/
+
+- https://youtu.be/5RhPZgDoglE?si=xnHo9a9v7tvVd5sz
+
+**1.3 Download and Run DeepSeek-R1**
+
+For my local configuration, I use a 3060GPU(12GB), so I can try the 7b. We can use the `ollama pull to down load the model`  or just use the run command, if the module is not download, Ollama will auto download it:
 
 ```
 ollama run deepseek-r1:7b
@@ -119,36 +129,61 @@ ollama run deepseek-r1:7b
 
 ![](img/s_06.png)
 
-Now the DeepSeek-R1has been setup on your local and you can ask AI questions from the terminal. 
+Now, DeepSeek-R1 is successfully deployed on your local machine, and you can start asking AI questions directly from the terminal.
 
 
 
 ------
 
-### Install nomic-embed-text 
+### Step 2 : Install nomic-embed-text
 
-To build the RAG knowledge base, we need the nomic-embed-text to convert the data (such as PDF file, text strings) to vector data. To download the nomic-embed-text ,go to  https://ollama.com/library/nomic-embed-text and download the latest version as shown below:
+To build the RAG (Retrieval-Augmented Generation) knowledge base, we need nomic-embed-text, which converts data (such as PDF files or text strings) into vector representations. These vector embeddings allow the AI model to understand semantic relationships between different pieces of text, improving search and retrieval accuracy.
+
+**2.1 Download nomic-embed-text**
+
+Visit the official page: https://ollama.com/library/nomic-embed-text and download the latest version as shown below:
 
 ![](img/s_07.png)
 
-You can also use Ollama pull command to download it:
+**2.2 Install via Ollama**
+
+You can also install nomic-embed-text directly using the Ollama pull command:
 
 ```bash
 ollama pull nomic-embed-text
 ```
 
+Once downloaded, **nomic-embed-text** is ready to be integrated into your RAG pipeline.
+
 
 
 ------
 
-### Install AnythingLLM and Deploy RAG
+### Step3 : Install AnythingLLM and Deploy RAG
 
-Go to the anythingLLM web download page to download the installer based on your system:
+Go to the anythingLLM web download page  https://anythingllm.com/desktop to download the installer based on your system:
 
 ![](img/s_08.png)
+
+Install and run the AnythingLLM, create a workshop named "DeepSeek-R1-RAG", then select the "open setting" icon of the workshop as shown below:
+
+![](img/s_10.png)
+
+Change the LLM configuration as shown below, select Ollama in the LLM Provider. Then select the deepseek-R1 in the Ollama Model, Max Tokens we set 4096 (you can set bigger if you need it to help analysis material or summerize a document), then select the save changes. 
+
+![](img/s_11.png)
+
+Then select the vector database and select the "LanceDB" which use 100% local vector DB runs on your local node as shown in below image:
+
+![](img/s_12.png)
+
+In the Embedder Tag, select the nomic-embed-text in the Ollama Embedding model then save the change : 
+
+![](img/S_13.png)
 
 
 
 ------
 
 https://www.bilibili.com/video/BV16RF5eaEML/?spm_id_from=333.788.recommend_more_video.2
+
