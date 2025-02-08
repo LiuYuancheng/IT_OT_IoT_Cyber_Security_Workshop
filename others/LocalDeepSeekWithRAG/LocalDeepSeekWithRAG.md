@@ -183,6 +183,86 @@ In the Embedder Tag, select the nomic-embed-text in the Ollama Embedding model t
 
 
 
+### Step 4 : Load data and start test 
+
+After finished the configuration now, we can start to load data and test. We prepare 4 PDF document for AI to use as knowledge base :
+
+![](img/s_14.png)
+
+The power grid simulation system introduction document and the user manual. 
+
+The Cluster user action emulation (CUE) system introduction document and library API document. 
+
+**4.1 Load the power grid data** 
+
+In the workshop, create a "Power Grid Chat Bot" Thread, then select the upload icon as shown below:
+
+![](img/s_15.png)
+
+Then upload the 2 PDF file `PowerGrid_introduction.pdf` and `PowerGrid_UsageManual.pdf`, after upload finished, select both file and press "Move to Workspace" as shown below:
+
+![](img/s_16.png)
+
+Then select the "Save and Embed" as shown below, after the progress finished the LLM with RAG is ready for use. 
+
+![](img/s_17.png)
+
+
+
+**4.1 Test the DeepSeek-R1 ChatBot with Power Grid data RAG** 
+
+Now we can try to ask DeepSeek-R1 a question related to the power grid simulation system and compare the result between with and without RAG.
+
+Question: 
+
+```
+Give a short summary about the design of PLC and Remote Control Circuit Breaker Design in Power_Grid_OT_Simulation_System project. 
+```
+
+For DeepSeek-R1 without RAG it list a very general answer as shown below and don't have relationship with the Power_Grid_OT_Simulation_System:
+
+![](img/s_18.png)
+
+If we run the same question to the LLM with RAG,  the result is shown below, the answer introduce the power grid system and cover the HMI breaker control information. 
+
+![](img/s_19.png)
+
+
+
+**4.3 Load the Cluster User Action Emulator Project data** 
+
+This time we remove the power grid doc and load the Cluster User Action Emulator Project introduction document CUE_Introduction.pdf and the python code API document Action_API_Doc.pdf as shown below:
+
+![](img/s_20.png)
+
+
+
+**4.4 Test the DeepSeek-R1 ChatBot with CUE data ** 
+
+Now we can try to ask DeepSeek-R1 a question related to create a python script with the lib in cue
+
+Question:
+
+```
+help create a python script/function uses the cluster user emulator(CUE) function API to ping an IP 192.168.10.100 and ssh login to the server with (username: admin, password: P@ssword)  to run a command "ifconfig" 
+```
+
+or DeepSeek-R1 without RAG, it doesn't understand what is CUE and use the requests lib with wrong answer:
+
+![](img/s_21.png)
+
+If we run the same question to the LLM with RAG,  the result is shown below, 
+
+![](img/s_22.png)
+
+As you can see the AI use the correct lib module provide in the API document and build the script
+
+
+
+
+
+
+
 ------
 
 https://www.bilibili.com/video/BV16RF5eaEML/?spm_id_from=333.788.recommend_more_video.2
