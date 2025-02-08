@@ -1,6 +1,6 @@
-# Deploy DeepSeek-R1 Locally and Build a Local RAG Knowledge Base
+# Deploying DeepSeek-R1 Locally with a Custom RAG Knowledge Base
 
-DeepSeek, a Chinese AI firm, is disrupting the industry with its low-cost, open source  large language models, challenging U.S. tech giants. It has shown high performance in mathematic, coding, English and Chinese Conversation. The DeepSeek-R1 model  is opensource ( MIT License ), this article will introduce how to deploy the DeepSeek-R1 on your local machine with a customized Retrieval-Augmented Generation knowledge base so the LLM can use some specific knowledge to solve problem which can art as an expert in some technical field, such as you can build your own support AI chat robot, code generation without upload your private document, information or licensed program to deep seek or add the information which is not in the deep seeks' learning data or not in public internet.
+**Project Design Purpose** : The primary goal of this article is to explore how to deploy DeepSeek-R1 an open-source large language model (LLM), and integrate it with a customized Retrieval-Augmented Generation (RAG) knowledge base on your local machine (PC/server). This setup enables the model to utilize domain-specific knowledge for expert-level responses while maintaining data privacy and customization flexibility. By doing so, users can enhance the model’s expertise in specific technical domains, enabling applications such as AI-powered support chatbots, private code generation, and industry-specific assistants. Most importantly, this setup allows users to keep proprietary data private, ensuring sensitive documents, licensed software, or non-public information remain secure while still benefiting from AI-powered insights.
 
 ```python
 # Version:     v_0.0.1
@@ -16,27 +16,49 @@ DeepSeek, a Chinese AI firm, is disrupting the industry with its low-cost, open 
 
 ### Introduction
 
-This article will use a normal laptop Window-PC with NVIDIA RTX3060(12G) to local deploy a deepseek-R1 7b LLM model with detailed document RAG data to build a customized information service chat robot or a program code builder. For the chat robot we want the AI can provide the information based on the company's product documents and for the code builder, we want the AI can give the code which based on the exist program API or import the exist function from the customized lab. 
+DeepSeek, a Chinese AI firm, is disrupting the industry with its low-cost, open source  large language models, challenging U.S. tech giants. It has shown high performance in mathematic, coding, English and Chinese Conversation. The DeepSeek-R1 model  is opensource ( MIT License ). This article explores the detailed steps to deploy the DeepSeek-R1:7B LLM model on a Windows laptop with an NVIDIA RTX 3060 (12GB GPU) to create a customized AI-powered chatbot or a program code generator using knowledge database Retrieval-Augmented Generation (RAG) and do a simple comparison between the normal LLM answer and RAG answer.
 
-To implement this project, we need 4 tools / program : 
+- For the AI customer service chatbot, we want it to provide information based on company product documentation, making it a powerful tool for internal knowledge management and customer support.
+- For the code generator, we want it to assist in software development by generating code snippets based on existing program APIs or importing functions from a customized library.
 
-- **Ollama** : a lightweight, extensible framework for building and running language models on the local machine.
-- **DeepSeek-R1** : a model trained via large-scale reinforcement learning (RL) without supervised fine-tuning (SFT) as a preliminary step, demonstrated remarkable performance on reasoning. 
-- **nomic-embed-text** : an open-source text embedding model that converts text into numerical vectors, allowing computers to understand the semantic meaning of text by comparing its representation to others.
-- **AnythingLLM** : an open-source AI chatbot that allows users to chat with documents. It's designed to help businesses and organizations make their written documents more accessible. 
+To implement this project, we will use four key tools:
 
-#### Background Knowledge of RAG
+- **Ollama** : A lightweight, extensible framework for building and running language models on the local machine. [> link](https://ollama.com/)
+- **DeepSeek-R1** : A model trained via large-scale reinforcement learning (RL) without supervised fine-tuning (SFT) as a preliminary step, demonstrated remarkable performance on reasoning. [> link](https://github.com/deepseek-ai/DeepSeek-R1/tree/main)
+- **nomic-embed-text** : An open-source text embedding model that converts text into numerical vectors, allowing computers to understand the semantic meaning of text by comparing its representation to others. [> link](https://ollama.com/library/nomic-embed-text)
+- **AnythingLLM** : An open-source AI chatbot that allows users to chat with documents. It's designed to help businesses and organizations make their written documents more accessible. [> link](https://anythingllm.com/)
 
-Retrieval-augmented generation is a technique for enhancing the accuracy and reliability of generative AI models with information from specific and relevant data sources. The work flow of RAS is shown below:
+This approach significantly improves **AI-assisted decision-making, technical support, and software development** by ensuring that responses are **grounded in reliable, domain-specific information**.
+
+
+
+------
+
+### Background Knowledge 
+
+#### DeepSeek-R1: A High-Performance Open-Source LLM
+
+DeepSeek AI is pioneering a new era of reasoning-based large language models (LLMs) with its DeepSeek-R1 series, designed to push the boundaries of mathematical, coding, and logical reasoning capabilities. Unlike traditional LLMs that rely heavily on supervised fine-tuning (SFT), DeepSeek AI adopts a reinforcement learning (RL)-first approach, enabling models to naturally develop complex reasoning behaviors.
+
+**Evolution of DeepSeek-R1 Models**
+
+- DeepSeek-R1-Zero was the first-generation model trained purely through large-scale reinforcement learning (RL), allowing it to self-verify, reflect, and generate long chain-of-thoughts (CoT) without SFT. However, it faced challenges such as language mixing, readability issues, and repetitive outputs.
+- DeepSeek-R1 improved upon this by incorporating cold-start data before RL training, resulting in a more refined and human-aligned model with performance comparable to OpenAI-o1 across various reasoning benchmarks.
+
+Reference link : https://api-docs.deepseek.com/
+
+#### Understanding Retrieval-Augmented Generation (RAG)
+
+Retrieval-augmented generation is a technique for enhancing the accuracy and reliability of generative AI models with information from specific and relevant data sources. RAG enhances generative AI models by retrieving external data before generating responses, leading to more accurate, up-to-date, and context-aware answers. 
+
+The work flow of RAS is shown below:
 
 ![](img/s_03.png)
 
 - In the **Normal LLM Question-Answer Flow** , when a user asks a question. Thee LLM processes the input and generates an answer **only based on its pre-trained knowledge**. There is no external data retrieval, meaning outdated or missing information cannot be corrected.
 - In the **LLM with RAG Question-Answer Flow**, when a user asks a questions. The The system first retrieves relevant information from external sources (databases, documents, APIs, or the web). The retrieved data is fed into the LLM along with the original question, then the LLM generates an answer based on both **pre-trained knowledge and retrieved data**, leading to **more accurate and up-to-date responses**.
 
-What is RAG: https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/
-
-https://www.bilibili.com/video/BV16RF5eaEML/?spm_id_from=333.788.recommend_more_video.2
+Reference link : https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/
 
 
 
