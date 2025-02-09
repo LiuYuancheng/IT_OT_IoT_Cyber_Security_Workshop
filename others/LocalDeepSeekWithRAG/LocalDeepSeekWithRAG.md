@@ -2,6 +2,8 @@
 
 **Project Design Purpose** : The primary goal of this article is to explore how to deploy DeepSeek-R1 an open-source large language model (LLM), and integrate it with a customized Retrieval-Augmented Generation (RAG) knowledge base on your local machine (PC/server). This setup enables the model to utilize domain-specific knowledge for expert-level responses while maintaining data privacy and customization flexibility. By doing so, users can enhance the model’s expertise in specific technical domains, enabling applications such as AI-powered support chatbots, private code generation, and industry-specific assistants. Most importantly, this setup allows users to keep proprietary data private, ensuring sensitive documents, licensed software, or non-public information remain secure while still benefiting from AI-powered insights.
 
+![](img/title.png)
+
 The article covers four main section:
 
 - **Installing and running DeepSeek-R1 locally** on a Windows machine with an NVIDIA RTX 3060 GPU.
@@ -18,6 +20,18 @@ The article covers four main section:
 **Table of Contents**
 
 [TOC]
+
+- [Deploying DeepSeek-R1 Locally with a Custom RAG Knowledge Base](#deploying-deepseek-r1-locally-with-a-custom-rag-knowledge-base)
+    + [Introduction](#introduction)
+    + [Background Knowledge](#background-knowledge)
+      - [DeepSeek-R1: A High-Performance Open-Source LLM](#deepseek-r1--a-high-performance-open-source-llm)
+      - [Understanding Retrieval-Augmented Generation (RAG)](#understanding-retrieval-augmented-generation--rag-)
+    + [Step 1 : Deploy DeepSeek-R1 Model on Your Local Machine](#step-1---deploy-deepseek-r1-model-on-your-local-machine)
+    + [Step 2 : Install nomic-embed-text](#step-2---install-nomic-embed-text)
+    + [Step 3 : Install AnythingLLM and Deploy RAG](#step-3---install-anythingllm-and-deploy-rag)
+    + [Step 4 : Load RAG Data and Start Testing](#step-4---load-rag-data-and-start-testing)
+    + [Conclusion](#conclusion)
+    + [Reference](#reference)
 
 ------
 
