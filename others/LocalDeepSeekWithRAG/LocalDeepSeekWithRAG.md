@@ -2,6 +2,13 @@
 
 **Project Design Purpose** : The primary goal of this article is to explore how to deploy DeepSeek-R1 an open-source large language model (LLM), and integrate it with a customized Retrieval-Augmented Generation (RAG) knowledge base on your local machine (PC/server). This setup enables the model to utilize domain-specific knowledge for expert-level responses while maintaining data privacy and customization flexibility. By doing so, users can enhance the model’s expertise in specific technical domains, enabling applications such as AI-powered support chatbots, private code generation, and industry-specific assistants. Most importantly, this setup allows users to keep proprietary data private, ensuring sensitive documents, licensed software, or non-public information remain secure while still benefiting from AI-powered insights.
 
+The article covers four main section:
+
+- **Installing and running DeepSeek-R1 locally** on a Windows machine with an NVIDIA RTX 3060 GPU.
+- **Setting up a RAG pipeline** using nomic-embed-text for vector-based text retrieval.
+- **Deploying AnythingLLM** to integrate document-based AI responses.
+- **Testing DeepSeek-R1 with and without RAG**, demonstrating its accuracy in responding to domain-specific queries.
+
 ```python
 # Version:     v_0.0.1
 # Created:     2025/02/06
@@ -153,62 +160,86 @@ You can also install nomic-embed-text directly using the Ollama pull command:
 ollama pull nomic-embed-text
 ```
 
+![](img/s_24.png)
+
 Once downloaded, **nomic-embed-text** is ready to be integrated into your RAG pipeline.
 
 
 
 ------
 
-### Step3 : Install AnythingLLM and Deploy RAG
+### Step 3 : Install AnythingLLM and Deploy RAG
 
-Go to the anythingLLM web download page  https://anythingllm.com/desktop to download the installer based on your system:
+To set up the **RAG (Retrieval-Augmented Generation) system**, we will use **AnythingLLM**, an open-source AI chatbot that allows seamless interaction with documents.
+
+**3.1 Download and Install AnythingLLM**
+
+Visit the official **AnythingLLM** download page: https://anythingllm.com/desktop and download the appropriate installer for your operating system.
 
 ![](img/s_08.png)
 
-Install and run the AnythingLLM, create a workshop named "DeepSeek-R1-RAG", then select the "open setting" icon of the workshop as shown below:
+**3.2 Create a Workspace**
+
+After installing and running **AnythingLLM**, create a new workspace named **"DeepSeek-R1-RAG"**. Then, click on the **"Open Settings"** icon for the workspace, as shown below:
 
 ![](img/s_10.png)
 
-Change the LLM configuration as shown below, select Ollama in the LLM Provider. Then select the deepseek-R1 in the Ollama Model, Max Tokens we set 4096 (you can set bigger if you need it to help analysis material or summerize a document), then select the save changes. 
+**3.3 Configure LLM Settings**
+
+- In the **LLM Provider** section, select **Ollama**.
+- Choose **DeepSeek-R1** as the **Ollama Model**.
+- Set **Max Tokens** to **4096** (you can increase this if you need more extensive analysis or summarization).
+- Click **Save Changes** to apply the settings. 
 
 ![](img/s_11.png)
 
-Then select the vector database and select the "LanceDB" which use 100% local vector DB runs on your local node as shown in below image:
+**3.4 Configure Vector Database**
+
+- Navigate to the **Vector Database** settings.
+- Select **LanceDB**, a **fully local** vector database that ensures data privacy by keeping everything on your local machine.
 
 ![](img/s_12.png)
 
-In the Embedder Tag, select the nomic-embed-text in the Ollama Embedding model then save the change : 
+**3.5 Configure Embedding Model**
+
+- In the **Embedder Tag**, choose **nomic-embed-text** under the **Ollama Embedding Model** section.
+- Save the changes to finalize the setup.
 
 ![](img/S_13.png)
 
 
 
-### Step 4 : Load data and start test 
+------
 
-After finished the configuration now, we can start to load data and test. We prepare 4 PDF document for AI to use as knowledge base :
+### Step 4 : Load RAG Data and Start Testing
+
+Now that we have completed the setup, we can load documents into the RAG system and test the DeepSeek-R1 chatbot.
+
+**4.1 Prepare the Knowledge Base**
+
+We will use four **PDF documents** to build the AI’s knowledge base:
 
 ![](img/s_14.png)
 
-The power grid simulation system introduction document and the user manual:
+Power Grid Simulation System Documents
 
-- PowerGrid_introduction.pdf : A introduction document about the Power_Grid_OT_Simulation_System Mini OT-Energy-System Cyber Security Digital Twin includes the overview, system structure,  subsystem design. 
-- PowerGrid_UsageManual.pdf : A software usage manual about the Power_Grid_OT_Simulation_System includes the system configuration, setup and usage.
+- `PowerGrid_introduction.pdf` – Introduction to the Power_Grid_OT_Simulation_System, including system overview, structure, and subsystem design.
+- `PowerGrid_UsageManual.pdf` – A user manual covering system configuration, setup, and usage.
 
-The Cluster user action emulation (CUE) system introduction document and library API document. 
+Cluster User Action Emulation (CUE) System Documents
 
-
-
-
-
+- `CUE_Introduction.pdf` – Overview of the Cluster User Emulation (CUE) system, covering system structure, configuration, and usage.
+- `Action_API_Doc.pdf` – Python API documentation with details on available functions, parameters, and usage examples.
 
 
-**4.1 Load the power grid data** 
 
-In the workshop, create a "Power Grid Chat Bot" Thread, then select the upload icon as shown below:
+**4.2 Load Power Grid System Data**
+
+In AnythingLLM, create a "Power Grid Chat Bot" thread and click the upload icon:
 
 ![](img/s_15.png)
 
-Then upload the 2 PDF file `PowerGrid_introduction.pdf` and `PowerGrid_UsageManual.pdf`, after upload finished, select both file and press "Move to Workspace" as shown below:
+Upload the 2 PDF files `PowerGrid_introduction.pdf` and `PowerGrid_UsageManual.pdf`, then select both files and click "Move to Workspace":
 
 ![](img/s_16.png)
 
@@ -218,9 +249,9 @@ Then select the "Save and Embed" as shown below, after the progress finished the
 
 
 
-**4.1 Test the DeepSeek-R1 ChatBot with Power Grid data RAG** 
+**4.3 Test the DeepSeek-R1 ChatBot with Power Grid data RAG** 
 
-Now we can try to ask DeepSeek-R1 a question related to the power grid simulation system and compare the result between with and without RAG.
+Now we can try to ask DeepSeek-R1 a question related to the power grid simulation system and compare the result between the answer with and without RAG.
 
 Question: 
 
@@ -228,27 +259,27 @@ Question:
 Give a short summary about the design of PLC and Remote Control Circuit Breaker Design in Power_Grid_OT_Simulation_System project. 
 ```
 
-For DeepSeek-R1 without RAG it list a very general answer as shown below and don't have relationship with the Power_Grid_OT_Simulation_System:
+**DeepSeek-R1 (Without RAG) Answer** - For DeepSeek-R1 without RAG, it listed a very general answer as shown below and the response doesn't have relationship with the project Power_Grid_OT_Simulation_System :
 
 ![](img/s_18.png)
 
-If we run the same question to the LLM with RAG,  the result is shown below, the answer introduce the power grid system and cover the HMI breaker control information. 
+**DeepSeek-R1 (With RAG Enabled)** - The AI provides an accurate response based on the uploaded documents, covering HMI breaker control and system details:
 
 ![](img/s_19.png)
 
 
 
-**4.3 Load the Cluster User Action Emulator Project data** 
+**4.4 Load the Cluster User Action Emulator Project Data** 
 
-This time we remove the power grid doc and load the Cluster User Action Emulator Project introduction document CUE_Introduction.pdf and the python code API document Action_API_Doc.pdf as shown below:
+This time we remove the power grid doc and load the Cluster User Action Emulator Project introduction document `CUE_Introduction.pdf` and the python code API document `Action_API_Doc.pdf` as shown below:
 
 ![](img/s_20.png)
 
 
 
-**4.4 Test the DeepSeek-R1 ChatBot with CUE data ** 
+**4.5 Test the DeepSeek-R1 ChatBot with CUE data**  
 
-Now we can try to ask DeepSeek-R1 a question related to create a python script with the lib in cue
+Now we can try to ask DeepSeek-R1 a question related to create a python script with the lib function in cluster user action simulation system.
 
 Question:
 
@@ -256,25 +287,35 @@ Question:
 help create a python script/function uses the cluster user emulator(CUE) function API to ping an IP 192.168.10.100 and ssh login to the server with (username: admin, password: P@ssword)  to run a command "ifconfig" 
 ```
 
-or DeepSeek-R1 without RAG, it doesn't understand what is CUE and use the requests lib with wrong answer:
+DeepSeek-R1 (Without RAG) Answer - The AI does not recognize CUE and incorrectly generates a solution using the `requests` library which is incorrect as shown below:
 
 ![](img/s_21.png)
 
-If we run the same question to the LLM with RAG,  the result is shown below, 
+**DeepSeek-R1 (With RAG Enabled)** - The AI correctly utilizes the CUE API to generate the script. However, while it correctly finds the ping API function, it incorrectly initializes the SSH action:
 
 ![](img/s_22.png)
 
-As you can see the AI use the correct lib module provide in the API document and build the script. For the ping action code, it find the correct API function and used correctly. For the SSH action, it find the correct API but didn't init the object correctly:
+As we can see the DeepSeek-R1 use the correct lib module provide in the API document and build the script. For the ping action code, it find the correct API function from API_document in page2 and used correctly. For the SSH action, it find the correct API from API_document in page 4, but it didn't init the connector object correctly:
 
 ![](img/s_23.png)
+
+With RAG enabled, DeepSeek-R1 can generate responses based on domain-specific documents, making it far more accurate and useful than the standard model. However, reviewing AI-generated code is still necessary to ensure correctness.
 
 
 
 ------
 
-Reference: 
+### Conclusion
 
-https://www.bilibili.com/video/BV16RF5eaEML/?spm_id_from=333.788.recommend_more_video.2
+Deploying DeepSeek-R1 locally with a custom Retrieval-Augmented Generation (RAG) knowledge base enables AI-powered applications with enhanced domain-specific expertise while maintaining data privacy. By leveraging tools like Ollama, nomic-embed-text, and AnythingLLM, users can build intelligent chatbots, code generators, and AI-assisted decision-making systems tailored to their unique needs. The comparison between standard LLM responses and RAG-enhanced answers highlights the significant improvements in accuracy and relevance when integrating external knowledge sources. This setup not only enhances AI reliability but also ensures proprietary data remains secure, making it a powerful solution for businesses, researchers, and developers seeking localized AI-driven insights.
+
+------
+
+### Reference
+
+- https://api-docs.deepseek.com/
+- https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/
+- https://www.bilibili.com/video/BV16RF5eaEML/?spm_id_from=333.788.recommend_more_video.2
 
 
 
