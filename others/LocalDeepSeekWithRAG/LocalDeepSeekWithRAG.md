@@ -1,10 +1,10 @@
-# Deploying DeepSeek-R1 Locally with a Custom RAG Knowledge Base
+# Deploying DeepSeek-R1 Locally with a Custom RAG Knowledge Data Base
 
 **Project Design Purpose** : The primary goal of this article is to explore how to deploy DeepSeek-R1 an open-source large language model (LLM), and integrate it with a customized Retrieval-Augmented Generation (RAG) knowledge base on your local machine (PC/server). This setup enables the model to utilize domain-specific knowledge for expert-level responses while maintaining data privacy and customization flexibility. By doing so, users can enhance the model’s expertise in specific technical domains, enabling applications such as AI-powered support chatbots, private code generation, and industry-specific assistants. Most importantly, this setup allows users to keep proprietary data private, ensuring sensitive documents, licensed software, or non-public information remain secure while still benefiting from AI-powered insights.
 
 ![](img/title.png)
 
-The article covers four main section:
+The implementation in this article covers four main sections :
 
 - **Installing and running DeepSeek-R1 locally** on a Windows machine with an NVIDIA RTX 3060 GPU.
 - **Setting up a RAG pipeline** using nomic-embed-text for vector-based text retrieval.
@@ -37,10 +37,10 @@ The article covers four main section:
 
 ### Introduction
 
-DeepSeek, a Chinese AI firm, is disrupting the industry with its low-cost, open source  large language models, challenging U.S. tech giants. It has shown high performance in mathematic, coding, English and Chinese Conversation. The DeepSeek-R1 model  is opensource ( MIT License ). This article explores the detailed steps to deploy the DeepSeek-R1:7B LLM model on a Windows laptop with an NVIDIA RTX 3060 (12GB GPU) to create a customized AI-powered chatbot or a program code generator using knowledge database Retrieval-Augmented Generation (RAG) and do a simple comparison between the normal LLM answer and RAG answer.
+DeepSeek, a Chinese AI firm, is disrupting the industry with its low-cost, open source  large language models, challenging U.S. tech giants. It has shown high performance in mathematic, coding, English and Chinese Conversation. The DeepSeek-R1 model  is opensource ( MIT License ). This article will explore the detailed steps to deploy the DeepSeek-R1:7B LLM model on a Windows laptop with an NVIDIA RTX 3060 (12GB GPU) to create a customized AI-powered chatbot or a program code generator using knowledge database Retrieval-Augmented Generation (RAG) and do a simple comparison between the normal LLM answer and RAG answer.
 
-- For the AI customer service chatbot, we want it to provide information based on company product documentation, making it a powerful tool for internal knowledge management and customer support.
-- For the code generator, we want it to assist in software development by generating code snippets based on existing program APIs or importing functions from a customized library.
+- For the **AI customer service chatbot**, we want it to provide information based on company product documentation, making it a powerful tool for internal knowledge management and customer support.
+- For the **AI program code generator**,, we want it to assist in software development by generating code snippets based on existing program APIs or importing functions from a customized library.
 
 To implement this project, we will use four key tools:
 
@@ -174,7 +174,7 @@ You can also install nomic-embed-text directly using the Ollama pull command:
 ollama pull nomic-embed-text
 ```
 
-![](img/s_24.png)
+![](img/s_24.PNG)
 
 Once downloaded, **nomic-embed-text** is ready to be integrated into your RAG pipeline.
 
@@ -298,10 +298,10 @@ Now we can try to ask DeepSeek-R1 a question related to create a python script w
 Question:
 
 ```
-help create a python script/function uses the cluster user emulator(CUE) function API to ping an IP 192.168.10.100 and ssh login to the server with (username: admin, password: P@ssword)  to run a command "ifconfig" 
+Help create a python script/function uses the cluster user emulator(CUE) function API to ping an IP 192.168.10.100 and ssh login to the server with (username: admin, password: P@ssword)  to run a command "ifconfig" 
 ```
 
-DeepSeek-R1 (Without RAG) Answer - The AI does not recognize CUE and incorrectly generates a solution using the `requests` library which is incorrect as shown below:
+**DeepSeek-R1 (Without RAG) Answer** - The AI does not recognize CUE and incorrectly generates a solution using the `requests` library which is incorrect as shown below:
 
 ![](img/s_21.png)
 
