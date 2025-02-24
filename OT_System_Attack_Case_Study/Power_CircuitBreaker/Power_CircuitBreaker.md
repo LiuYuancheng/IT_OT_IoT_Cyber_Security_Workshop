@@ -6,7 +6,7 @@
 
 ` Figure-00: Project Overview Diagram, version v0.0.2 (2024)`
 
-**Project Design Purpose**: The objective of this project is to demonstrate how to utilize Programmable Logic Controllers (PLC) to remotely monitor and control circuit breakers within a power (grid/supply) system. Using a Schneider Electric circuit breaker, sensor, closer and PLC, the project will cover the physical hardware connections and provide a step-by-step guide for designing a PLC ladder diagram  to sense and control the breaker states. Additionally, the project will explain how to detect power system anomalies (such as power trips), based on the states of PLC contacts and coils from the power system control SCADA HMI. Finally, a digital power grid digital equivalent  simulation will be used to model and simulate the entire control sequence for the people who don't have the hardware.
+**Project Design Purpose**: The objective of this project is to demonstrate how to utilize Programmable Logic Controllers (PLC) to remotely monitor and control circuit breakers within a power (grid/supply) system. Using a Schneider Electric circuit breaker, sensor, closer and PLC, the project will cover the physical hardware connections and provide a step-by-step guide for designing a PLC ladder diagram  to sense and control the breaker states. Additionally, the project will explain how to detect power system anomalies (such as power trips), based on the states of PLC contacts and coils from the power system control SCADA HMI. Finally, a digital power grid digital equivalent simulation will be used to model and simulate the entire control sequence for the people who don't have the hardware.
 
 ```python
 # Version:     v0.0.2
