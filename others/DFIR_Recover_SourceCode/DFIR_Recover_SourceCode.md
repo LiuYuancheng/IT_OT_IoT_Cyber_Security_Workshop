@@ -203,7 +203,7 @@ uncompyle6 backdoorTrojan.pyc >> sourcode.txt
 ```
 Then we can get the decompiled source code of the backdoor trojan as shown below:
 
-
+The decompile host python version must be same as the compile host other wase the PYZ-00.pyz_extracted will be empty.
 
 
 
