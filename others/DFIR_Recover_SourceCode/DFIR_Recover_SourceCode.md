@@ -6,7 +6,7 @@ This article will introduce the detailed steps about how to parse a complied win
 2. Configure the windows for memory dump collection. 
 3. Collect the memory dump file. 
 4. Parse the memory dump to get the executed malware data. 
-5. Decompile the malware data back to sour
+5. Decompile the malware data back to source code 
 
 
 
@@ -166,5 +166,53 @@ Step 1 :  Install the volatility3in host machine with pip
 ```
 pip install volatility3
 ```
+Step 2: Use volatility3 to find the target program's process ID Af
+After we install the volatility3, we can use the vol command, use the command 
+```
+vol -f test.dmp windows.pslist
+```
+to get the target malware program's windows process ID:
+as we renamed the backdoor trojan to testInstaller(as shown in the below image), we can find that process tree, there are 2 process ID 3968 and 8276. As the process 8276's parend process ID (PPID) is 3968 so the init process is 3968. 
 
-Then 
+Step 3: pase the malware data from the dump file. 
+Now we have confirm the process we need to focus on, we need to extract the data from the memory dump file
+```
+vol -f test.dmp -o output  windows.dumpfiles --pid 3968
+```
+Then we save the data to output folder as show below;
+
+The file file.0xd084eb19a620.0xd084eb13d150.DataSectionObject.testInstaller.exe.dat is the data what we need.
+
+------
+
+### Decompile the malware data back to source code 
+**Host machine** : Ubuntu
+
+**Tool** : 
+pyinstxtractor, [https://github.com/volatilityfoundation/volatility3](https://github.com/extremecoders-re/pyinstxtractor)
+uncompyle6 https://pypi.org/project/uncompyle6/
+
+Download the pyinstxtractor from github and copy the file.0xd084eb19a620.0xd084eb13d150.DataSectionObject.testInstaller.exe.dat with the same folder of the pyinstxtractor.py then run cmd:
+```
+python3 pyinstxtractor.py file.0xd084eb19a620.0xd084eb13d150.DataSectionObject.testInstaller.exe.dat 
+```
+we will get the pyc program 
+Decompile the PYC program with uncompyle6 with command 
+```
+uncompyle6 backdoorTrojan.pyc >> sourcode.txt
+```
+Then we can get the decompiled source code of the backdoor trojan as shown below:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
