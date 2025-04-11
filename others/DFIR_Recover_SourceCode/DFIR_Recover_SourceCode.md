@@ -172,16 +172,21 @@ After we install the volatility3, we can use the vol command, use the command
 vol -f test.dmp windows.pslist
 ```
 to get the target malware program's windows process ID:
-as we renamed the backdoor trojan to testInstaller(as shown in the below image), we can find that process tree, there are 2 process ID 3968 and 8276. As the process 8276's parend process ID (PPID) is 3968 so the init process is 3968. 
+
+![](img/s_09.png)
+
+As we renamed the backdoor trojan to testInstaller(as shown in the below image), we can find that process tree, there are 2 process ID 3968 and 8276. As the process 8276's parend process ID (PPID) is 3968 so the init process is 3968. 
 
 Step 3: pase the malware data from the dump file. 
 Now we have confirm the process we need to focus on, we need to extract the data from the memory dump file
 ```
 vol -f test.dmp -o output  windows.dumpfiles --pid 3968
 ```
-Then we save the data to output folder as show below;
+Then we save the data to output folder as show below:
 
-The file file.0xd084eb19a620.0xd084eb13d150.DataSectionObject.testInstaller.exe.dat is the data what we need.
+![](img/s_10.png)
+
+The file `file.0xd084eb19a620.0xd084eb13d150.DataSectionObject.testInstaller.exe.dat` is the data what we need.
 
 ------
 
@@ -192,26 +197,51 @@ The file file.0xd084eb19a620.0xd084eb13d150.DataSectionObject.testInstaller.exe.
 pyinstxtractor, [https://github.com/volatilityfoundation/volatility3](https://github.com/extremecoders-re/pyinstxtractor)
 uncompyle6 https://pypi.org/project/uncompyle6/
 
+Step 1: extract the python class file  pyc from the data file.
+
 Download the pyinstxtractor from github and copy the file.0xd084eb19a620.0xd084eb13d150.DataSectionObject.testInstaller.exe.dat with the same folder of the pyinstxtractor.py then run cmd:
+
 ```
 python3 pyinstxtractor.py file.0xd084eb19a620.0xd084eb13d150.DataSectionObject.testInstaller.exe.dat 
 ```
-we will get the pyc program 
+we will get the pyc program as shown below:
+
+![](img/s_11.png)
+
+The pyinstxtractor  show the compile python version is 3.7, so we need to create a virtual environment use 3.7 to extract the files, otherwise the `PYZ-00.pyz_extracted` will be empty. as shown below:
+
+![](img/s_12.png)
+
+
+
+Step 2 : Decompile the python class file to source code
+
+Find the main execution backdoor trojan program from the extract fodler:
+
+![](img/s_13.png)
+
+
+
 Decompile the PYC program with uncompyle6 with command 
+
 ```
 uncompyle6 backdoorTrojan.pyc >> sourcode.txt
 ```
 Then we can get the decompiled source code of the backdoor trojan as shown below:
 
-The decompile host python version must be same as the compile host other wase the PYZ-00.pyz_extracted will be empty.
+![](img/s_14.png)
+
+Now we can analyze the malware simulation program's activities. 
 
 
 
+To decompile the import lib, go to the `PYZ-00.pyz_extracted` folder, if the decompile host machine's python version is different from the compile machine, the  `PYZ-00.pyz_extracted` will be empty.
 
 
 
+------
 
-
+> last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 11/04/2025 if you have any problem, please send me a message. 
 
 
 
