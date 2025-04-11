@@ -1,83 +1,118 @@
-# Reverse Engineering to Get the Malware Source Code via Memory Dump in DFIR
+# Reverse Engineering to Get the Python Malware Source Code via DFIR Memory Dump
 
-This article will introduce the detailed steps about how to parse a complied windows malware exe file (coded by python) from the windows memory dump file then decompile the data to get the source code for a DFIR (Digital Forensics and Incident Response) cyber exercise. The article includes below 5 section.
+In the world of cybersecurity, understanding how to dissect and analyze malware is a critical skill—especially during Digital Forensics and Incident Response (DFIR) operations. One common scenario involves encountering malicious executables written in Python but compiled into Windows executable (EXE) files. 
 
-1. Create a python windows execution file. 
-2. Configure the windows for memory dump collection. 
-3. Collect the memory dump file. 
-4. Parse the memory dump to get the executed malware data. 
-5. Decompile the malware data back to source code 
+In such cases, analysts often rely on memory dumps to retrieve and reverse engineer the malware’s behavior and underlying code.This article will introduce the detailed steps about how to extract a complied windows malware exe file (coded by python) from the windows memory dump data, then decompile the data to get the Python source code. The guide is structured into five key sections:
+
+1. Creating a Python-based malware simulation Windows-OS executable program.
+2. Configuring the malware victim node system for memory dump data collection.
+3. Capturing the memory dump during malware execution.
+4. Extracting malware data/files from the memory dump.
+5. Decompiling the extracted data back into readable python source code.
 
 
+We will also introduce about the tools used by finishing each section, so if you're a DFIR practitioner or a cybersecurity enthusiast you can also used them for memory forensics and Python malware analysis.
+
+```
+# Author:      Yuancheng Liu
+# Created:     2025/04/06
+# version:     v_0.0.1
+# Copyright:   Copyright (c) 2025 LiuYuancheng
+# License:     MIT License
+```
+
+[TOC]
 
 ------
 
 ### Introduction
 
-The Digital Forensics and Incident Response is a very wide topic in cyber execise/event, this article is included in the Memory forensics topic in DFIR (as shown below). Before we start, we need to introduce some background knowledge about the DFIR and the tools we used. 
+The Digital Forensics and Incident Response (DFIR) is a cornerstone of modern cybersecurity, playing a critical role in identifying, investigating, and mitigating cyberattacks. Within DFIR, **memory forensics** has become an essential technique, allowing analysts to extract volatile evidence from system memory that might not be present on disk or network traffic. As shown in the below DFIR contents diagram. 
+
+
 
 ![](img/s_02.jpg)
 
-#### Background knowledge about the DFIR
+Before diving into the hands-on steps, we provide essential background knowledge about DFIR and introduce the tools utilized in this project.This article falls under the *Memory Forensics* domain of DFIR and focuses on a practical reverse engineering scenario commonly used in cyber exercises and training events. Specifically, we demonstrate how to extract and recover the source code of a Python-based malware sample that was compiled into a Windows executable, using only a memory dump captured during its execution. 
 
-**Digital forensics and incident response (DFIR)** is a field within cybersecurity that focuses on the identification, investigation, and remediation of cyberattacks.
+#### Background Knowledge about DFIR
 
-DFIR has two main components:
+**Digital Forensics and Incident Response (DFIR)** is a cybersecurity discipline dedicated to understanding, responding to, and recovering from security incidents. It includes two main areas:
 
-- **Digital forensics:** A subset of forensic science that examines system data, user activity, and other pieces of digital evidence to determine if an attack is in progress and who may be behind the activity.
-- **Incident response:** The overarching process that an organization will follow in order to prepare for, detect, contain, and recover from a [data breach](https://www.crowdstrike.com/en-us/cybersecurity-101/cyberattacks/data-breach/).
+- **Digital forensics:** Involves the analysis of system data, user behavior, and digital evidence to uncover how an attack happened and who may be responsible.
+- **Incident response:** Encompasses the strategies and processes organizations follow to detect, contain, and remediate threats in real time.
 
-The [Digital forensics](https://www.crowdstrike.com/en-us/cybersecurity-101/data-protection/digital-forensics/) provides the necessary information and evidence that the computer emergency response team (CERT) or computer security incident response team (CSIRT) needs to respond to a security incident. Digital forensics may include: File system forensics, Memory forensics, Network forensics and Log analysis.
+Digital forensics branches into multiple areas, including file system forensics, network forensics, log analysis, and **memory forensics**, which is the core focus of this article.
 
-> Reference Llink: https://www.crowdstrike.com/en-us/cybersecurity-101/exposure-management/digital-forensics-and-incident-response-dfir/#:~:text=Digital%20forensics%20and%20incident%20response%20(DFIR)%20is%20a%20field%20within,investigation%2C%20and%20remediation%20of%20cyberattacks.
+> Reference Link: https://www.crowdstrike.com/en-us/cybersecurity-101/exposure-management/digital-forensics-and-incident-response-dfir/#:~:text=Digital%20forensics%20and%20incident%20response%20(DFIR)%20is%20a%20field%20within,investigation%2C%20and%20remediation%20of%20cyberattacks.
 
+#### Tools Used in This Project
 
+This project utilizes multiple tools across different environments:
 
-#### Tools used in the Project
+- **PyInstaller** (Windows): Used to compile Python scripts into standalone Windows executable files.
+- **Volatility3** (Ubuntu): A powerful framework for memory forensics, used here to analyze memory dumps and extract malware-related data.
+- **uncompyle6** (Ubuntu/Windows): A decompilation tool that converts Python bytecode (.pyc files) back into readable source code.
 
-In this project, we use a Window11 machine to create the exe file, one Windows10 VM to collect the memory dump and one Ubuntu machine to decompile the to the source code. There are several tools we will be used in the project.
+We use a Windows 11 machine to generate the malware EXE, a Windows 10 virtual machine to execute and capture memory dumps, and an Ubuntu system to perform analysis and reverse engineering.
 
-**PyInstaller** : Tool to compile a python program to and Windows executable program. 
+With this foundation in place, we’ll now walk through each step of the process—from compiling the malware to recovering its source code from memory.
 
 
 
 ------
 
-### Create a python windows execution file
+### Creating a Python-based Windows Executable
 
 **Host machine** : Windows-11
 
 **Tool** : PyInstaller https://pyinstaller.org/
 
-In the DFIR memory forensics, we will need to create an executable program to simulate the malware's activities running on the data collect machine. If you use python to create the program we can use the PyInstaller to compile your python program to one file. In this step we try to create an exe file of the backdoor trojan malware simulator program: https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/backdoorTrojan
+As part of this DFIR memory forensics exercise, we need to simulate the behavior of malware running on a target victim system. To do this, we'll create a Windows executable from a Python-based malware script using **PyInstaller**, a tool that compiles Python programs into standalone executables.
 
-Step 1 :  Install the pyInstaller in host machine with pip
+In this section, we will generate an `.exe` file for a simulated backdoor trojan malware sample sourced from the following GitHub repository : https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/backdoorTrojan
+
+**Step 1: Install PyInstaller**
+
+Use `pip` to install PyInstaller on the host Windows 11 machine:
 
 ```
 pip install -U pyinstaller
 ```
 
-Step 2 :  Compile the backdoor trojan malware to one exe file with the pyinstaller "onefile" parameter
+**Step 2: Compile the Python Script into an Executable**
+
+Navigate to the directory containing `backdoorTrojan.py`, then run the following command to generate a single executable file using the `--onefile` flag :
 
 ```
 pyinstaller --onefile .\backdoorTrojan.py
 ```
 
-After the progress finished, we will get the one file executable in the `dist` folder as shown below:
+Once the process completes, the compiled executable `backdoorTrojan.exe` will be located in the `dist` folder, as shown below:
 
 ![](img/s_03.jpg)
 
-Then we rename the backdoor trojan as testInstaller.exe and copy to the target VM.
+Then we rename the output file (e.g., to `testInstaller.exe`) and copy it to the target virtual machine where the memory dump will be collected.
 
 
 
 ------
 
-### Configure the windows for memory dump collection
+### Configuring Windows for Memory Dump Collection
 
-**Host machine** : Windows-10
+**Target Machine:** Windows 10
 
-**Tool** : N.A 
+**Tool:** N/A (Built-in Windows settings and Registry Editor)
+
+
+
+
+
+
+
+
+
+
 
 A memory dump is taking all the information in your device’s working memory (RAM) and creating a copy of it in your computer's hard drive. This process happens automatically when a computer crashes and right before the power turns off. To collect the memory dump file in a windows VM, the memory file will be nearly same size of your memory, we need to make sure the VM disk has enough space (Assume your VM RAM config is 16GB, then we need to make sure there will be 16GB free space in the VM disk) . 
 
