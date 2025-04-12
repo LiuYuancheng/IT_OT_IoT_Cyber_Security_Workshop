@@ -1,19 +1,23 @@
 # Reverse Engineering to Get the Python Malware Source Code via DFIR Memory Dump
 
-In the world of cybersecurity, understanding how to dissect and analyze malware is a critical skill—especially during Digital Forensics and Incident Response (DFIR) operations. One common scenario involves encountering malicious executables written in Python but compiled into Windows executable (EXE) files. 
+In the world of cybersecurity, understanding how to dissect and analyze malware and malicious code is a critical skill—especially during Digital Forensics and Incident Response (DFIR) operations. One common scenario involves encountering malicious executables written in Python but compiled into Windows executable (EXE) files. In such cases, analysts often rely on memory dumps to retrieve and reverse engineer the malware’s behavior and underlying code. This article will introduce the detailed steps about how to extract a complied windows malware exe file (coded by python) from the windows memory dump data, then decompile the data to get the Python source code. (As shown in the below project workflow diagram)
 
-In such cases, analysts often rely on memory dumps to retrieve and reverse engineer the malware’s behavior and underlying code.This article will introduce the detailed steps about how to extract a complied windows malware exe file (coded by python) from the windows memory dump data, then decompile the data to get the Python source code. The guide is structured into five key sections:
+![](img/title.png)
 
-1. Creating a Python-based malware simulation Windows-OS executable program.
-2. Configuring the malware victim node system for memory dump data collection.
-3. Capturing the memory dump during malware execution.
-4. Extracting malware data/files from the memory dump.
-5. Decompiling the extracted data back into readable python source code.
+`Figure-00 Project workflow diagram, version v_0.0.1 (2025)`
+
+The guide is structured into five key sections:
+
+1. **Malware Creation** : Creating a Python-based malware simulation Windows-OS executable program.
+2. **Victim Configuration** : Configuring the malware victim node system for memory dump data collection.
+3. **Evidence Collection** : Capturing the memory dump during malware execution.
+4. **Data Extraction** : Extracting malware data/files from the memory dump.
+5. **Reverse Engineering** : Decompiling the extracted data back into readable python source code.
 
 
-We will also introduce about the tools used by finishing each section, so if you're a DFIR practitioner or a cybersecurity enthusiast you can also used them for memory forensics and Python malware analysis.
+We will also introduce about the related tools used by finishing each section, so if you're a DFIR blue team practitioner or a cybersecurity enthusiast you can also used them for memory forensics and Python malware analysis.
 
-```
+```python
 # Author:      Yuancheng Liu
 # Created:     2025/04/06
 # version:     v_0.0.1
@@ -33,7 +37,9 @@ The Digital Forensics and Incident Response (DFIR) is a cornerstone of modern cy
 
 ![](img/s_02.jpg)
 
-Before diving into the hands-on steps, we provide essential background knowledge about DFIR and introduce the tools utilized in this project.This article falls under the *Memory Forensics* domain of DFIR and focuses on a practical reverse engineering scenario commonly used in cyber exercises and training events. Specifically, we demonstrate how to extract and recover the source code of a Python-based malware sample that was compiled into a Windows executable, using only a memory dump captured during its execution. 
+`Figure-01 Digital Forensics and Incident Response (DFIR) domain overview diagram, version v_0.0.1 (2025)`
+
+Before diving into the hands-on steps, we provide essential background knowledge about DFIR and introduce the tools utilized in this project. This article falls under the *Memory Forensics* domain of DFIR and focuses on a practical reverse engineering scenario commonly used in cyber exercises and training events. Specifically, we demonstrate how to extract and recover the source code of a Python-based malware sample that was compiled into a Windows executable, using only a memory dump captured during its execution. 
 
 #### Background Knowledge about DFIR
 
@@ -52,9 +58,9 @@ This project utilizes multiple tools across different environments:
 
 - **PyInstaller** (Windows): Used to compile Python scripts into standalone Windows executable files.
 - **Volatility3** (Ubuntu): A powerful framework for memory forensics, used here to analyze memory dumps and extract malware-related data.
-- **uncompyle6** (Ubuntu/Windows): A decompilation tool that converts Python bytecode (.pyc files) back into readable source code.
+- **uncompyle6** (Ubuntu/Windows): A de-compilation tool that converts Python bytecode (.pyc files) back into readable source code.
 
-We use a Windows 11 machine to generate the malware EXE, a Windows 10 virtual machine to execute and capture memory dumps, and an Ubuntu system to perform analysis and reverse engineering.
+We use a Windows-11 machine to generate the malware EXE, a Windows-10 virtual machine to execute and capture memory dumps, and an Ubuntu-22.04 machine to perform analysis and reverse engineering.
 
 With this foundation in place, we’ll now walk through each step of the process—from compiling the malware to recovering its source code from memory.
 
@@ -68,7 +74,7 @@ With this foundation in place, we’ll now walk through each step of the process
 
 **Tool** : PyInstaller https://pyinstaller.org/
 
-As part of this DFIR memory forensics exercise, we need to simulate the behavior of malware running on a target victim system. To do this, we'll create a Windows executable from a Python-based malware script using **PyInstaller**, a tool that compiles Python programs into standalone executables.
+As part of this DFIR memory forensics exercise, we need to simulate the behavior of malware running on a target victim system. To do this, we'll create a Windows-OS executable from a Python-based malware script using **PyInstaller**, a tool that compiles Python programs into standalone executables.
 
 In this section, we will generate an `.exe` file for a simulated backdoor trojan malware sample sourced from the following GitHub repository : https://github.com/LiuYuancheng/Python_Malwares_Repo/tree/main/src/backdoorTrojan
 
@@ -92,7 +98,9 @@ Once the process completes, the compiled executable `backdoorTrojan.exe` will be
 
 ![](img/s_03.jpg)
 
-Then we rename the output file (e.g., to `testInstaller.exe`) and copy it to the target virtual machine where the memory dump will be collected.
+`Figure-02 Python malware code compilation, version v_0.0.1 (2025)`
+
+Then we rename the output file as a software installation program (e.g., to `testInstaller.exe`) and copy it to the target virtual machine where the memory dump will be collected.
 
 
 
@@ -121,6 +129,8 @@ To configure Windows to generate a memory dump:
 As shown below : 
 
 ![](img/s_04.png)
+
+
 
 **Step 2: Enable Memory Dump Parameters via Registry Editor**
 
