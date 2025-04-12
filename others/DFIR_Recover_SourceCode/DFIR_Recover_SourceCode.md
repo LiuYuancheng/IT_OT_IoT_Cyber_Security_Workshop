@@ -25,7 +25,20 @@ We will also introduce about the related tools used by finishing each section, s
 # License:     MIT License
 ```
 
+**Table of Contents** 
+
 [TOC]
+
+- [Reverse Engineering to Get the Python Malware Source Code via DFIR Memory Dump](#reverse-engineering-to-get-the-python-malware-source-code-via-dfir-memory-dump)
+    + [Introduction](#introduction)
+      - [Background Knowledge about DFIR](#background-knowledge-about-dfir)
+      - [Tools Used in This Project](#tools-used-in-this-project)
+    + [Creating a Python-based Windows Executable](#creating-a-python-based-windows-executable)
+    + [Configuring Windows for Memory Dump Collection](#configuring-windows-for-memory-dump-collection)
+    + [Collecting the Memory Dump File](#collecting-the-memory-dump-file)
+    + [Parsing the Memory Dump to Extract Executed Malware Data](#parsing-the-memory-dump-to-extract-executed-malware-data)
+    + [Decompile the malware data back to source code](#decompile-the-malware-data-back-to-source-code)
+    + [Conclusion](#conclusion)
 
 ------
 
@@ -112,7 +125,7 @@ Then we rename the output file as a software installation program (e.g., to `tes
 
 **Tool:** N/A (Built-in Windows settings and Registry Editor)
 
-A **memory dump** captures the contents of a system’s RAM and saves it to disk—essentially creating a snapshot of everything running in memory at a given time. While memory dumps are often generated automatically during system crashes, they can also be configured to assist in forensic analysis, such as during a DFIR (Digital Forensics and Incident Response) exercise.
+A **memory dump** captures the contents of a system’s RAM and saves it to disk—essentially creating a snapshot of everything running in memory at a given time. While memory dumps are often generated automatically during system crashes, they can also be configured to assist in forensic analysis, such as during a DFIR exercise.
 
 Before collecting a memory dump on the Windows 10 virtual machine, ensure there is enough free disk space. The size of the memory dump will roughly match the amount of RAM allocated to the VM. For example, if your VM has 16 GB of RAM, make sure at least 16 GB of free disk space is available.
 
@@ -130,13 +143,15 @@ As shown below :
 
 ![](img/s_04.png)
 
-
+`Figure-03 Enable Windows_OS System Failure Memory Dump Settings, version v_0.0.1 (2025)`
 
 **Step 2: Enable Memory Dump Parameters via Registry Editor**
 
 Press `Win + R`, type `regedit`, and press Enter to open the **Registry Editor**.
 
 ![](img/s_05.png)
+
+`Figure-04 Start the registry editor, version v_0.0.1 (2025)`
 
 To ensure that memory dumps are always preserved, modify the Windows registry as follows:
 
@@ -147,6 +162,8 @@ To ensure that memory dumps are always preserved, modify the Windows registry as
 4. Ensure the `AlwaysKeepMemoryDump` key is also set to `1`. (As shown below)
 
 ![](img/s_06.png)
+
+`Figure-05 Setup the CrashControl config in registry editor, version v_0.0.1 (2025)`
 
 These settings ensure that the memory dump file is preserved even after system restarts, making it available for later analysis with forensic tools.
 
@@ -186,9 +203,13 @@ Once triggered, the system will crash and display a blue screen (BSOD) with a pr
 
 ![](img/s_07.png)
 
+`Figure-06 System failure screen shot, version v_0.0.1 (2025)`
+
 Wait until the dump process reaches **100%** and the system automatically restarts. Do **not** interrupt the process. After rebooting, navigate to the `C:\dump` directory (based on the configuration you set in the previous section). You should now see the generated memory dump file (e.g., `test.dmp`) as shown below:
 
 ![](img/s_08.png)
+
+`Figure-07 Windows system memory dump file, version v_0.0.1 (2025)`
 
 > Reference: https://techcommunity.microsoft.com/blog/coreinfrastructureandsecurityblog/how-to-force-a-diagnostic-memory-dump-when-a-computer-hangs/257809
 
@@ -218,11 +239,13 @@ Once installed, use the `vol` command to list all running processes from the mem
 ```
 vol -f test.dmp windows.pslist
 ```
-This command outputs a list of active processes captured at the time of the dump. Look for the name of your malware executable (in this case, `testInstaller.exe`) to identify its process ID (PID) as shown below:
+This command outputs a list of active processes captured at the time of the dump. Looking for the name of your malware executable (in this case, `testInstaller.exe`) to identify its process ID (PID) as shown below:
 
 ![](img/s_09.png)
 
-In the example above process tree, as we renamed the backdoor trojan to testInstaller we can see two related processes:
+`Figure-08 use the volatility3 to get the process try from the memory dump, version v_0.0.1 (2025)`
+
+In the example above process tree, as we renamed the backdoor trojan to `testInstaller` we can see two related processes:
 
 - PID **3968**
 - PID **8276**
@@ -239,6 +262,8 @@ vol -f test.dmp -o output  windows.dumpfiles --pid 3968
 The memory regions associated with the selected process are extracted into the `output/` directory. Among the extracted files, locate the one similar to  `file.0xd084eb19a620.0xd084eb13d150.DataSectionObject.testInstaller.exe.dat`  as shown below:
 
 ![](img/s_10.png)
+
+`Figure-08 Use the volatility3 to extract program data from memory dump, version v_0.0.1 (2025)`
 
 This file contains the in-memory representation of the executable—this is the critical data we’ll use in the next step to recover the original Python source code.
 
@@ -271,11 +296,15 @@ After execution, you'll see output like this:
 
 ![](img/s_11.png)
 
+`Figure-09 Extract .pyc Files Using pyinstxtractor from memory dump, version v_0.0.1 (2025)`
+
 The extractor also identifies the Python version used to compile the executable—in this case, Python **3.7**.
 
 ⚠️ **Important:** If your current environment is not using the same Python version (3.7), the `PYZ-00.pyz_extracted/` directory will remain empty. To avoid this, create and activate a Python 3.7 virtual environment before extraction.
 
 ![](img/s_12.png)
+
+`Figure-10 Find the additional import liborary file from PYZ-00.pyz_extracted folder, version v_0.0.1 (2025)`
 
 
 
@@ -287,6 +316,8 @@ Once the extraction is successful, locate the main executable `.pyc` file from t
 
 ![](img/s_13.png)
 
+`Figure-11 Find python pyc file from the result, version v_0.0.1 (2025)`
+
 Use `uncompyle6` to decompile the `.pyc` file into readable Python source code:
 
 ```
@@ -295,6 +326,8 @@ uncompyle6 backdoorTrojan.pyc >> sourcode.txt
 The decompiled code will be saved in `sourcecode.txt` and should resemble the original backdoor trojan Python script as shown below:
 
 ![](img/s_14.png)
+
+`Figure-12 decompile the pyc file to python source code, version v_0.0.1 (2025)`
 
 Now you can now review and analyze the behavior of the malware simulator for your DFIR exercise.
 
@@ -323,7 +356,7 @@ Whether for research, training, or incident response, this process offers a prac
 
 ------
 
-> last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 11/04/2025 if you have any problem, please send me a message. 
+> last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 12/04/2025 if you have any problem, please send me a message. 
 
 
 
