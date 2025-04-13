@@ -304,7 +304,7 @@ The extractor also identifies the Python version used to compile the executableâ
 
 ![](img/s_12.png)
 
-`Figure-10 Find the additional import liborary file from PYZ-00.pyz_extracted folder, version v_0.0.1 (2025)`
+`Figure-10 Find the additional import library file from PYZ-00.pyz_extracted folder, version v_0.0.1 (2025)`
 
 
 
