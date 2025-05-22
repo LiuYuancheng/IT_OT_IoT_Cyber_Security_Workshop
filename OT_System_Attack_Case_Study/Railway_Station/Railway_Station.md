@@ -41,5 +41,31 @@ If you are interested about how virtualized OT components can be integrated into
 
 ------
 
+### Background Knowledge
+
+The Land Based Railway IT-OT System Cyber Security Test Platform is a miniature cyber range capable of simulating the land-based railway system’s IT-OT environment. It will provide a simplified and straightforward digital-twin style Operational Technology (OT) environments emulation solution for the railway track signaling systems, train ATC and ATP system and station control system. It will also provide a customizable Information Technology (IT) environment to simulate a normal company corporate network with various users. 
+
+The system will offer several different modules to simulate Level 0 (Physical Process Field I/O device) to Level 5 (Internet DMZ Zone) of an IT-OT environment. In this article will will introduce the station control sub system which highlight in the system architecture diagram as shown below:
+
+![](img/s_03.png)
+
+From the architecture view, the station control system covers 3 level of OT environment with different program implementation. 
+
+- In the Physical Process field I/O device, the physical world simulator program will use software generate the electrical signal which generate from different sensors such as the distance echo sensor to detect the trains position in the station, then simulate the control electrical signal such as the train stop/brake/start move sgianl, the platform door driving motor on/off signal. So simulate all the physcial device's input/output to the OT device. 
+- In the OT system Controller LAN level, we will use the PLC simulator I developped to pick up all the simulated electrical signal generated from the  Physical Process field I/O device level as the real world PLC do. Then in PLC I will setup different control logic to control the related station's track and platform's components to achieve the automatic control which same as the real world. 
+- In the Control Center/Room Processing Lan level, I will create the HMI (human machine interface) and control console which use the OT protocol to communicate to the PLC to implement the system real time monitoring and manually overload control. 
+
+
+
+
+
+
+
+
+
+
+
+------
+
 > last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 22/05/2025 if you have any problem, please send me a message. 
 
