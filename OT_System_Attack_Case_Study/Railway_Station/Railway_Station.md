@@ -43,19 +43,19 @@ If you are interested about how virtualized OT components can be integrated into
 
 ### Background Knowledge
 
-The Land Based Railway IT-OT System Cyber Security Test Platform is a miniature cyber range capable of simulating the land-based railway system’s IT-OT environment. It will provide a simplified and straightforward digital-twin style Operational Technology (OT) environments emulation solution for the railway track signaling systems, train ATC and ATP system and station control system. It will also provide a customizable Information Technology (IT) environment to simulate a normal company corporate network with various users. 
+The Land-Based Railway IT-OT System Cyber Security Test Platform is a compact and modular cyber range designed to emulate the complex IT and OT environments of modern railway systems. It serves as a digital-twin simulation environment that integrates both operational technologies—such as railway track signaling, train ATC/ATP systems, and station control systems—and a realistic enterprise IT network comprising standard user infrastructure like internal servers, databases, and workstations. This platform allows researchers, engineers, and cybersecurity professionals to study and test interactions across IT-OT boundaries in a controlled, scalable environment.
 
-The system will offer several different modules to simulate Level 0 (Physical Process Field I/O device) to Level 5 (Internet DMZ Zone) of an IT-OT environment. In this article will will introduce the station control sub system which highlight in the system architecture diagram as shown below:
+The system architecture spans all six levels of the Purdue Model—from Level 0 (Physical Process Field I/O) to Level 5 (Internet DMZ)—and is fully customizable to suit various training or simulation goals. In this article, we specifically focus on the **Railway Station OT Control Subsystem**, which is highlighted in the system diagram below.
 
 ![](img/s_03.png)
 
-From the architecture view, the station control system covers 3 level of OT environment with different program implementation. 
+As illustrated, the **station control system** operates across three OT environment layers:
 
-- In the Physical Process field I/O device, the physical world simulator program will use software generate the electrical signal which generate from different sensors such as the distance echo sensor to detect the trains position in the station, then simulate the control electrical signal such as the train stop/brake/start move sgianl, the platform door driving motor on/off signal. So simulate all the physcial device's input/output to the OT device. 
-- In the OT system Controller LAN level, we will use the PLC simulator I developped to pick up all the simulated electrical signal generated from the  Physical Process field I/O device level as the real world PLC do. Then in PLC I will setup different control logic to control the related station's track and platform's components to achieve the automatic control which same as the real world. 
-- In the Control Center/Room Processing Lan level, I will create the HMI (human machine interface) and control console which use the OT protocol to communicate to the PLC to implement the system real time monitoring and manually overload control. 
+- **Level 0 – Physical Process (Field I/O Devices)**: A software-based physical world simulator generates virtual sensor signals—such as echo sensors to detect train position—and actuator signals like brake commands, start/stop movement instructions, and platform safety door motor triggers. These emulate the electrical behavior of actual field devices.
+- **Level 1 – OT System Controller LAN**: The custom-developed IEC 60870-5-104 PLC simulator receives the simulated signals and processes them using control logic implemented in ladder diagrams. This level replicates how a real PLC would manage train docking, departure sequences, and platform door control based on input conditions.
+- **Level 2 – Control Center (Processing LAN)**: Here, Human-Machine Interfaces (HMIs) and control consoles interact with the virtual PLC via OT communication protocols. These interfaces enable real-time system monitoring, emergency intervention, and manual override functionalities—just like in a real-world railway control room.
 
-
+This layered design allows us to replicate realistic control workflows and fault scenarios in a safe, repeatable simulation environment—supporting both engineering education and cybersecurity defense exercises.
 
 
 
