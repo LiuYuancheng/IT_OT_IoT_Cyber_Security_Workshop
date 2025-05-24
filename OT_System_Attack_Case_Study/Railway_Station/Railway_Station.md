@@ -85,44 +85,86 @@ All these components are interfaced with the Station Control PLC, which processe
 
 ------
 
-### System Operation Design
+### System PLC Operation Design
 
-For the system design part, we will introduce the control connection the the circuit and the ladder control. The components to PLC connection link diagram is shown below: 
+In the Land-Based Railway IT-OT System Cyber Security Test Platform, the **Railway Station OT Control System** relies on programmable logic controllers (PLCs) to simulate and manage various station automation processes. For better logical separation and easier understanding, the control system is modularized into three PLC units: PLC0, PLC1, and PLC2. However, in real implementation, these logic sequences can be consolidated into one PLC using separate ladder rungs or functional blocks.
+
+The following figure illustrates the component-to-PLC connection architecture:
 
 ![](img/s_06.png)
 
-As shown in the diagram, to make it looks clearer we use 3 PLC, for detail implementation we can use one PLC with different ladder rung sequence configuration. For each control flow detail : 
+#### PLC2 – Entrance and Exit Signal Control
 
-**PLC2 control** 
+**Connected Components:**
 
-- Connected components: to the 1st train sensor, the Entrance Dock Signals and the Train Exit Departure Signal. 
-- input: 1st train motion detection sensor
-- Output: entrance Dock Signals and the Train Exit Departure Signal
-- Init state: change Dock Signals green and Departure Signal green. 
-- Workflow: When the 1st train sensor triggered, turn both  change Dock Signals and Departure Signal to red to freeze the station. 
-- Over ride control: The station HMI can force turn on/off the  Dock Signals and the Train Exit Departure Signal. 
+- Train position detection sensor (1st sensor before the platform)
+- Station Entrance Dock Signal
+- Station Exit Departure Signal
 
+**Control Logic:**
 
+- **Inputs:** Train motion detection sensor signal (train pass and moving direction)
+- **Outputs:** Entrance Dock Signal, Exit Departure Signal
+- **Initial State:** Both signals set to **green** (train allowed to enter and exit)
+- **Workflow:**
+  1. When the train triggers the first motion sensor, PLC2 sets both signals to **red** to lock down the station (prevent entrance/exit).
+  2. This state ensures that only one train occupies the station at any time.
 
-**PLC 1 control** 
+**Override Capability:**
 
-- Connected components: PCL2, 2nd train sensor, Train Exit Departure Signal, platform doors. 
-- Input :  2nd train sensor,
-- Output: PLC2, Train Exit Departure Signal, platform doors. 
-- Init state: change Dock Signals green and the platform doors close (red). 
-- Workflow: when the 2nd train sensor detect train speed 0 and at correct trigger area, open the platform door. When the internal timer count to 0 (simulate all people finish boarding), turn off the platform door, then change the Train Exit Departure Signal to green. When the 2nd train sensor detect train left, reset the PLC for the next train to dock. 
-- Over ride control: he station HMI can force turn on/off the  Departure Signal, platform doors open and close.
+- The station HMI interface can **manually override** PLC2 to control entrance and exit signals in case of supervisory intervention or failure recovery.
 
+#### PLC1 – Platform Door and Departure Flow Control
 
+**Connected Components:**
 
-**PLC 0 Control** 
+- PLC2 ( for coordination )
+- Train position detection sensor (2nd sensor at platform zone)
+- Platform Safety Doors
+- Train Exit Departure Signal
 
-- Connected components: PLC1, PLC2, Emergency button, Entrance Dock Signals and the Train Exit Departure Signal, platform doors motor and the train 3rd track power input. 
-- Input: platform Emergency buttons. 
-- Output :PLC1, PLC2,  Entrance Dock Signals and the Train Exit Departure Signal, platform doors motor and the train 3rd track power input. 
-- Init state: Entrance Dock Signals and the Train Exit Departure Signal green, platform doors motor on and the train 3rd track power on.
-- Workflow : when the button is pressed, Entrance Dock Signals and the Train Exit Departure Signal will change to red, the power to the platform doors and train will be cut off. The PLC1 and PLC2 will be turn off.  
-- Over ride control: Then emergency state can only be over ride (recover ) via reboot all the PLC(s)
+**Control Logic:**
+
+- **Inputs:** Second train sensor (checks if train is stopped in docking zone)
+- **Outputs:** Platform doors, coordination signal to PLC2, Exit Departure Signal
+- **Initial State:** Platform doors **closed**, Dock Signal **green**
+- **Workflow:**
+  1. When train is **stopped** and correctly aligned (sensor trigger + speed = 0), platform doors are **opened**.
+  2. A **countdown timer** simulates boarding time, based on the number of waiting passengers.
+  3. Once the timer reaches zero, platform doors are **closed**, and Exit Departure Signal is set to **green** to allow train departure.
+  4. When the train fully exits the platform (as detected by the second sensor), PLC1 resets for the next docking cycle.
+
+**Override Capability:**
+
+- The station HMI can **force door open/close** and **manually control** the Exit Departure Signal as needed.
+
+#### PLC0 – Emergency Safety Control System
+
+**Connected Components:**
+
+- Emergency Stop Button
+- PLC1 and PLC2 (via control signals)
+- Platform Door Motors
+- Train 3rd Track Power Supply
+- Entrance and Exit Signals
+
+**Control Logic:**
+
+- **Input:** Platform Emergency Stop Button
+- **Outputs:** Kill signals to PLC1, PLC2, Platform door motors, Train power supply, and both platform signals
+- **Initial State:** All systems **active** – entrance/exit signals green, platform doors powered, train powered
+- **Workflow:**
+  1. When the **Emergency Button is pressed**, PLC0 initiates **total shutdown**:
+     - Entrance and Exit signals turn **red**
+     - **Platform door motors and train power** are cut off
+     - Both PLC1 and PLC2 are **disabled**
+  2. This ensures all movement stops, achieving a fail-safe halt of all operations.
+
+**Override Capability:**
+
+- Emergency mode **can only be reset** by **rebooting all PLCs**, ensuring controlled and deliberate recovery from any hazardous condition.
+
+This three-tier PLC design enables simulation of realistic station automation processes, fault response, and HMI interactions. The layered logic also serves as a **testbed for cybersecurity assessment**, ensuring that each control point can be monitored, isolated, or overridden during test scenarios.
 
 
 
@@ -146,9 +188,38 @@ PLC2 Ladder Design
 | pt4      | `00 00 05`    | Measured Point   | `M_SP_NA`       | True           | Output [station dock signal]                          |
 | pt5      | `00 00 06`    | Measured Point   | `M_SP_NA`       | True           | Output [station departure signal]                     |
 
+To implement the login with the IEC104 PLC simulator
 
+```python
+def initLadderInfo(self):
+    self.stationAddr = STATION_ADDR 
+    self.srcPointAddrList = [2, 11, 12]
+    self.srcPointTypeList = [M_BOOL_TYPE, C_STEP_TYPE, C_STEP_TYPE]
+    self.destPointAddrList = [5, 6]
+    self.destPointTypeList = [M_BOOL_TYPE, PT5_ADDR]
+```
 
+**Logic Execution Code** : After finished all the point configuration, use python to implement the logic in the function `runLadderLogic()` function as shown below.
 
+```python
+def runLadderLogic(self):
+    pt1Val = self.parent.getPointVal(self.stationAddr, self.srcPointAddrList[0])
+    pt2Val = self.parent.getPointVal(self.stationAddr, self.srcPointAddrList[1])
+    pt4Val = pt1Val
+    if pt2Val == c104.Step.HIGHER:
+        pt4Val = True 
+    elif pt2Val == c104.Step.LOWER:
+        pt4Val = False 
+    self.parent.setPointVal(self.stationAddr, self.destPointAddrList[0], pt4Val)
+
+	pt3Val = self.parent.getPointVal(self.stationAddr, self.srcPointAddrList[2])
+	pt5Val = pt1Val
+	if pt3Val == c104.Step.HIGHER:
+		pt5Val = True
+	elif pt3Val == c104.Step.LOWER:
+		pt4Val = False
+	self.parent.setPointVal(self.stationAddr, self.destPointAddrList[1], pt5Val)
+```
 
 
 
