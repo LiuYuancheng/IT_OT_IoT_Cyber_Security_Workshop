@@ -170,58 +170,233 @@ This three-tier PLC design enables simulation of realistic station automation pr
 
 ------
 
-### Circuit and PLC Ladder Design 
+### PLC2 Ladder Logic Implement Overview
 
-This section will introduce the ladder logic to implement the PLC operation and how we use the IEC104 PLC simulator to implement the ladder logic.
-
-PLC2 Ladder Design 
+This section describes the ladder logic used to implement **PLC2 operations**. It also explains how the control logic is simulated using the **IEC 60870-5-104 (IEC104) PLC Simulator**. PLC2 is responsible for managing the train entrance dock signal and the exit departure signal based on the first train sensor and HMI overrides.
 
 ![](img/s_07.png)
 
+Each output is controlled by the train sensor input and an optional override from the HMI. The logic block performs a conditional check:
 
+- If HMI override is set to HIGHER, output is forced to `True`. If HMI override is set to LOWER, output is forced to `False`.
+- Otherwise, the output mirrors the train sensor state.
 
-| Point ID | Point Address | Point Type       | Point Data Type | Init Value     | Ladder Rung I/O Type                                  |
-| -------- | ------------- | ---------------- | --------------- | -------------- | ----------------------------------------------------- |
-| pt1      | `00 00 02`    | Measured Point   | `M_SP_NA`       | False          | Input [ train sensor 01]                              |
-| pt2      | `00 00 11`    | Changeable Point | `C_RC_TA`       | STEP.INVALID_0 | Input [ station HMI dock signal control switch]       |
-| pt3      | `00 00 12`    | Changeable Point | `C_RC_TA`       | STEP.INVALID_0 | Input [ station HMI departure signal control switch ] |
-| pt4      | `00 00 05`    | Measured Point   | `M_SP_NA`       | True           | Output [station dock signal]                          |
-| pt5      | `00 00 06`    | Measured Point   | `M_SP_NA`       | True           | Output [station departure signal]                     |
+PLC Point Configuration Table is shown below : 
 
-To implement the login with the IEC104 PLC simulator
+| Point ID | Point Address | Point Type       | Point Data Type | Init Value     | Ladder Rung I/O Type                                 |
+| -------- | ------------- | ---------------- | --------------- | -------------- | ---------------------------------------------------- |
+| pt1      | `00 00 02`    | Measured Point   | `M_SP_NA`       | False          | **Input** – Train Sensor 01                          |
+| pt2      | `00 00 11`    | Changeable Point | `C_RC_TA`       | STEP.INVALID_0 | **Input** – HMI Entrance Dock Signal Override switch |
+| pt3      | `00 00 12`    | Changeable Point | `C_RC_TA`       | STEP.INVALID_0 | **Input** – HMI Departure Signal Override switch     |
+| pt4      | `00 00 05`    | Measured Point   | `M_SP_NA`       | True           | **Output** – Entrance Dock Signal                    |
+| pt5      | `00 00 06`    | Measured Point   | `M_SP_NA`       | True           | **Output** – Train Exit Departure Signal             |
+
+**PLC2 Simulation Initialization Code** 
+
+Use the following Python code snippet to initialize PLC2 point addresses and types for the IEC104 PLC simulator:
 
 ```python
 def initLadderInfo(self):
     self.stationAddr = STATION_ADDR 
-    self.srcPointAddrList = [2, 11, 12]
+    self.srcPointAddrList = [2, 11, 12]  # pt1, pt2, pt3
     self.srcPointTypeList = [M_BOOL_TYPE, C_STEP_TYPE, C_STEP_TYPE]
-    self.destPointAddrList = [5, 6]
-    self.destPointTypeList = [M_BOOL_TYPE, PT5_ADDR]
+    self.destPointAddrList = [5, 6]      # pt4, pt5
+    self.destPointTypeList = [M_BOOL_TYPE, M_BOOL_TYPE] 
 ```
 
-**Logic Execution Code** : After finished all the point configuration, use python to implement the logic in the function `runLadderLogic()` function as shown below.
+**PLC2 Logic Execution Code**
+
+This function simulates the ladder logic behavior using Python:
 
 ```python
 def runLadderLogic(self):
+    # Get train sensor value
     pt1Val = self.parent.getPointVal(self.stationAddr, self.srcPointAddrList[0])
+    # Get HMI overrides
     pt2Val = self.parent.getPointVal(self.stationAddr, self.srcPointAddrList[1])
+    pt3Val = self.parent.getPointVal(self.stationAddr, self.srcPointAddrList[2])
+    # Determine entrance dock signal output
     pt4Val = pt1Val
     if pt2Val == c104.Step.HIGHER:
-        pt4Val = True 
+        pt4Val = True
     elif pt2Val == c104.Step.LOWER:
-        pt4Val = False 
+        pt4Val = False
     self.parent.setPointVal(self.stationAddr, self.destPointAddrList[0], pt4Val)
-
-	pt3Val = self.parent.getPointVal(self.stationAddr, self.srcPointAddrList[2])
-	pt5Val = pt1Val
-	if pt3Val == c104.Step.HIGHER:
-		pt5Val = True
-	elif pt3Val == c104.Step.LOWER:
-		pt4Val = False
-	self.parent.setPointVal(self.stationAddr, self.destPointAddrList[1], pt5Val)
+    # Determine train exit departure signal output
+    pt5Val = pt1Val
+    if pt3Val == c104.Step.HIGHER:
+        pt5Val = True
+    elif pt3Val == c104.Step.LOWER:
+        pt5Val = False        
+    self.parent.setPointVal(self.stationAddr, self.destPointAddrList[1], pt5Val)
 ```
 
 
+
+------
+
+### PLC1 Ladder Logic Implement Overview
+
+This section describes the logic executed by **PLC1**, which manages the **Platform Door Motor** and the **Train Exit Departure Signal**. The logic is designed to handle automated door operations and departure signaling, including manual overrides and a countdown timer to simulate dwell time at the station. The ladder is shown below:
+
+![](img/s_08.png)
+
+PLC1 controls two key output signals:
+
+- **Platform Door Motor (%M 000105)** – Controls opening/closing of the train platform doors.
+- **Train Exit Departure Signal (%M 000006)** – Signals the train that it is clear to depart.
+
+Inputs include:
+
+- **Train Sensor 2 (%M 000102)** – Detects the presence of a train.
+- **HMI Door Overload Switch (%C 000111)** – Overrides the door state manually.
+- **HMI Signal Overload Switch (%C 000112)** – Overrides the departure signal manually.
+
+Countdown Timer Logic
+
+To simulate dwell time, a countdown timer (COUNT = 10s) is used:
+
+- While the train is present, the platform door remains open.
+- After 10 seconds, the door closes automatically.
+- The NOT output of the timer becomes `True`, which triggers the departure signal to turn green.
+
+This timer-based sequence ensures a realistic platform operation: wait, close door, then depart.
+
+PLC Point Configuration Table is shown below : 
+
+| Point ID | Point Address | Point Type       | Point Data Type | Init Value       | Ladder Rung I/O Type                     |
+| -------- | ------------- | ---------------- | --------------- | ---------------- | ---------------------------------------- |
+| pt1      | `00 01 02`    | Measured Point   | `M_SP_NA`       | `False`          | **Input** – Train Sensor 2               |
+| pt2      | `00 01 11`    | Changeable Point | `C_RC_TA`       | `STEP.INVALID_0` | **Input** – HMI Door Override            |
+| pt3      | `00 01 12`    | Changeable Point | `C_RC_TA`       | `STEP.INVALID_0` | **Input** – HMI Signal Override          |
+| pt4      | `00 01 05`    | Measured Point   | `M_SP_NA`       | `True`           | **Output** – Platform Door Motor         |
+| pt5      | `00 00 06`    | Measured Point   | `M_SP_NA`       | `True`           | **Output** – Train Exit Departure Signal |
+
+**PLC2 Simulation Initialization Code** 
+
+```python
+def initLadderInfo(self):
+    self.stationAddr = STATION_ADDR 
+    self.srcPointAddrList = [102, 111, 112]  # pt1, pt2, pt3
+    self.srcPointTypeList = [M_BOOL_TYPE, C_STEP_TYPE, C_STEP_TYPE]
+    self.destPointAddrList = [105, 6]       # pt4, pt5
+    self.destPointTypeList = [M_BOOL_TYPE, M_BOOL_TYPE] 
+```
+
+**PLC2 Logic Execution Code**
+
+```python
+def runLadderLogic(self):
+    # Get sensor and HMI override values
+    train_present = self.parent.getPointVal(self.stationAddr, self.srcPointAddrList[0])  # pt1
+    door_override = self.parent.getPointVal(self.stationAddr, self.srcPointAddrList[1])  # pt2
+    signal_override = self.parent.getPointVal(self.stationAddr, self.srcPointAddrList[2])  # pt3
+    # === Phase 1: While Train is Present ===
+    # Open door
+    door_val = train_present
+    if door_override == c104.Step.HIGHER:
+        door_val = True
+    elif door_override == c104.Step.LOWER:
+        door_val = False
+    self.parent.setPointVal(self.stationAddr, self.destPointAddrList[0], door_val)  # pt4
+    # Keep signal red (False)
+    signal_val = not train_present
+    if signal_override == c104.Step.HIGHER:
+        signal_val = True
+    elif signal_override == c104.Step.LOWER:
+        signal_val = False
+    self.parent.setPointVal(self.stationAddr, self.destPointAddrList[1], signal_val)  # pt5
+    # === Countdown timer to simulate 10 seconds dwell time ===
+    time.sleep(10)  # simulate timer countdown
+    # === Phase 2: Close Door ===
+    door_val = not train_present
+    door_override = self.parent.getPointVal(self.stationAddr, self.srcPointAddrList[1])
+    if door_override == c104.Step.HIGHER:
+        door_val = True
+    elif door_override == c104.Step.LOWER:
+        door_val = False
+    self.parent.setPointVal(self.stationAddr, self.destPointAddrList[0], door_val)  # pt4
+    # === Phase 3: Allow Train to Depart (Green Signal) ===
+    signal_override = self.parent.getPointVal(self.stationAddr, self.srcPointAddrList[2])  # pt3
+    signal_val = not train_present  # departure signal turns green
+    if signal_override == c104.Step.HIGHER:
+        signal_val = True
+    elif signal_override == c104.Step.LOWER:
+        signal_val = False
+    self.parent.setPointVal(self.stationAddr, self.destPointAddrList[1], signal_val)  # pt5
+```
+
+
+
+------
+
+### PLC0 Ladder Logic Implement Overview
+
+This section describes the logic executed by **PLC0**, which manages the **platform emergency stop circuit**. The logic ensures immediate power shutdown and signal lockdown when any **Emergency Stop Button** is pressed, prioritizing passenger safety and emergency handling. The ladder is shown below:
+
+![](img/s_09.png)
+
+PLC0 controls the following output systems:
+
+- **Platform Door Motor Power (%M 000106)** – Supplies power to the door control system.
+- **Train Exit Departure Signal (%M 000006)** – Signals that allow a train to leave the platform.
+- **Train Entrance Dock Signal (%M 000005)** – Signal allows train entry into the station.
+- **Train’s Third Track Power Supply (%M 000009)** – Power supply for the trains system docking next to the platform.  
+
+Input inlcude:
+
+- **Emergency Stop Button (%M 001000)** – Triggered when someone presses the emergency stop.
+
+Emergency Stop Logic
+
+The PLC checks the **state of the emergency stop button**:
+
+- If **not pressed**, all outputs retain their current state.
+- If **pressed**, all critical systems are **immediately powered off** and **signals set to red**, halting any train movement and isolating platform systems.
+
+This logic ensures a **fail-safe mode** is activated in emergency scenarios.
+
+PLC Point Configuration Table is shown below : 
+
+| Point ID | Point Address | Point Type       | Point Data Type | Init Value     | Ladder Rung I/O Type                     |
+| -------- | ------------- | ---------------- | --------------- | -------------- | ---------------------------------------- |
+| pt1      | `00 10 00`    | Changeable Point | `C_RC_TA`       | `STEP.LOWER`   | **Input** – Emergency Button             |
+| pt2      | `00 01 06`    | Measured Point   | `M_SP_NA`       | measured value | **Input** – Platform Door Motor Power    |
+| pt3      | `00 00 09`    | Measured Point   | `M_SP_NA`       | measured value | **Input** – Train's 3rd Track Power      |
+| pt4      | `00 00 05`    | Measured Point   | `M_SP_NA`       | measured value | **Output** – Train Entrance Dock Signal  |
+| pt5      | `00 00 06`    | Measured Point   | `M_SP_NA`       | measured value | **Output** – Train Exit Departure Signal |
+
+**PLC0 Simulation Initialization Code** 
+
+```python
+def initLadderInfo(self):
+    self.stationAddr = STATION_ADDR 
+    self.srcPointAddrList = [1000, 106, 9, 5, 6]  # pt1, pt2, pt3, pt4, pt5
+    self.srcPointTypeList = [C_STEP_TYPE, M_BOOL_TYPE, M_BOOL_TYPE, M_BOOL_TYPE, M_BOOL_TYPE]
+    self.destPointAddrList = [106, 9, 5, 6]       # door power, track power, entry signal, exit signal
+    self.destPointTypeList = [M_BOOL_TYPE, M_BOOL_TYPE, M_BOOL_TYPE, M_BOOL_TYPE] 
+```
+
+**PLC0 Logic Execution Code**
+
+```python
+def runLadderLogic(self):
+    pt1Val = self.parent.getPointVal(self.stationAddr, self.srcPointAddrList[0])  # Emergency button
+
+    if pt1Val == c104.Step.HIGHER:
+        # Emergency triggered – shut everything down
+        self.parent.setPointVal(self.stationAddr, self.destPointAddrList[0], False)  # Door motor power OFF
+        self.parent.setPointVal(self.stationAddr, self.destPointAddrList[1], False)  # 3rd track power OFF
+        self.parent.setPointVal(self.stationAddr, self.destPointAddrList[2], False)  # Entry signal RED
+        self.parent.setPointVal(self.stationAddr, self.destPointAddrList[3], False)  # Exit signal RED
+    else:
+        # Emergency not triggered – maintain current state
+        pass
+```
+
+
+
+------
 
 
 
