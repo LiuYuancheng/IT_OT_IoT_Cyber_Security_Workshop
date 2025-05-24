@@ -1,23 +1,25 @@
 # OT Railway System Development [02]
 
-### Simulating Simple Railway Station Train Dock and depart Auto-Control System with IEC104 PLC Simulator
+### Simulating Simple Railway Station Train Dock and Depart Auto-Control System with IEC104 PLC Simulator
 
-**Project Design Purpose** : Building on the Virtual PLC Simulator with IEC 60870-5-104 communication (https://www.linkedin.com/pulse/python-virtual-plc-simulator-iec-60870-5-104-protocol-yuancheng-liu-bov7c) that I presented in the previous article, this project demonstrates one detailed use case about how the PLC/RTU simulator can drive a simplified railway-station automation control scenario. Our goal is to show step-by-step information about how core station hardware—train-position sensors, dock/depart signal lights, platform doors, platform emergency stops, station control room —can be modeled in software; how their interactions are orchestrated through a lean automatic-control circuit; and how the resulting logic is implemented and tested in ladder code within the IEC 104 virtual PLC. 
+**Project Design Purpose** : Building on the Virtual PLC Simulator with IEC 60870-5-104 communication (https://www.linkedin.com/pulse/python-virtual-plc-simulator-iec-60870-5-104-protocol-yuancheng-liu-bov7c) that I presented in the previous article, this project demonstrates one detailed use case about how the PLC/RTU simulator can drive a simplified railway-station automation control scenario. Our goal is to show step-by-step information about how core station hardware—train-position sensors, dock/depart signal lights, platform doors, platform emergency stops, station control room —can be modeled in software; how their interactions are orchestrated through a lean automatic-control circuit; and how the resulting logic is implemented and tested in ladder code within the IEC 104 virtual PLC. The system over view is shown below:
+
+![](img/title.png)
+
+` Figure-00: Station Control System Overview Diagram, version v_0.0.3 (2025)`
 
 While real-world rail systems involve far richer safety layers and interlocks, the streamlined approach here is intentionally trimmed for education and rapid prototyping, giving engineers and students a practical sandbox for exploring OT-grade rail automation without the overhead of a full-scale installation.
 
 ```
 # Version:     v_0.0.3
 # Created:     2025/05/18
-# Copyright:   Copyright (c) 2024 LiuYuancheng
+# Copyright:   Copyright (c) 2025 LiuYuancheng
 # License:     MIT License 
 ```
 
 **Table of Contents**
 
 [TOC]
-
-
 
 ------
 
@@ -49,6 +51,8 @@ The system architecture spans all six levels of the Purdue Model—from Level 0 
 
 ![](img/s_03.png)
 
+` Figure-01: Station Control System Architecture Diagram, version v_0.0.3 (2025)`
+
 As illustrated, the **station control system** operates across three OT environment layers:
 
 - **Level 0 – Physical Process (Field I/O Devices)**: A software-based physical world simulator generates virtual sensor signals—such as echo sensors to detect train position—and actuator signals like brake commands, start/stop movement instructions, and platform safety door motor triggers. These emulate the electrical behavior of actual field devices.
@@ -67,11 +71,15 @@ Within the Land-Based Railway IT-OT System Cyber Security Test Platform, the phy
 
 ![](img/s_04.png)
 
+` Figure-02: Station Control System Physical World Simulator View, version v_0.0.3 (2025)`
+
 **Station Simulator Operation Workflow** : Each virtual station will dynamically generates a random number of passengers labeled as “people waiting to onboard.” When a train docks at the station, the system simulates the passengers boarding process, decrementing this number until it reaches zero. This number directly influences the train’s dwell time at the platform: the more passengers, the longer the train will stop. Once all waiting passengers have boarded, the station closes the platform doors and updates the departure signal to release the train for departure.
 
 To emulate the physical station environment, five key station components are simulated in software, as shown in the following schematic:
 
 ![](img/s_05.png)
+
+` Figure-03: Station Control System Physical Components View, version v_0.0.3 (2025)`
 
 - **Train Position Sensors** : These sensors detect the train’s position as it approaches and docks at the platform. They send real-time positioning data to the control system to ensure train precise alignment—so that all train doors align exactly with the platform safety doors.
 - **Train Entrance Dock Signals** : Two sets of signals are used: one at the station perimeter max safety distance (entrance signal) and one at the platform threshold (platform dock signal). These signals manage queueing and entry permissions for trains—only allowing them to dock when conditions are safe and space is available.
@@ -92,6 +100,8 @@ In the Land-Based Railway IT-OT System Cyber Security Test Platform, the **Railw
 The following figure illustrates the component-to-PLC connection architecture:
 
 ![](img/s_06.png)
+
+` Figure-04: Station Control System PLC connection diagram, version v_0.0.3 (2025)`
 
 #### PLC2 – Entrance and Exit Signal Control
 
@@ -176,6 +186,8 @@ This section describes the ladder logic used to implement **PLC2 operations**. I
 
 ![](img/s_07.png)
 
+` Figure-05: Station Control System PLC2 ladder logic diagram, version v_0.0.3 (2025)`
+
 Each output is controlled by the train sensor input and an optional override from the HMI. The logic block performs a conditional check:
 
 - If HMI override is set to HIGHER, output is forced to `True`. If HMI override is set to LOWER, output is forced to `False`.
@@ -240,6 +252,8 @@ def runLadderLogic(self):
 This section describes the logic executed by **PLC1**, which manages the **Platform Door Motor** and the **Train Exit Departure Signal**. The logic is designed to handle automated door operations and departure signaling, including manual overrides and a countdown timer to simulate dwell time at the station. The ladder is shown below:
 
 ![](img/s_08.png)
+
+` Figure-05: Station Control System PLC1 ladder logic diagram, version v_0.0.3 (2025)`
 
 PLC1 controls two key output signals:
 
@@ -332,9 +346,18 @@ def runLadderLogic(self):
 
 ### PLC0 Ladder Logic Implement Overview
 
-This section describes the logic executed by **PLC0**, which manages the **platform emergency stop circuit**. The logic ensures immediate power shutdown and signal lockdown when any **Emergency Stop Button** is pressed, prioritizing passenger safety and emergency handling. The ladder is shown below:
+This section describes the logic executed by **PLC0**, which manages the **platform emergency stop circuit**. The logic ensures immediate power shutdown and signal lockdown when any **Emergency Stop Button** is pressed, prioritizing passenger safety and emergency handling. The **PLC0 emergency stop logic** provides critical safety functions:
+
+- Immediately powers off doors and train systems.
+- Forces all entry/exit signals to RED.
+- Prevents any train movement during emergencies.
+- Ensures all systems remain in current state unless an emergency is triggered.
+
+The ladder is shown below:
 
 ![](img/s_09.png)
+
+` Figure-05: Station Control System PLC0 ladder logic diagram, version v_0.0.3 (2025)`
 
 PLC0 controls the following output systems:
 
@@ -396,7 +419,15 @@ def runLadderLogic(self):
 
 
 
+If you are interested about the detailed implementation about Python Virtual PLC Simulator with IEC-60870-5-104 Communication Protocol, you can refer to this article: https://www.linkedin.com/pulse/python-virtual-plc-simulator-iec-60870-5-104-protocol-yuancheng-liu-bov7c
+
 ------
+
+
+
+
+
+
 
 
 
