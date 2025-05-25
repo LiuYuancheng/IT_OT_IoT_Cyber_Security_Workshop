@@ -1,16 +1,19 @@
 # OT Railway System Development [02]
 
+![](img/s_02.png)
+
 ### Simulating Simple Railway Station Train Dock and Depart Auto-Control System with IEC104 PLC Simulator
 
-**Project Design Purpose** : Building on the Virtual PLC Simulator with IEC 60870-5-104 communication (https://www.linkedin.com/pulse/python-virtual-plc-simulator-iec-60870-5-104-protocol-yuancheng-liu-bov7c) that I presented in the previous article, this project demonstrates one detailed use case about how the PLC/RTU simulator can drive a simplified railway-station automation control scenario. Our goal is to show step-by-step information about how core station hardware—train-position sensors, dock/depart signal lights, platform doors, platform emergency stops, station control room —can be modeled in software; how their interactions are orchestrated through a lean automatic-control circuit; and how the resulting logic is implemented and tested in ladder code within the IEC 104 virtual PLC. The system over view is shown below:
+**Project Design Purpose** : Building on the Virtual PLC Simulator with IEC 60870-5-104 communication (https://www.linkedin.com/pulse/python-virtual-plc-simulator-iec-60870-5-104-protocol-yuancheng-liu-bov7c) that I presented in the previous article, this project demonstrates one detailed use case about how the PLC/RTU simulator can drive a simplified railway-station automation control scenario. The goal is to show step-by-step information about how the core station hardware such as  the train-position sensors, dock/depart signal lights, platform doors, platform emergency stops, station control room can be modeled in software and how their interactions are orchestrated through different automatic-control circuits. Then I will introduce how the circuits can be implemented by ladder logic within the IEC 104 virtual PLC simulator program. The system overview diagram is shown below:
 
 ![](img/title.png)
 
 ` Figure-00: Station Control System Overview Diagram, version v_0.0.3 (2025)`
 
-While real-world rail systems involve far richer safety layers and interlocks, the streamlined approach here is intentionally trimmed for education and rapid prototyping, giving engineers and students a practical sandbox for exploring OT-grade rail automation without the overhead of a full-scale installation.
+While the real-world rail systems involve far richer safety layers and interlocks, the streamlined approach here is intentionally trimmed for education and rapid prototyping, giving engineers and students a practical sandbox for exploring OT-grade rail automation without the overhead of a full-scale installation.
 
 ```
+# Author:      Yuancheng Liu
 # Version:     v_0.0.3
 # Created:     2025/05/18
 # Copyright:   Copyright (c) 2025 LiuYuancheng
@@ -21,13 +24,27 @@ While real-world rail systems involve far richer safety layers and interlocks, t
 
 [TOC]
 
+- [OT Railway System Development [02]](#ot-railway-system-development--02-)
+    + [Simulating Simple Railway Station Train Dock and Depart Auto-Control System with IEC104 PLC Simulator](#simulating-simple-railway-station-train-dock-and-depart-auto-control-system-with-iec104-plc-simulator)
+    + [Introduction](#introduction)
+    + [Background Knowledge](#background-knowledge)
+    + [Physical World Station Simulation](#physical-world-station-simulation)
+    + [System PLC Operation Design](#system-plc-operation-design)
+      - [PLC2 – Entrance and Exit Signal Control](#plc2---entrance-and-exit-signal-control)
+      - [PLC1 – Platform Door and Departure Flow Control](#plc1---platform-door-and-departure-flow-control)
+      - [PLC0 – Emergency Safety Control System](#plc0---emergency-safety-control-system)
+    + [PLC2 Ladder Logic Implement Overview](#plc2-ladder-logic-implement-overview)
+    + [PLC1 Ladder Logic Implement Overview](#plc1-ladder-logic-implement-overview)
+    + [PLC0 Ladder Logic Implement Overview](#plc0-ladder-logic-implement-overview)
+    + [Conclusion](#conclusion)
+
 ------
 
 ### Introduction
 
-This article is part of the Land Based Railway IT-OT Cyber Range System's program design wiki,  it presents a detailed walkthrough of how the Virtual IEC 60870-5-104 PLC Simulator is applied within the OT environment of Land-Based Railway IT-OT Cyber Range System I developed, specifically for monitoring and controlling the railway stations in the system. The system operates in both automatic and manual modes, covering two key functional domains:
+This article is part of the Land Based Railway IT-OT Cyber Range System's program wiki document,  it presents a detailed walkthrough of how the Virtual IEC 60870-5-104 PLC Simulator is applied within the OT environment of Land-Based Railway IT-OT Cyber Range System I developed, specifically for monitoring and controlling the railway stations in the system. The system operates in both automatic and manual modes, covering two key functional domains:
 
-- **Station Track Control**: Utilizing position sensors and signal logic to control train braking and acceleration, this subsystem ensures accurate train docking and safe departure guiding procedures.
+- **Station Tracks Control**: Utilizing position sensors and signal logic to control train stopping and acceleration, this subsystem ensures accurate train docking and safe departure guiding procedures.
 - **Station Platform Control**: Managing the synchronized operation of train and platform doors, emergency stop functions, and manual override controls from the station control room.
 
 To provide a comprehensive understanding of this simulation, the article is structured into four main sections:
@@ -45,7 +62,7 @@ If you are interested about how virtualized OT components can be integrated into
 
 ### Background Knowledge
 
-The Land-Based Railway IT-OT System Cyber Security Test Platform is a compact and modular cyber range designed to emulate the complex IT and OT environments of modern railway systems. It serves as a digital-twin simulation environment that integrates both operational technologies—such as railway track signaling, train ATC/ATP systems, and station control systems—and a realistic enterprise IT network comprising standard user infrastructure like internal servers, databases, and workstations. This platform allows researchers, engineers, and cybersecurity professionals to study and test interactions across IT-OT boundaries in a controlled, scalable environment.
+The Land-Based Railway IT-OT System Cyber Security Test Platform is a compact and modular cyber range designed to simulate the complex IT and OT environments of modern railway systems. It serves as a digital-twin simulation environment that integrates both operational technologies—such as railway track signaling, train ATC/ATP systems, and station control systems—and a realistic enterprise IT network comprising standard user infrastructure like internal servers, databases, and workstations. This platform allows researchers, engineers, and cybersecurity professionals to study and test interactions across IT-OT boundaries in a controlled, scalable environment.
 
 The system architecture spans all six levels of the Purdue Model—from Level 0 (Physical Process Field I/O) to Level 5 (Internet DMZ)—and is fully customizable to suit various training or simulation goals. In this article, we specifically focus on the **Railway Station OT Control Subsystem**, which is highlighted in the system diagram below.
 
@@ -53,11 +70,11 @@ The system architecture spans all six levels of the Purdue Model—from Level 0 
 
 ` Figure-01: Station Control System Architecture Diagram, version v_0.0.3 (2025)`
 
-As illustrated, the **station control system** operates across three OT environment layers:
+As illustrated, the station control system operates across three OT environment layers:
 
 - **Level 0 – Physical Process (Field I/O Devices)**: A software-based physical world simulator generates virtual sensor signals—such as echo sensors to detect train position—and actuator signals like brake commands, start/stop movement instructions, and platform safety door motor triggers. These emulate the electrical behavior of actual field devices.
 - **Level 1 – OT System Controller LAN**: The custom-developed IEC 60870-5-104 PLC simulator receives the simulated signals and processes them using control logic implemented in ladder diagrams. This level replicates how a real PLC would manage train docking, departure sequences, and platform door control based on input conditions.
-- **Level 2 – Control Center (Processing LAN)**: Here, Human-Machine Interfaces (HMIs) and control consoles interact with the virtual PLC via OT communication protocols. These interfaces enable real-time system monitoring, emergency intervention, and manual override functionalities—just like in a real-world railway control room.
+- **Level 2 – Control Center (Processing LAN)**: Here, Human-Machine Interfaces (HMIs) and control consoles interact with the virtual PLC via OT communication protocols. These interfaces enable real-time system monitoring, emergency intervention, and manual override functionalities—just like in a real-world railway station control room or HQ.
 
 This layered design allows us to replicate realistic control workflows and fault scenarios in a safe, repeatable simulation environment—supporting both engineering education and cybersecurity defense exercises.
 
@@ -67,7 +84,7 @@ This layered design allows us to replicate realistic control workflows and fault
 
 ### Physical World Station Simulation
 
-Within the Land-Based Railway IT-OT System Cyber Security Test Platform, the physical world simulation program replicates the behavior of a multi-station rail network consisting of 22 virtual train stations simulator across 3 distinct tracks (Green / Pink / Orange) , as highlighted in the below diagram : 
+Within the Land-Based Railway IT-OT System Cyber Security Test Platform, the physical world simulation program replicates the behavior of a multi-station rail network consisting of 22 virtual train stations simulator across 3 distinct tracks (Green / Pink / Orange Line) , as highlighted in the below diagram : 
 
 ![](img/s_04.png)
 
@@ -87,7 +104,7 @@ To emulate the physical station environment, five key station components are sim
 - **Train Exit Departure Signal** : Positioned at the end of the platform, this signal governs when a train is permitted to leave. It turns green only if both the train and platform doors are closed, reinforcing safe departure logic.
 - **Platform Emergency Button**: This manual override mechanism immediately halts all train movement and disables the platform door motors when pressed. It also cuts power to the train and forces all signals both entrance and exit to red, placing the station in an emergency stop state.
 
-All these components are interfaced with the Station Control PLC, which processes their status and manages control logic. The implementation details of the PLC logic and automatic control circuitry will be covered in the next section of the article.
+All these components are interfaced with the Station Control PLC(s), which processes their status and manages control logic. The implementation details of the PLC logic and automatic control circuitry will be covered in the next section of the article.
 
 
 
@@ -108,8 +125,8 @@ The following figure illustrates the component-to-PLC connection architecture:
 **Connected Components:**
 
 - Train position detection sensor (1st sensor before the platform)
-- Station Entrance Dock Signal
-- Station Exit Departure Signal
+- Station Entrance Dock Signals
+- Station Exit Departure Signals
 
 **Control Logic:**
 
@@ -117,7 +134,7 @@ The following figure illustrates the component-to-PLC connection architecture:
 - **Outputs:** Entrance Dock Signal, Exit Departure Signal
 - **Initial State:** Both signals set to **green** (train allowed to enter and exit)
 - **Workflow:**
-  1. When the train triggers the first motion sensor, PLC2 sets both signals to **red** to lock down the station (prevent entrance/exit).
+  1. When the train triggers the first motion sensor, PLC2 sets both signals to **red** to lock down the station (prevent train entrance/exit).
   2. This state ensures that only one train occupies the station at any time.
 
 **Override Capability:**
@@ -139,7 +156,7 @@ The following figure illustrates the component-to-PLC connection architecture:
 - **Outputs:** Platform doors, coordination signal to PLC2, Exit Departure Signal
 - **Initial State:** Platform doors **closed**, Dock Signal **green**
 - **Workflow:**
-  1. When train is **stopped** and correctly aligned (sensor trigger + speed = 0), platform doors are **opened**.
+  1. When train is **stopped** and correctly aligned (sensor trigger + speed == 0), platform doors are **opened**.
   2. A **countdown timer** simulates boarding time, based on the number of waiting passengers.
   3. Once the timer reaches zero, platform doors are **closed**, and Exit Departure Signal is set to **green** to allow train departure.
   4. When the train fully exits the platform (as detected by the second sensor), PLC1 resets for the next docking cycle.
@@ -190,8 +207,8 @@ This section describes the ladder logic used to implement **PLC2 operations**. I
 
 Each output is controlled by the train sensor input and an optional override from the HMI. The logic block performs a conditional check:
 
-- If HMI override is set to HIGHER, output is forced to `True`. If HMI override is set to LOWER, output is forced to `False`.
-- Otherwise, the output mirrors the train sensor state.
+- If HMI override is set to step HIGHER, output is forced to `True`. If HMI override is set to step LOWER, output is forced to `False`.
+- Otherwise, the output mirrors the 1st train sensor state.
 
 PLC Point Configuration Table is shown below : 
 
@@ -366,7 +383,7 @@ PLC0 controls the following output systems:
 - **Train Entrance Dock Signal (%M 000005)** – Signal allows train entry into the station.
 - **Train’s Third Track Power Supply (%M 000009)** – Power supply for the trains system docking next to the platform.  
 
-Input inlcude:
+Input include:
 
 - **Emergency Stop Button (%M 001000)** – Triggered when someone presses the emergency stop.
 
@@ -423,17 +440,13 @@ If you are interested about the detailed implementation about Python Virtual PLC
 
 ------
 
+### Conclusion
 
+This project demonstrates the application of a virtualized IEC 60870-5-104 PLC simulator in modeling a streamlined railway station automation system, integrating critical components such as train position sensors, dock/depart signals, platform doors, and emergency controls. By modularizing control logic across three PLCs—handling entrance/exit signaling, platform operations, and emergency shutdowns—the simulation provides a practical framework for understanding OT-grade automation workflows while prioritizing safety and interoperability. 
 
-
-
-
-
-
-
-
+Though simplified for educational purposes, the system captures core principles of rail automation, including fail-safe mechanisms, manual overrides, and protocol-driven communication. The use of ladder logic and Python-based simulation highlights its versatility as a sandbox for engineers and students to explore cybersecurity, control logic design, and IT-OT integration without physical infrastructure overhead. This approach not only accelerates prototyping but also serves as a valuable resource for training, testing, and refining operational resilience in rail systems.
 
 ------
 
-> last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 22/05/2025 if you have any problem, please send me a message. 
+> last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 24/05/2025 if you have any problem, please send me a message. 
 
