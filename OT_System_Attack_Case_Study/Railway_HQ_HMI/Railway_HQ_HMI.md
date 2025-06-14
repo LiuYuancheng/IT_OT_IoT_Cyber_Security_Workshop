@@ -148,7 +148,7 @@ Designing a Human-Machine Interface (HMI) for a cyber range simulation requires 
 
 #### Summary Table: Real-World vs. Cyber Range HMI Design
 
-By recognizing and designing for these key differences, developers can create effective HMIs tailored to the needs of each environment—whether it's for day-to-day operational control or high-intensity cyber defense training. The difference comapre table is shown below:
+By recognizing and designing for these key differences, developers can create effective HMIs tailored to the needs of each environment—whether it's for day-to-day operational control or high-intensity cyber defense training. The difference compare table is shown below:
 
 | **Aspect**              | **Real-World OT Training HMI**    | **Cyber Range Simulated HMI**                |
 | ----------------------- | --------------------------------- | -------------------------------------------- |
@@ -166,9 +166,55 @@ By recognizing and designing for these key differences, developers can create ef
 
 ### Functional Architecture of Railway Cyber Range HMIs
 
-After introduced the background of HMI and the design of cyber range HMI, this section I will introduce how I design the 4 HMIs in the land based railway system. 
+After introduced the background of HMI and the design of cyber range HMI, this section I will introduce how I design the 4 HMIs in the land based railway system. In the land based railway cyber range system I designed 4 different kind of HMIs for system monitoring and control. As highlight in the below system architecture diagram:
+
+![](img/s_07.png)
+
+There will be 3 typical  Machine-Level HMIs to show the detailed system information in the level 2 Control Center Processing Lan:
+
+- **HQ Signal System Monitor HMI** : The right side top HMI in the diagram, this HMI directly connect to the junction control PLC and the Station Signal PLCs show the train detection sensor state, train control signal's state, the sensor-signal linked relationship and real time PLC register and coil state. 
+- **HQ Railway Block Monitor HMI** : The right side middle HMI in the diagram, this HMI directly connect to the track fixed block control PLCs and the station entrance block power control PLC to display the fixed block ATP system states and provide overload control for the fixed block track ATP signals. 
+- **HQ railway Train Control HMI** : The right side bottom HMI in the diagram, the HMI directly connect to the railway 3rd track(power) control PLC(s) and the on train RTUs. This HMI provide the monitor function for the trains current speed, motor voltage, current and the control for power supply from the track to the train. 
+
+ There is one Supervisory HMI to show the railway system whole state in the level 3 Operations Management Zone network. 
+
+- **HQ management HMI** : the middle top HMI in the diagram, this HMI is used to show the overview of all the junctions, forks, trains and stations state for the railway HQ operators to monitor the whole railway system. It will connect to the data base and the three level2 HMI, it also provide the overload function to control some of the PLC via IEC104 for emergency situation handling. 
+
+#### Cyber Range HMI Connection
+
+This section will introduce the connection between the HMI and the OT field device in the lev1 OT system controller lan. 
+
+**HQ Signal System Monitor HMI** 
+
+- Connection type : Direct Linkage
+- OT Protocol : `Modbus-TCP`, `IEC61850-104`
+
+ Connection Diagram: 
+
+![](img/s_09.png)
+
+The signaling HMI will connect to 6 PLC with direct linage connection. It will connect to the railway junction and fork control PLC set (PLC-00, PLC-01, PLC 02)  via Modbus TCP and the station control PLC set (PLC-03, PLC-04, PLC-05) via IEC61850-104.
+
+**HQ Railway Block Monitor HMI** 
+
+- Connection type : Direct Linkage
+- OT Protocol : `Modbus-TCP`
+
+Connection Diagram: 
+
+![](img/s_11.png)
+
+The block control HMI will connect to 2 PLC with direct linage connection. It will connect to railway fixed block auto train protection PLCs (PLC-10 and PLC-11) via Modbus-TCP to fetch the sensor and signal state. 
 
 
 
+**HQ railway Train Control HMI**
 
+- Connection type : Direct Linkage
+- OT Protocol : `Modbus-TCP`, `Siemens-S7Comm`
 
+ Connection Diagram: 
+
+![](img/s_10.png)
+
+The  Train Control HMI will connect to 2 PLC and 10 RTU with direct linage connection. It will connect to railway thrid track power control PLC via Modbus-TCP and the Trains RTU set (RTU00 - RTU09) via Siemens-S7Comm. 
