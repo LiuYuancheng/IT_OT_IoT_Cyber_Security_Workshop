@@ -108,3 +108,67 @@ Many modern systems implement hybrid architectures of the Direct Linkage, Master
 
 ------
 
+### Design Differences: Real-World HMI vs. Cyber Range Simulated HMI
+
+Designing a Human-Machine Interface (HMI) for a cyber range simulation requires a fundamentally different approach compared to building one for real-world OT training. Based on my experience from multiple cybersecurity exercises and feedback from end users, this section explores the key distinctions between the two types of HMI designs. While these observations are based on my personal experience and may not be 100% correct, they reflect real-world needs from both OT engineers and cybersecurity practitioners.
+
+##### 1. Design Purpose and Usage Context
+
+- **Real-World Training HMI** : These HMIs are designed to replicate actual industrial control systems as closely as possible. Their primary goal is to train OT operators in using the production system, so accuracy, realism, and fidelity are critical. The interface must mirror the layout, features, and behavior of the live system in production environment.
+
+- **Cyber Range Simulated HMI** : The purpose of the cyber range HMI shifts from operation to defense of cyber attack. The HMI is tailored for cybersecurity training scenarios, helping defenders (blue teams) identify anomalies, investigate possible attacks, and practice incident response. It emphasizes observability, anomaly detection, and flexibility over realism.
+
+##### 2. Protocols and Communication
+
+- **Real-World Training HMI** : These HMIs typically simulate a single, vendor-specific OT protocol—such as Siemens S7Comm+ or Rockwell’s EtherNet/IP—because real-world devices from one vendor often use a unified protocol stack.
+- **Cyber Range Simulated HMI** : To support red team exercises and simulate diverse attack vectors, the cyber range HMI integrates multiple open or standard protocols (e.g., IEC 60870-5-104, Modbus TCP, DNP3). This allows attackers to test various tactics across different protocol layers in a single environment.
+
+##### 3. Information Display
+
+- **Real-World Training HMI** : These interfaces need to be clear and show most critical information which for the operator to make decision. Only essential information is shown—such as alarms, system status, and critical sensor values—so that operators are not overwhelmed. Non-critical data (e.g., detailed PLC coil states or sensor response times) is often hidden to reduce distractions.
+
+- **Cyber Range Simulated HMI** : These interfaces are designed to be information-rich. They display as much information as possible even the low-level data including PLC coil/contact states, communication latency, individual sensor statuses, and even abnormal signal behavior. Some alerts may be deliberately omitted or hidden to test the defender’s situational awareness and detection capabilities (e.g., discovering a MITM attack based on increased latency of PLC response).
+
+##### 4. **User Interaction Design**
+
+- **Real-World Training HMI** : A high degree of interactivity between the HMI and operator is expected. Operators are trained to manually acknowledge alarms, switch system modes, and control devices using HMI buttons, slider-bar and menus—closely replicating real-life workflows.
+- **Cyber Range Simulated HMI** : In most cyber exercises, the HMI is projected on large screens without dedicated a human operators to control 24/7. As such, these HMIs are designed to be self-running or script-driven, automatically simulating operator behaviors or some response action. Manual controls are minimized or abstracted.
+
+##### 5. **UI Layout and Alert Management**
+
+- **Real-World Training HMI** : These typically feature a tabbed layout with separate views/tab page for alarms, process control, and trend monitoring and the operator need to switch between different tab to monitor and control the system. Alerts are pre-configured and follow fixed rules designed by the system integrator.
+- **Cyber Range Simulated HMI** : To support continuous forensic recording, all critical information is displayed on a single screen—ensuring that nothing is missed in screen recordings. Additionally, the HMI allows customizable alert logic, often configured via external files, so blue teams can define their own detection thresholds or trigger conditions for dynamic learning scenarios.
+
+##### 6. **Logging and Forensics Support**
+
+- **Real-World Training HMI** : Logging is often limited to operational events and system states, primarily for training review or internal diagnostics.
+- **Cyber Range Simulated HMI**: Logging and recording are extensive and forensic-focused. This includes: Continuous screen capture (e.g., video recording of UI), Logging of all control events, communication attempts, and OT messages, and even Packet-level network traffic capture (e.g., PCAP logs) for post-event analysis. These logs provide valuable datasets for post-exercise debriefing, attacker traceability, and blue team performance review.
+
+
+
+#### Summary Table: Real-World vs. Cyber Range HMI Design
+
+By recognizing and designing for these key differences, developers can create effective HMIs tailored to the needs of each environment—whether it's for day-to-day operational control or high-intensity cyber defense training. The difference comapre table is shown below:
+
+| **Aspect**              | **Real-World OT Training HMI**    | **Cyber Range Simulated HMI**                |
+| ----------------------- | --------------------------------- | -------------------------------------------- |
+| **Main Purpose**        | Operator skill training           | Cyber defense awareness, anomaly detection   |
+| **Protocols Used**      | Single vendor-specific protocol   | Multiple open/standard protocols             |
+| **Information Display** | Minimal, focused on critical data | Detailed, includes low-level system metrics  |
+| **User Interaction**    | Manual interaction required       | Mostly automated or scripted behavior        |
+| **UI Layout**           | Tabbed views                      | All-in-one view for continuous recording     |
+| **Alert Configuration** | Fixed, pre-configured             | Customizable via config files                |
+| **Logging Focus**       | Operational logs only             | Full data/event/packet logging for forensics |
+
+
+
+------
+
+### Functional Architecture of Railway Cyber Range HMIs
+
+After introduced the background of HMI and the design of cyber range HMI, this section I will introduce how I design the 4 HMIs in the land based railway system. 
+
+
+
+
+
