@@ -4,29 +4,63 @@
 
 ### Implementing Different Human-Machine Interfaces (HMI) for a Land-Based Railway Cyber Range
 
-```
+```python
 # Author:      Yuancheng Liu
 # Created:     2025/06/14
 # Version:     v_0.0.2
 # Copyright:   Copyright (c) 2025 Liu Yuancheng
 ```
 
+**Table of Contents**
+
 [TOC]
+
+- [OT Railway System Development [03]](#ot-railway-system-development--03-)
+    + [Implementing Different Human-Machine Interfaces (HMI) for a Land-Based Railway Cyber Range](#implementing-different-human-machine-interfaces--hmi--for-a-land-based-railway-cyber-range)
+    + [Introduction](#introduction)
+    + [Background Knowledge about HMI in ICS](#background-knowledge-about-hmi-in-ics)
+      - [What Is an HMI program?](#what-is-an-hmi-program-)
+      - [HMI Communication Architecture](#hmi-communication-architecture)
+        * [1. Direct Linkage (Integrated HMI Connection)](#1-direct-linkage--integrated-hmi-connection-)
+        * [2. Master-Slave linkage (Non-integrated HMI connection)](#2-master-slave-linkage--non-integrated-hmi-connection-)
+        * [3. Database Linkage (Non-Integrated HMI Connection)](#3-database-linkage--non-integrated-hmi-connection-)
+        * [4. Hybrid Connection Models](#4-hybrid-connection-models)
+    + [Design Differences: Real-World HMI vs. Cyber Range Simulated HMI](#design-differences--real-world-hmi-vs-cyber-range-simulated-hmi)
+        * [1. Design Purpose and Usage Context](#1-design-purpose-and-usage-context)
+        * [2. Protocols and Communication](#2-protocols-and-communication)
+        * [3. Information Display](#3-information-display)
+        * [4. User Interaction Design](#4-user-interaction-design)
+        * [5. UI Layout and Alert Management](#5-ui-layout-and-alert-management)
+        * [6. Logging and Forensics Support](#6-logging-and-forensics-support)
+      
+      - [Summary Table: Real-World vs. Cyber Range HMI Design](#summary-table--real-world-vs-cyber-range-hmi-design)
+    + [Functional Architecture of Railway Cyber Range HMIs](#functional-architecture-of-railway-cyber-range-hmis)
+      - [System Overview](#system-overview)
+      - [1. HQ Signal System Monitor HMI](#1-hq-signal-system-monitor-hmi)
+      - [2. HQ Railway Block Monitor HMI](#2-hq-railway-block-monitor-hmi)
+      - [3. HQ Railway Train Control HMI](#3-hq-railway-train-control-hmi)
+      - [4. HQ Railway Management HMI](#4-hq-railway-management-hmi)
+    + [Deployment and Usage of the Four Cyber Range HMIs in the Cyber Exercise](#deployment-and-usage-of-the-four-cyber-range-hmis-in-the-cyber-exercise)
+      - [Role Distribution and Interaction in Exercises](#role-distribution-and-interaction-in-exercises)
+      - [Functions in Cyber Exercise](#functions-in-cyber-exercise)
+    + [User Interface and Functional Showcase](#user-interface-and-functional-showcase)
 
 ------
 
 ### Introduction
 
-In the operational technology (OT) environments,Human-Machine Interfaces (HMIs) play a critical role in bridging the complex control systems and human operators. In both real-world railway systems and cybersecurity training platforms, well-designed HMIs enhance visibility, improve safety, and enable timely decision-making. However, when designing HMIs for a **cyber range**—a simulated environment used for cybersecurity exercise, training and evaluation needs some different considerations and priorities.
+In the industry operational technology (OT) environments, Human-Machine Interface (HMI) plays a critical role in bridging the complex control systems and human operators. Such as in both real-world railway systems and cybersecurity training platforms, well-designed HMIs enhance visibility, improve safety, and enable timely decision-making. What's more, when designing HMIs for a **cyber range**—a simulated environment used for cybersecurity exercise, training and evaluation needs some different considerations and priorities.
+
+![](img/title.png)
 
 This article explores the development of four different SCADA HMIs created specifically for a **Land-Based Railway Cyber Range**. These interfaces were designed not only to reflect the realism of an operational railway control system but also to serve the unique functional and pedagogical goals of a cybersecurity exercise and training environment. The article is structured into four main sections:
 
 - **Fundamentals of SCADA HMIs** : A brief overview of SCADA systems and HMI principles background knowledge, using the railway domain as a case study example.
-- **Design Differences [Real-World HMI vs Cyber Range HMI]** : A discussion of how HMI design requirements shift when the objective changes from operational control to cybersecurity simulation and education.
-- **Functional Architecture of Railway Cyber Range HMIs** – A detailed introduction about how these HMIs interact with other simulated OT components in the railway system, including signaling, PLCs, and interlocking mechanisms.
+- **Design Differences [Real-World HMI vs Cyber Range HMI]** : A discussion of how HMI design requirements shift when the objective changes from real world operational control to cybersecurity simulation and education.
+- **Functional Architecture of Railway Cyber Range HMIs** – A detailed introduction about how these HMIs interact with other simulated OT components in the railway system, including signaling, PLCs, RTUs and interlocking mechanisms.
 - **User Interface and Functional Showcase** – A walkthrough of the developed HMI UI and usage, highlighting their unique features, use cases, and integration with the railway cyber range platform.
 
-**Important:** Currently there is not a standard for designing HMIs specifically for cyber ranges. In this article, I want to share my idea about finding the "balance point" between the needs of **OT engineers** and **cybersecurity professionals**. The goal is to create an HMI that is intuitive and functional for OT operators performing system control tasks, while also providing the necessary visibility and context for cybersecurity engineers to detect, analyze, and respond to cyber incidents effectively. Striking this balance ensures that the HMI serves both operational usability and security monitoring purposes within the cyber range environment.
+**Important** : Currently there is not a standard for designing HMIs specifically for cyber ranges. In this article, I want to share my **personal idea** about finding the "balance point" between the needs of OT engineers and cybersecurity professionals. The goal is to create an HMI that is intuitive and functional for OT operators performing system control tasks, while also providing the necessary visibility and context for cybersecurity engineers to detect, analyze, and respond to cyber incidents effectively. Striking this balance ensures that the HMI serves both operational usability and security monitoring purposes within the cyber range environment.
 
 
 
@@ -41,6 +75,8 @@ Human-Machine Interfaces (HMIs) are critical components of modern industrial aut
 
 ![](img/s_02.png)
 
+` Figure-00: Level-2 and level-3 OT environment, version v_0.0.2 (2025)`
+
 This layered positioning ensures that HMIs have both the visibility of OT field data and the control capabilities needed for safe, efficient operations.
 
 #### What Is an HMI program?
@@ -48,6 +84,8 @@ This layered positioning ensures that HMIs have both the visibility of OT field 
 An **HMI** is a graphical user interface that enables human operators to interact with machines, controllers, or entire systems. In the context of railway, power, or maritime systems, HMIs are used to monitor real-time system status, send control commands, receive alarms, and visualize operational trends. The typical workflow of HMI is shown below:
 
 ![](img/s_03.png)
+
+` Figure-01: Typical workflow of HMI in SCADA system, version v_0.0.2 (2025)`
 
 Key Features of HMI Program:
 
@@ -67,6 +105,8 @@ In this architecture, the HMI is **directly connected** to the OT controllers (e
 
 ![](img/s_04.png)
 
+` Figure-02: 4 types of direct linkage HMI connection to OT controller system, version v_0.0.2 (2025)`
+
 Key features of the direct linkage: 
 
 - Real-time data acquisition and control
@@ -75,37 +115,35 @@ Key features of the direct linkage:
 
 **Use Case**: Common in systems where immediate operational feedback and control are required, such as emergency stop panels or motor control dashboards.
 
-Master–Slave Linkage (Non-Integrated HMI Connection)
-
-
-
 ##### 2. Master-Slave linkage (Non-integrated HMI connection)
 
-In more complex systems, a **master HMI** is directly linked to OT devices, while one or more **slave HMIs** connect to the master via a separate network. Slave HMIs receive data filtered and distributed by the master HMI andall the slave's control request will also send to master HMI first then forward to related controller based on the master HMI's setting. (The connection is shown below)
+In more complex systems, a **master HMI** is directly linked to OT devices, while one or more **slave HMIs** connect to the master via a separate network. Slave HMIs receive data filtered and distributed by the master HMI and all the slave's control request will also send to master HMI first then forward to related controller based on the master HMI's setting. (The connection is shown below)
 
 ![](img/s_05.png)
 
+` Figure-03: Master-Slave linkage of HMI connection, version v_0.0.2 (2025)`
+
 Key features of the direct Master-Slave linkage : 
 
-- Better control over access permissions
+- Better control over access permissions configuration
 - Isolation between core control and auxiliary interfaces
 - Suitable for multi-role operator environments
 
 **Use Case**: Operation training systems, remote monitoring stations, or multi-tiered control rooms.
 
-
-
 ##### 3. Database Linkage (Non-Integrated HMI Connection)
 
-In large SCADA environments, processed field data is often stored in centralized databases. Some of the HMIs such as the management HMI in this configuration access **historical or aggregated data** via standard IT protocols (e.g., SQL queries, RESTful APIs) rather than communicating directly with OT devices. The connection diagram is shown below:
+In large SCADA environments, processed OT field data is often stored in centralized databases. Some of the HMIs such as the management HMI in this configuration access **historical or aggregated data** via standard IT protocols (e.g., SQL queries, RESTful APIs) rather than communicating directly with OT devices. The connection diagram is shown below:
 
 ![](img/s_06.png)
+
+` Figure-04: Database Linkage of HMI connection, version v_0.0.2 (2025)`
 
 Key features of the direct Database Linkage : 
 
 - Aggregates data from multiple systems
 - Useful for analytics dashboards, reporting, and supervisory-level overviews
-- Reduced OT network load
+- Reduced OT network load an unneeded traffic flow in the core industry network
 
 **Use Case**: High-level monitoring across multiple subsystems (e.g., energy, signaling, HVAC) in a unified dashboard.
 
@@ -119,7 +157,7 @@ Many modern systems implement hybrid architectures of the Direct Linkage, Master
 
 ### Design Differences: Real-World HMI vs. Cyber Range Simulated HMI
 
-Designing a Human-Machine Interface (HMI) for a cyber range simulation requires a fundamentally different approach compared to building one for real-world OT training. Based on my experience from multiple cybersecurity exercises and feedback from end users, this section explores the key distinctions between the two types of HMI designs. While these observations are based on my personal experience and may not be 100% correct, they reflect real-world needs from both OT engineers and cybersecurity practitioners.
+Designing a Human-Machine Interface (HMI) for a cyber range simulation requires a fundamentally different approach compared to building one for real-world normal OT training. Based on my experience from multiple cybersecurity exercises and feedback from end users, this section explores the key distinctions between the two types of HMI designs. While these observations are based on my personal experience and may not be 100% correct, they reflect real-world needs from both OT engineers and cybersecurity practitioners.
 
 ##### 1. Design Purpose and Usage Context
 
@@ -129,7 +167,7 @@ Designing a Human-Machine Interface (HMI) for a cyber range simulation requires 
 
 ##### 2. Protocols and Communication
 
-- **Real-World Training HMI** : These HMIs typically simulate a single, vendor-specific OT protocol—such as Siemens S7Comm+ or Rockwell’s EtherNet/IP—because real-world devices from one vendor often use a unified protocol stack.
+- **Real-World Training HMI** : These HMIs typically simulate a single, vendor-specific (some not open standard ) OT protocol—such as Siemens S7Comm+ or Rockwell’s EtherNet/IP—because real-world devices from one vendor often use a unified protocol stack.
 - **Cyber Range Simulated HMI** : To support red team exercises and simulate diverse attack vectors, the cyber range HMI integrates multiple open or standard protocols (e.g., IEC 60870-5-104, Modbus TCP, DNP3). This allows attackers to test various tactics across different protocol layers in a single environment.
 
 ##### 3. Information Display
@@ -183,6 +221,8 @@ As highlighted in the following system architecture diagram:
 
 ![](img/s_07.png)
 
+` Figure-05: system architecture diagram of railway cyber range, version v_0.0.2 (2025)`
+
 The railway cyber range HMI architecture is composed of:
 
 - **Three Machine-Level HMIs** located in the **Level 2 Control Center Processing LAN** for real-time monitoring and control of subsystems: HQ Signal System Monitor HMI, 
@@ -216,6 +256,8 @@ The right side top HMI in the architecture diagram, provides real-time monitorin
 
 ![](img/s_09.png)
 
+` Figure-06: Network connection of Signal System Monitor HMI, version v_0.0.2 (2025)`
+
 The signaling HMI will connect to 6 PLC with direct linage connection. It will connect to the railway junction and fork control PLC set (PLC-00, PLC-01, PLC-02)  via Modbus TCP and the station control PLC set (PLC-03, PLC-04, PLC-05) via IEC61850-104.The HMI also support master-slave mode connection. 
 
 
@@ -235,6 +277,8 @@ The right side middle HMI in the architecture diagram,  displays the status of *
 **Connection Diagram:** 
 
 ![](img/s_11.png)
+
+` Figure-07: Network connection of Railway Block Monitor HMI, version v_0.0.2 (2025)`
 
 The block control HMI will connect to 2 PLC with direct linage connection. It will connect to railway fixed block auto train protection PLCs (PLC-10 and PLC-11) via Modbus-TCP to fetch the sensor and signal state. The HMI also provide the signal overload function for operator to handle the emergency situation.
 
@@ -257,11 +301,13 @@ The Bottom-right of the architecture diagram, monitors **real-time train status*
 
 ![](img/s_10.png)
 
+` Figure-08: Network connection of Railway Train Control HMI, version v_0.0.2 (2025)`
+
 The Train Control HMI will connect to 2 PLC and 10 RTU with direct linage connection. It will connect to railway thrid track power control PLC via Modbus-TCP and the Trains RTU set (RTU00 - RTU09) via Siemens-S7Comm. 
 
 
 
-#### 4. HQ Management HMI
+#### 4. HQ Railway Management HMI
 
 The top-center HMI of the architecture diagram, provides a **holistic operational overview** of the railway network for HQ operators, including junctions, forks, trains, and stations. It also supports **emergency command override**.
 
@@ -279,6 +325,8 @@ The top-center HMI of the architecture diagram, provides a **holistic operationa
 
 ![](img/s_12.png)
 
+` Figure-09: Network connection of Railway Management HMI, version v_0.0.2 (2025)`
+
 - **Inter-HMI Data Exchange**: Receives processed data from the Signal and Block HMIs via standard TCP communication.
 - **Database Access**: Queries operational logs and train telemetry from a shared SCADA database using SQL.
 - **Direct Control Channel**: Connects directly to selected **station PLCs via IEC61850-104** for emergency handling.
@@ -289,9 +337,11 @@ The top-center HMI of the architecture diagram, provides a **holistic operationa
 
 ### Deployment and Usage of the Four Cyber Range HMIs in the Cyber Exercise
 
- When the **Land-Based Railway Cyber Range** are deployed and used within cyber exercises, the four cyber range HMIs will configure as shown below to simulate the real world HQ for the blue team training and system behavior analysis.
+When the **Land-Based Railway Cyber Range** are deployed and used within cyber exercises, the four cyber range HMIs will configure as shown below to simulate the real world HQ for the blue team training and system behavior analysis.
 
 ![](img/s_08.png)
+
+` Figure-10: diagram to map real world HMI to cyber range HMI, version v_0.0.2 (2025)`
 
 As shown in the image, the four HMIs are deployed as follows:
 
@@ -348,5 +398,5 @@ For the detailed User interface introduction, UI usage, customized alert configu
 
 ------
 
-> last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 20/07/2024 if you have any problem, please send me a message. 
+> last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 15/06/2025 if you have any problem, please send me a message. 
 
