@@ -45,3 +45,58 @@ From the defender's view unlike IT environments, where traffic is often encrypte
 ------
 
 ### Software Structure Design
+
+All the HMI programs are designed as a multi-threading with below architecture: 
+
+![](img/s_02.png)
+
+The main thread includes 5 sub modules:
+
+- **Program Control Module**: Control the program execution and all the sub threads . 
+- **Program Clock Control Module**: Control the loop frequency for all the other thread module and the display such as fps.
+- **Program Data Control Module**: Control the data flow between different thread and state process and storage sequence. 
+- **Alert management module** : Control when and how the program will trigger and display alerts or warning.
+- **Pre-Configured instance response module**: auto execute the preset instance response code based on the user's setting when the alert module raise a alert or warning
+
+When the program started, the main thread will start 5 sub-thread with different module as shown in the architecture diagram. 
+
+#### 1. IT Data Manager Thread
+
+The thread run periodic with different module to handle the IT network data communication (HMI to HMI, HMI to data base) and a IT data preprocessing module to filter the old data or None data. For each module's function 
+
+- **Database Comm Client ** : Sqlite3 client to fetch data from the data base (Supervisory-Level HMI) or insert data to data base (Machine-Level HMIs)
+- **HMI Comm Client/Serve **: A normal UDP server if the HMI is mater mode for other HMI connect to, or UDP client if the HMI is slave mode to connect to the Master HMI. 
+- **IT Data Storage module ** : Data management module to store, pre-filter, combine the IT data from data base or other HMI, then send the pre-processed data to the Data mapping module in the data processing thread. It will also send the raw data to the local I/O manager thread to log the data.
+
+#### 2.OT Data Manager Thread
+
+The OT data manager Thread will handle the communication from HMI to all the OT controllers with multiple different OT-Comm Client and a OT data pre-processing module to process the OT data:
+
+- **OT-Comm Clients**: Based on how many PLC the HMI will connect to and the PLC protocol, the OT data manager will create related number of OT-Comm client with the related OT protocol connectors.
+- **Raw OT Data Storage and process module** : Control and filter the raw OT data in one data fetch round, fill the data in the related dictionary and send the raw data to the local I/O manager thread to log the data.
+
+#### 3.Data Processing Thread
+
+The main "data processing center" of the HMI program, all the data will be filtered, converted, verified and stored in this Module
+
+- **OT Data Covert module** : convert the OT data such as the register NC NO state to True/False, 0/1 
+- **Data Mapping module : ** Mapping the data to the information such memory int value to voltage value,  True/False to indicator on and off state
+- **Data filter module**: filter the duplicate data or the old data. 
+- **Data verify module** : Verify whether the data is under the correct range and trigger the alert based on user's configuration.
+- **Data Process module** : Interact with the main thread's data control module to generate the summarized data based on the main thread data controller's request.
+
+#### 4.UI Display Manager Thread
+
+The thread to provide all the UI display for user and handle the user interaction such as press a button. 
+
+- **UI Components Manager** : Work as a graphic engineer to generate all the components state show in the UI such as the value, indicator color,  animation (such as alert indicator blinking)
+- **Display Refresh Manager** : the real display panel to visualized the components generate by the UI Components Manager for each frame. 
+- **User Action and Event handler** : Take the user action and send to the main controller, such as when a user press the button to turn off a breaker.
+
+#### 5.Local I/O Manager Thread
+
+The thread to handle the I/O between the HMI program and the host computer.
+
+- **Config loader** : Read the configuration file to init the program and change the system global setting based on the user's configuration update. 
+- **Log and record generator**: Log all the data to the related log file, roll over if the log file is big (10MB), create HMI screen shot when abnormal situation appear. 
+- **Global Variable module**: Control all the global variable of the program and interact with the main thread's data controller.
