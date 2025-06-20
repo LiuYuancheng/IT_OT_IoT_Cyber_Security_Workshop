@@ -44,59 +44,90 @@ From the defender's view unlike IT environments, where traffic is often encrypte
 
 ------
 
-### Software Structure Design
+### HMI Software Design
 
-All the HMI programs are designed as a multi-threading with below architecture: 
+To support the simulation, monitoring, and incident response capabilities required by a railway cyber range, all Human-Machine Interface (HMI) programs are developed using a modular, multithreaded architecture. This design ensures efficient data handling, real-time responsiveness, and separation of responsibilities across different functional modules. The overall software structure is depicted in the architecture diagram below:
 
 ![](img/s_02.png)
 
-The main thread includes 5 sub modules:
+At the core of the HMI application is the **Main Thread**, which orchestrates five key sub-threads responsible for managing data flow, user interaction, system communication, and real-time control.
 
-- **Program Control Module**: Control the program execution and all the sub threads . 
-- **Program Clock Control Module**: Control the loop frequency for all the other thread module and the display such as fps.
-- **Program Data Control Module**: Control the data flow between different thread and state process and storage sequence. 
-- **Alert management module** : Control when and how the program will trigger and display alerts or warning.
-- **Pre-Configured instance response module**: auto execute the preset instance response code based on the user's setting when the alert module raise a alert or warning
+#### Main Thread and Core Modules
 
-When the program started, the main thread will start 5 sub-thread with different module as shown in the architecture diagram. 
+The main thread initializes and governs the entire HMI application by controlling the lifecycle and interaction of all sub-modules and threads. The main thread includes 6 sub-modules:
+
+- **Program Control Module** : Coordinates the start-up and shutdown of all sub-threads, ensuring orderly program execution and system synchronization.
+- **Program Clock Control Module**: Manages the timing mechanisms and loop frequency for all the threads (e.g., FPS for UI rendering, data polling intervals for communication threads).
+- **Program Data Control Module**: Oversees inter-thread data flow, ensuring proper sequencing for state processing, analysis, and storage.
+- **Alert Management Module**: Monitors system states and triggers alerts in response to abnormal events or threshold violations.
+- **Pre-Configured Instance Response Module**: Automatically executes predefined responses (e.g., shutdowns, notifications) based on alert types and user-defined conditions.
+- **Operation Verification Module (Operational)**: This module is only used by the blue team which allow the HMI also run the same ladder logic as the target PLC based on the PLC input and compare the reading reason and calculation result to detect possible FDI attack.  
 
 #### 1. IT Data Manager Thread
 
-The thread run periodic with different module to handle the IT network data communication (HMI to HMI, HMI to data base) and a IT data preprocessing module to filter the old data or None data. For each module's function 
+This thread handles communications on the IT layer, including interactions with databases and inter-HMI messaging, and conducts preliminary filtering of incoming data:
 
-- **Database Comm Client ** : Sqlite3 client to fetch data from the data base (Supervisory-Level HMI) or insert data to data base (Machine-Level HMIs)
-- **HMI Comm Client/Serve **: A normal UDP server if the HMI is mater mode for other HMI connect to, or UDP client if the HMI is slave mode to connect to the Master HMI. 
-- **IT Data Storage module ** : Data management module to store, pre-filter, combine the IT data from data base or other HMI, then send the pre-processed data to the Data mapping module in the data processing thread. It will also send the raw data to the local I/O manager thread to log the data.
+- **Database Comm Client**: Interfaces with the cyber range ICS database (typically using SQLite3) to fetch data (supervisory-level HMI ) or insert data (machine-level HMIs).
+- **HMI Comm Client/Server**: Facilitates UDP-based communication between HMIs. Acts as a server in Master HMI mode and a client in Slave mode.
+- **IT Data Storage Module**: Manages incoming data from the database or peer HMIs. It filters redundant data, organizes records, and sends preprocessed information to the Data Processing Thread and raw data to the Local I/O Manager for logging.
 
-#### 2.OT Data Manager Thread
+#### 2. OT Data Manager Thread
 
-The OT data manager Thread will handle the communication from HMI to all the OT controllers with multiple different OT-Comm Client and a OT data pre-processing module to process the OT data:
+Thread responsible for collecting and preparing operational data from OT field devices such as PLCs, RTUs, and IEDs: 
 
-- **OT-Comm Clients**: Based on how many PLC the HMI will connect to and the PLC protocol, the OT data manager will create related number of OT-Comm client with the related OT protocol connectors.
-- **Raw OT Data Storage and process module** : Control and filter the raw OT data in one data fetch round, fill the data in the related dictionary and send the raw data to the local I/O manager thread to log the data.
+- **OT Communication Clients**: Implements connectors for various protocols including Modbus-TCP,  Siemens S7Comm, IEC 60870-5-104, OPC-UA. The number of connectors will be same as the number of PLCs the HMI connects to.
+- **Raw OT Data Storage and Process Module**: Gathers raw data in each polling cycle, organizes it into device-specific dictionaries, filters irrelevant entries, and logs the unprocessed data via the Local I/O Manager Thread.
 
-#### 3.Data Processing Thread
+#### 3. Data Processing Thread
 
-The main "data processing center" of the HMI program, all the data will be filtered, converted, verified and stored in this Module
+This thread serves as the data refinement and analysis center for the HMI:
 
-- **OT Data Covert module** : convert the OT data such as the register NC NO state to True/False, 0/1 
-- **Data Mapping module : ** Mapping the data to the information such memory int value to voltage value,  True/False to indicator on and off state
-- **Data filter module**: filter the duplicate data or the old data. 
-- **Data verify module** : Verify whether the data is under the correct range and trigger the alert based on user's configuration.
-- **Data Process module** : Interact with the main thread's data control module to generate the summarized data based on the main thread data controller's request.
+- **OT Data Convert Module**: Converts raw controller signals (e.g., NC/NO states) into logical values (e.g., `True/False`, `0/1`).
+- **Data Mapping Module**: Translates system values into human-readable indicators (e.g., mapping a memory integer to a voltage reading or LED color).
+- **Data Filter Module**: Removes duplicate or stale entries from both IT and OT data streams.
+- **Data Verify Module**: Validates that incoming data falls within expected operational ranges. Alerts are triggered if violations are detected.
+- **Data Process Module**: Aggregates and prepares final outputs for visualization and storage, interact with the Main Thread’s Program Data Control Module..
 
-#### 4.UI Display Manager Thread
+#### 4. UI Display Manager Thread
 
-The thread to provide all the UI display for user and handle the user interaction such as press a button. 
+Manages the visual interface and interaction logic between the operator and the system:
 
-- **UI Components Manager** : Work as a graphic engineer to generate all the components state show in the UI such as the value, indicator color,  animation (such as alert indicator blinking)
-- **Display Refresh Manager** : the real display panel to visualized the components generate by the UI Components Manager for each frame. 
-- **User Action and Event handler** : Take the user action and send to the main controller, such as when a user press the button to turn off a breaker.
+- **UI Components Manager** : Renders visual elements like indicators, alarms, gauges, and animation effects in real time.
+- **Display Refresh Manager** : Display panel to refresh  visualize cycles to maintain a stable and responsive UI.
+- **User Action and Event Handler** : Captures user inputs (e.g., button clicks, toggle switches) and relays control commands to the Program Control Module for execution.
 
-#### 5.Local I/O Manager Thread
+#### 5. Local I/O Manager Thread
 
-The thread to handle the I/O between the HMI program and the host computer.
+Handles program configuration, logging, and global state variables:
 
-- **Config loader** : Read the configuration file to init the program and change the system global setting based on the user's configuration update. 
-- **Log and record generator**: Log all the data to the related log file, roll over if the log file is big (10MB), create HMI screen shot when abnormal situation appear. 
-- **Global Variable module**: Control all the global variable of the program and interact with the main thread's data controller.
+- **Config Loader**: Parses configuration files to initialize and dynamically update system settings.
+- **Log and Record Generator**:  Log all the data to the related log files, roll over if the log file is big (10MB), create HMI screen shot when abnormal situation appears. 
+- **Global Variable Module**: Manages shared variables used across the entire application and interacts with the Program Data Control Module for synchronization.
+
+
+
+------
+
+### UI Design Introduction
+
+This section will introduce the User Interface design for each HMI.
+
+#### Design of PLC display panel
+
+For each of the the machine-level HMIs, the HMI will show same number of PLC state pane to show the real time raw data read from the PLC 
+
+- Signal System Monitor HMI: 6 PLC panels
+- Railway Block Monitor HMI: 2 PLC panels 
+- Railway Train Control HMI: 2 PLC Panels
+
+The information shown on the PLC panel mapping to the physical world components and PLC ladder logic is shown below:
+
+![](img/s_03.png)
+
+The PLC info part will show the connected PLC ID, position, type, IP address, used port and the current connection state. 
+
+The state part will show 5 columns of data: 
+
+- **Colum1**: The PLC connected physical world sensor ID, ID format: `<line_ID>_<sensor_type><sensor_Idx>`, as show in the example`west08` is the WE_Line(we) Station(st) 08 's train sensor
+- Colum2: The PLC register ID and state, Register ID format : `R_<Changeable_Char%>_<register_type>_`in the example, R-register, %-changeable ladder rung input, H-Holding, 0-rung set index =0 , Green color - contact input voltage high, gray color -   contact input voltage low.
+- Colum3: The holding res
