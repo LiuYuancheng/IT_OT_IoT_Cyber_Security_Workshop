@@ -112,22 +112,38 @@ Handles program configuration, logging, and global state variables:
 
 This section will introduce the User Interface design for each HMI.
 
-#### Design of PLC display panel
+#### Design of PLC Display Panel
 
-For each of the the machine-level HMIs, the HMI will show same number of PLC state pane to show the real time raw data read from the PLC 
+In the machine-level HMIs each HMI features multiple **PLC display panels** to visualize the real-time raw PLC data. Each machine-level HMI displays a different number of PLC panels, depending on its monitoring scope:
 
-- Signal System Monitor HMI: 6 PLC panels
-- Railway Block Monitor HMI: 2 PLC panels 
-- Railway Train Control HMI: 2 PLC Panels
+- **Signal System Monitor HMI**: 6 PLC panels
+- **Railway Block Monitor HMI**: 2 PLC panels
+- **Railway Train Control HMI**: 2 PLC panels
 
-The information shown on the PLC panel mapping to the physical world components and PLC ladder logic is shown below:
+Each panel presents detailed, real-time information from a specific PLC, with mappings to its associated ladder logic and connected physical components. The design structure is shown in the diagram below:
 
 ![](img/s_03.png)
 
-The PLC info part will show the connected PLC ID, position, type, IP address, used port and the current connection state. 
+Each PLC panel is divided into two main sections: **PLC Information** and **PLC State Display**.
 
-The state part will show 5 columns of data: 
+PLC Information Section section provides metadata and communication details about the connected PLC:
 
-- **Colum1**: The PLC connected physical world sensor ID, ID format: `<line_ID>_<sensor_type><sensor_Idx>`, as show in the example`west08` is the WE_Line(we) Station(st) 08 's train sensor
-- Colum2: The PLC register ID and state, Register ID format : `R_<Changeable_Char%>_<register_type>_`in the example, R-register, %-changeable ladder rung input, H-Holding, 0-rung set index =0 , Green color - contact input voltage high, gray color -   contact input voltage low.
-- Colum3: The holding res
+- **PLC ID**: Unique identifier assigned to each PLC within the SCADA system.
+- **Position**: Logical location or subsystem the PLC belongs to.
+- **Mode**: PLC Mode (master/slave)
+- **IP Address**: Network IP used by the PLC.
+- **Port**: Port number used for communication (e.g., `502` for Modbus-TCP).
+- **Connection State**: Displays whether the HMI is currently connected to the PLC. (Green = Connected, Yellow = High latency, Gray = Disconnected)
+
+PLC State Display Section section shows the real-time data read directly from the PLC ladder logic and maps it to the physical world components. The display is divided into five key columns:
+
+- **Physical World Sensor ID** : Shows the sensor connected to the PLC input contact. Format: `<LineID>_<SensorType><Index>`. 
+  Example: `west08` = WE Line (we), Station (st) 08 sensor.
+- **Holding Register ID and State** :  Indicates the state of the register linked to the ladder logic contact.  Format: `R_<Changeable_Char%>_<register_type> <rung_set_idx>.<item_idx>`  Example: `R_%H0.0` = Holding register, rung 0, item 0.  Green = Input Voltage High 5V , Gray = Input Voltage Low 0V.
+- **Coil ID** : Ladder logic coil address. Format: `<Changeable_Char%>Q<rung_set_idx>.<item_idx>`  Example: `%Q0.0` = Output coil 0 in rung set 0.
+- **Coil State** : Status of the coil. Green = ON (Output Voltage High), Gray = OFF (Output Voltage  Low).
+- **Physical World Signal ID** : Indicates the real-world actuator or signal driven by the coil. Format: `<SignalType>_<LineID>_<SignalIndex>`  Example: `STwe08` = Signal device at WE Line, Station 08.
+
+The register ID and coil ID formatting follows conventions commonly used in Schneider Electric's Wonderware PLC programming tool's stand, ensuring compatibility and familiarity for industrial engineers as shown below:
+
+![](img/s_04.png)
