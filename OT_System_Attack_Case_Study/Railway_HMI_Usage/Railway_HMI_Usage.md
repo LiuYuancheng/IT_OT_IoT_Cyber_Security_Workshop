@@ -114,7 +114,7 @@ This section will introduce the User Interface design for each HMI.
 
 #### Design of PLC Display Panel
 
-In the machine-level HMIs each HMI features multiple **PLC display panels** to visualize the real-time raw PLC data. Each machine-level HMI displays a different number of PLC panels, depending on its monitoring scope:
+In the machine-level HMIs each HMI features multiple **PLC display panels** to visualize the real-time raw PLC data (which always hide in real world or digital twin HMI). Each machine-level HMI displays a different number of PLC panels, depending on its monitoring scope:
 
 - **Signal System Monitor HMI**: 6 PLC panels
 - **Railway Block Monitor HMI**: 2 PLC panels
@@ -147,3 +147,20 @@ PLC State Display Section section shows the real-time data read directly from th
 The register ID and coil ID formatting follows conventions commonly used in Schneider Electric's Wonderware PLC programming tool's stand, ensuring compatibility and familiarity for industrial engineers as shown below:
 
 ![](img/s_04.png)
+
+
+
+#### UI Introduction
+
+##### Signal System Monitor HMI
+
+The Junction and station signal link HMI detail is shown below:
+
+![](img/s_05.png)
+
+The HMI contents below components and function:
+
+- A train sensors-signal relation map to show sensors state, signals state and the sensors-signals auto control relation ship (tracks-cross-junction and train-stations). 
+- Three PLC panel to show the junction-sensor-signal control system's Digital Input/Output state, PLC holding register state and the PLC Coils state. 
+- Three PLC panel to shoe the station-sensor-signal control system's Digital Input/Output state, PLC holding register state and the PLC Coils state. 
+
