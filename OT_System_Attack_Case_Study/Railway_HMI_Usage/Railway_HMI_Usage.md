@@ -164,3 +164,31 @@ The HMI contents below components and function:
 - Three PLC panel to show the junction-sensor-signal control system's Digital Input/Output state, PLC holding register state and the PLC Coils state. 
 - Three PLC panel to shoe the station-sensor-signal control system's Digital Input/Output state, PLC holding register state and the PLC Coils state. 
 
+**Railway Block Monitor HMI**
+
+The Railway Block Monitor HMI is shown below;
+
+![](img/s_06.png)
+
+The HMI contents below components and function:
+
+- A train sensors-signal relation map to show sensors state, signals state and the sensors-signals auto control relation ship of each block on the track, station and junction. 
+- Two PLC panel to show the block-sensor-signal control system's Digital Input/Output state, PLC holding register state and the PLC Coils state. 
+- A PLC control override panel for operator to enable or disable the PLC's ATP(auto train protection) control, when the check box is check, the PLC block ATP function will work normally, then the check box is uncheck, the ATP function will be disabled and the signal will remain the last state and the operator can use the block control to manual change the signal state.
+
+
+
+##### Railway Train Control HMI
+
+The Railway Railway Train Control HMI is shown below:
+
+![](img/s_07.png)
+
+The HMI contents below components and function:
+
+- 10 Trains information panel + 2 place holder with a gauge to show the trains related information: Train-ID, Current Speed, average, 3rd track input power state, 3rd track input Current,  3rd track input Voltage and 3rd track power control buttons 
+- One RTU connection panel to show the train front radar detection state. 
+- One RTU Information sheet with 2 mode: If test mode off , the sheet will show the raw RTU feed back data, if test mode on it is for the user to type in the numbers to test the alert handling and the data filter function. Example, if the user set the speed alert to 90km/h, type in 100 in 3 column to check whether the alert will be triggered and alert dialog will pop-up
+- Two PLC state display panel to show the state of holding registers and output coils for control the 3rd power track.
+- One Train collision auto avoidance backdoor control to on/off trains auto-safety  control used for cyber attack demo.
+
