@@ -150,6 +150,37 @@ The register ID and coil ID formatting follows conventions commonly used in Schn
 
 
 
+#### Design of Sensor-Signal Relationship Diagram
+
+The Sensor-Signal Relationship Diagram is a core UI component of both the Signal System Monitor HMI, Block Monitor HMI and the HQ Management HMI, offering a real-time visual mapping between the simulated physical world components (stations and junctions), their connected sensors, and the control signal states. It is designed to provide intuitive situational awareness during operation and cyber defense activities. 
+
+Below is an example to mapping the physical world simulation components to the sensor-signal relationship diagram display:
+
+![](img/s_09.png)
+
+The diagram represents the interaction between:
+
+- **Sensors** in stations and junctions (position sensors, lock sensors, release sensors)
+- **Signal lights** (entrance, exit, junction)
+- **Physical components** (junction switches, train positions, platform doors)
+
+The relationships are visualized in a way that allows operators to instantly assess whether a signal behavior is logically valid based on the current state of its corresponding sensors and PLC logic.
+
+**Ladder Logic Verification Mode**
+
+A key feature of the Sensor-Signal Relationship Diagram is the "Ladder Logic Verification Mode". When this mode is enabled (typically during cyber defense exercises), the HMI operates in simulation-consistency verification mode, the detail process is:
+
+1. The Sensor-Signal Relationship Diagram will only display the sensors state from PLC raw data. 
+2. HMI control module will execute the same ladder logic as the related PLC based on the PLC sensor data.
+3. After get the expected signal state, the ladder logic execution result will show on Sensor-Signal Relationship Diagram signal. 
+4. If the Sensor-Signal Relationship Diagram signal state is different with the PLC display panel's raw data, then there may be possible OT False Command Injection attack happens.
+
+This verification mechanism is inspired by concepts from the PLC Honeypot Project: https://www.linkedin.com/pulse/python-plc-honeypot-project-yuancheng-liu-vks8c 
+
+
+
+------
+
 ### HMI UI Display Introduction
 
 This chapter introduces the User Interface (UI) design and core functional components of the four HMI types: Signal System Monitor HMI, Railway Block Monitor HMI, Railway Train Control HMI, and HQ Management HMI.
@@ -217,4 +248,53 @@ Main Components:
 - **9 Signal-Track Junction Indicators**: Display control states and signals at forked junctions involving fork entrance signal and the junction block state. 
 
 This interface provides centralized visibility and is vital for cyber situational awareness, abnormal pattern detection, and incident response coordination.
+
+
+
+------
+
+### HMI Usage and Defense Case Study
+
+This section will introduce some simple cases for the blue team to use the HMI to detect the possible cyber attack. 
+
+#### Detect possible False command injection attack on PLC 
+
+This is a simple example to use Sensor-Signal Relationship Diagram to detect abnormal scenario and raise alert : 
+
+![](img/s_10.png)
+
+- Step 1 : In physical world simulator, train triggered the junction entrance sensor, PLC contact input changes the register’s state
+- Step 2: In the Sensor-Signal Relationship Diagram,  the sensor will show triggered state (yellow color)
+- Step 3: HMI execute the ladder logic, calculate change the coil sate [Signal Red]
+- Step 4: Compare the S-CC-0 Signal state (calculated ) with the PLC Display Panel Scc00 (fetch from PLC directly), if same, verification pass, raise alert.  
+
+#### Detect possible False command injection attack on RTU
+
+This is a simple example to use HQ management HMI to detect abnormal scenario and raise alert : 
+
+![](img/S_11.png)
+
+Step 1 : the PLC display panel shows the station sensor is triggered 
+
+Step 2: Check the calculated signal’s state from the Sensor-Signal Relationship Diagram
+
+Step 3: Compare the ST[0] Signal state (calculated ) with the PLC Display Panel STns00 (fetch from PLC directly), if same, verification pass, raise alert.  
+
+Step 4: Mapping to the management HMI to confirm data update correctly in data base
+
+Step 5 : check the position of the train on the fixed block if the train position not in the station block, means the RTU data is abnormal, there may be false data injection attack on the RTU memory 
+
+#### Detect Possible ARP spoofing from the PLC connection Panel
+
+To detect the APT spoofing packet drop attack please follow the observation describe in this case study
+
+**OT Cyber Attack Workshop [ Case Study 02 ]: ARP Spoofing Attack on HM** : https://www.linkedin.com/pulse/ot-cyber-attack-workshop-case-study-02-arp-spoofing-hmi-yuancheng-liu-howzc
+
+![](img/s_13.png)
+
+
+
+------
+
+> last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 22/06/2025 if you have any problem, please send me a message. 
 
