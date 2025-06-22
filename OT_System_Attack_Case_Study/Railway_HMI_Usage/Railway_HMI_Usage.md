@@ -108,7 +108,7 @@ Handles program configuration, logging, and global state variables:
 
 ------
 
-### UI Design Introduction
+### HMI UI Design Introduction
 
 This section will introduce the User Interface design for each HMI.
 
@@ -150,45 +150,71 @@ The register ID and coil ID formatting follows conventions commonly used in Schn
 
 
 
-#### UI Introduction
+### HMI UI Display Introduction
 
-##### Signal System Monitor HMI
+This chapter introduces the User Interface (UI) design and core functional components of the four HMI types: Signal System Monitor HMI, Railway Block Monitor HMI, Railway Train Control HMI, and HQ Management HMI.
 
-The Junction and station signal link HMI detail is shown below:
+#### 1. Signal System Monitor HMI
+
+The Signal System Monitor HMI provides visualization of sensor-to-signal mapping within both station and junction areas. It is used to show the signal operations in relation to train presence and movement across track forks and platforms. The UI with detail function explanatory note is shown below :
 
 ![](img/s_05.png)
 
-The HMI contents below components and function:
+HMI Main Components:
 
-- A train sensors-signal relation map to show sensors state, signals state and the sensors-signals auto control relation ship (tracks-cross-junction and train-stations). 
-- Three PLC panel to show the junction-sensor-signal control system's Digital Input/Output state, PLC holding register state and the PLC Coils state. 
-- Three PLC panel to shoe the station-sensor-signal control system's Digital Input/Output state, PLC holding register state and the PLC Coils state. 
+- **Sensor-Signal Relation Map** : Displays real-time status of train sensors and signal lights. It also visualizes automatic control relationships based on track layout, station zones, and junction connections. If enable the signal light verify function, it will show the expected signal state based on the "internal ladder logic calculation" to compare with the raw data read from PLC.
+- **Three Station PLC Panels**: 3 PLC display panels [PLC-03, PLC-04, PLC-05] monitor input/output states related to sensors and signals at all the stations.
+- **Thee Junction PLC Panels**: 3 PLC display panels [PLC-00, PLC-01, PLC-02] monitor input/output states at railway junctions.  Each panel includes real-time display of PLC holding registers, digital input/output states, and coil activation statuses.
 
-**Railway Block Monitor HMI**
+This HMI plays a critical role in simulating switch misbehavior, light malfunction, or control failures under normal or attack conditions.
 
-The Railway Block Monitor HMI is shown below;
+
+
+#### 2. Railway Block Monitor HMI
+
+The Railway Block Monitor HMI focuses on block-level train control and ATP (Automatic Train Protection) management. It simulates block occupancy, sensor detection, and signal enforcement across train blocks. The UI with detail function explanatory note is shown below :
 
 ![](img/s_06.png)
 
-The HMI contents below components and function:
+HMI Main Components:
 
-- A train sensors-signal relation map to show sensors state, signals state and the sensors-signals auto control relation ship of each block on the track, station and junction. 
-- Two PLC panel to show the block-sensor-signal control system's Digital Input/Output state, PLC holding register state and the PLC Coils state. 
-- A PLC control override panel for operator to enable or disable the PLC's ATP(auto train protection) control, when the check box is check, the PLC block ATP function will work normally, then the check box is uncheck, the ATP function will be disabled and the signal will remain the last state and the operator can use the block control to manual change the signal state.
+- **Block Sensor-Signal Control Map**: Provides real-time visibility into block occupation status, sensor triggers, and signal transitions in stations and junctions.
+- **Two PLC State Panels**: 2 PLC Display Panels to show I/O signal states and register/coils from block control PLCs.
+- **ATP Control Override Panel** : Allows manual override of the PLC's ATP function. Enabled (Checkbox Checked): ATP logic operates normally through PLC ladder control. Disabled (Checkbox Unchecked): ATP logic is bypassed, and signal states remain frozen (keep the current state) or manually controlled by the operator.
+
+This HMI is especially useful in demonstrating the impact of cyber tampering with ATP logic or unauthorized control access.
 
 
 
-##### Railway Train Control HMI
+#### 3. Railway Train Control HMI
 
-The Railway Railway Train Control HMI is shown below:
+The Railway Train Control HMI is designed for monitoring individual train systems, including traction power, radar input, and real-time diagnostics. It supports both operational simulation and cybersecurity testing. The UI with detail function explanatory note is shown below :
 
 ![](img/s_07.png)
 
-The HMI contents below components and function:
+Main Components:
 
-- 10 Trains information panel + 2 place holder with a gauge to show the trains related information: Train-ID, Current Speed, average, 3rd track input power state, 3rd track input Current,  3rd track input Voltage and 3rd track power control buttons 
-- One RTU connection panel to show the train front radar detection state. 
-- One RTU Information sheet with 2 mode: If test mode off , the sheet will show the raw RTU feed back data, if test mode on it is for the user to type in the numbers to test the alert handling and the data filter function. Example, if the user set the speed alert to 90km/h, type in 100 in 3 column to check whether the alert will be triggered and alert dialog will pop-up
-- Two PLC state display panel to show the state of holding registers and output coils for control the 3rd power track.
-- One Train collision auto avoidance backdoor control to on/off trains auto-safety  control used for cyber attack demo.
+- **Train Information Panels** : 10 train information panels and 2 placeholders provide detailed telemetry for each train, including: Train ID, Current and Average Speed, 3rd Rail Power Input: Voltage, Current, and Power State and Control Buttons for 3rd Rail Power Toggle. 
+- **RTU Radar State Panel**: 10 indicators to display the obstacle detection status from front-facing radar sensors.
+- **RTU Information Sheet** : 1 RTU information sheet with 2 function. Normal Mode (`test mode false`) : Displays raw feedback data from RTUs. Test Mode: Allows users to manually input test values (e.g., speed or power) to validate alert and data filtering functions.
+- **PLC State Display Panels** : 2 PLC display panels show live holding register and coil state used to control 3rd rail power.
+- **Auto-Avoidance Backdoor Switch** Provides a backdoor toggle control for enabling/disabling the auto-train collision avoidance system—primarily used in cyberattack demo scenarios to illustrate effects of unauthorized overrides. 
+
+
+
+#### 4. HQ Management HMI
+
+The HQ Management HMI acts as the supervisory-level interface for control room operators. It provides an overview of the full railway system’s operational status and enables strategic decision-making. The UI with detail function explanatory note is shown below :
+
+![](img/s_08.png)
+
+Main Components:
+
+- **22 Station Monitor Indicators** : Display the state of entrance/exit signals, platform doors, and associated door lighting for each monitored station.
+- **10 Train Indicators** : Show the current position of each train based on block occupancy, following a fixed-block railway control model.
+- **6 Track-End Buffer Area Indicators**: Monitor signal states at the physical end-points of the tracks.
+- **5 Double-Track Junction Indicators** : Show real-time signal and block states at major junctions where two tracks with  multi-crosses. 
+- **9 Signal-Track Junction Indicators**: Display control states and signals at forked junctions involving fork entrance signal and the junction block state. 
+
+This interface provides centralized visibility and is vital for cyber situational awareness, abnormal pattern detection, and incident response coordination.
 
