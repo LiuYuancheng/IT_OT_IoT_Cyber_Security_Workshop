@@ -255,42 +255,62 @@ This interface provides centralized visibility and is vital for cyber situationa
 
 ### HMI Usage and Defense Case Study
 
-This section will introduce some simple cases for the blue team to use the HMI to detect the possible cyber attack. 
+This section will introduce three case studies demonstrating how Human-Machine Interfaces (HMIs) in the Land-Based Railway Cyber Range can be actively used by blue team defenders to detect and respond to potential Operational Technology (OT) cyberattacks. These scenarios illustrate the value of real-time monitoring, sensor-signal verification, and cross-HMI data consistency in cyber defense operations.
 
-#### Detect possible False command injection attack on PLC 
+#### Case 1: Detecting False Command Injection on PLCs
 
-This is a simple example to use Sensor-Signal Relationship Diagram to detect abnormal scenario and raise alert : 
+**Objective**: Use the HMI’s Sensor-Signal Relationship Diagram to detect inconsistencies between actual PLC output and expected output computed from ladder logic. The steps are shown in below picture:
 
 ![](img/s_10.png)
 
-- Step 1 : In physical world simulator, train triggered the junction entrance sensor, PLC contact input changes the register’s state
-- Step 2: In the Sensor-Signal Relationship Diagram,  the sensor will show triggered state (yellow color)
-- Step 3: HMI execute the ladder logic, calculate change the coil sate [Signal Red]
-- Step 4: Compare the S-CC-0 Signal state (calculated ) with the PLC Display Panel Scc00 (fetch from PLC directly), if same, verification pass, raise alert.  
+**Detail Steps**:
 
-#### Detect possible False command injection attack on RTU
+- **Sensor Triggered**: In the physical world simulation, a train approaches a junction and triggers the entrance sensor. This causes the corresponding PLC contact input register to change state in the HMI's PLC display panel.
+- **Sensor Update in HMI** : The Sensor-Signal Relationship Diagram reflects the sensor status ( blinking with yellow and light blue color), indicating it was triggered.
+- **Signal Simulation** : The HMI control module internally executes the same ladder logic as the PLC to calculate the expected output state — in this case, the junction signal should turn red to block trains on orange line.
+- **Result Verification** : The system compares the calculated signal state (e.g., S-CC-0) with the value shown in the PLC Display Panel (e.g., Scc00). If both match, the system passes verification, If they do not match, the HMI raises an alert for a possible false command injection attack. 
 
-This is a simple example to use HQ management HMI to detect abnormal scenario and raise alert : 
+
+
+#### Case 2: Detecting False Command Injection on RTUs
+
+**Objective**: Use multi-layer HMI verification to identify potential RTU memory manipulation or forged data injection attack. The steps is shown below : 
 
 ![](img/S_11.png)
 
-Step 1 : the PLC display panel shows the station sensor is triggered 
+**Detail Steps**:
 
-Step 2: Check the calculated signal’s state from the Sensor-Signal Relationship Diagram
+- **Sensor Triggered** : The station train position sensor is triggered, and the change is displayed on the PLC Panel.
+- **Simulated Signal State** : The HMI controller module calculates the expected state of the signal based on ladder logic and show the station state in Sensor-Signal Relationship Diagram.
+- **Comparison with PLC Output** : The system compares the calculated signal (e.g., ST[0]) with the actual value retrieved from the PLC (e.g., STns00).
+- **Cross-HMI Validation** : The calculated and reported states are validated against the **HQ Management HMI**, confirming that database records update as expected.
+- **Train Position Check** : The fixed-block track system in the Management HMI is checked to verify train location. If the train is not in the expected station block, this may indicate a false data injection attack on the RTU's memory as the train position value is periodic updated by RTU. 
 
-Step 3: Compare the ST[0] Signal state (calculated ) with the PLC Display Panel STns00 (fetch from PLC directly), if same, verification pass, raise alert.  
 
-Step 4: Mapping to the management HMI to confirm data update correctly in data base
 
-Step 5 : check the position of the train on the fixed block if the train position not in the station block, means the RTU data is abnormal, there may be false data injection attack on the RTU memory 
+#### Case 3: Detecting ARP Spoofing via PLC Connection Panel
 
-#### Detect Possible ARP spoofing from the PLC connection Panel
+**Objective**: Identify ARP spoofing and communication drop attacks using HMI network behavior indicators. This case demonstrates how blue team members can detect ARP spoofing attacks that may silently drop or redirect communication between the HMI and PLCs. The observation is shown below:
 
-To detect the APT spoofing packet drop attack please follow the observation describe in this case study
+![](img/s_13.png)
+
+Possible observations include:
+
+- **Intermittent or permanent disconnection status** on the **PLC connection panel**
+- **Missing or stale data updates** in the PLC register display
+- **Mismatch between signal state and sensor feedback** over tim
+
+For the case study detail, please refer to this:
 
 **OT Cyber Attack Workshop [ Case Study 02 ]: ARP Spoofing Attack on HM** : https://www.linkedin.com/pulse/ot-cyber-attack-workshop-case-study-02-arp-spoofing-hmi-yuancheng-liu-howzc
 
-![](img/s_13.png)
+
+
+------
+
+### Conclusion
+
+This article has detailed the practical implementation and operational utility of four specialized Human-Machine Interfaces (HMIs) within a land-based railway cyber range. By leveraging a **modular, multithreaded software architecture**, these HMIs ensure real-time data processing, robust communication, and intuitive user interaction—critical for both routine operations and high-stakes cybersecurity exercises. The UI designs, tailored for distinct operational roles (signal monitoring, block control, train management, and central oversight), provide granular visibility into PLC states, sensor-signal relationships, and system-wide dynamics. Crucially, the defense case studies demonstrated how these HMIs empower OT engineers to **detect and mitigate sophisticated attacks**—such as false command injection and ARP spoofing—through real-time verification, cross-HMI consistency checks, and anomaly-driven alerts. Together, these interfaces bridge the gap between physical operations and cyber defense, proving that well-designed HMIs are indispensable tools for enhancing resilience in critical railway infrastructure.
 
 
 
