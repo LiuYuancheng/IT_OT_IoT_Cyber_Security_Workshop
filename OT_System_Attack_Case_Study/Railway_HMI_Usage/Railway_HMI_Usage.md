@@ -163,7 +163,7 @@ PLC Information Section provides metadata and communication details about the co
 - **Port**: Port number used for communication (e.g., `502` for Modbus-TCP).
 - **Connection State**: Displays whether the HMI is currently connected to the PLC. (Green = Connected, Yellow = High latency, Gray = Disconnected)
 
-PLC State Display Section section shows the real-time data read directly from the PLC ladder logic and maps it to the physical world components. The display is divided into five key columns:
+PLC State Display section shows the real-time data read directly from the PLC ladder logic and maps it to the physical world components. The display is divided into five key columns:
 
 - **Physical World Sensor ID** : Shows the sensor connected to the PLC input contact. Format: `<LineID>_<SensorType><Index>`. 
   Example: `west08` = WE Line (we), Station (st) 08 sensor.
