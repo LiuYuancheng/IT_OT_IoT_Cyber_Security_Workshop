@@ -44,7 +44,9 @@ The train simulation system is one of the core components of the land-based rail
 
 ![](img/s_03.png)
 
-Each train is a self-contained unit that interacts with its environment—including track signals, power systems, and sensors—while being monitored and controlled through two main interfaces:
+Each train is a self-contained unit that interacts with its environment—including track signals, power systems, and sensors—while being monitored and controlled through two main interfaces as shown below:
+
+![](img/s_02.png)
 
 - **On-Train Driver Console** (local control HMI)
 - **HQ Train Monitoring HMI** (central supervisory interface)
@@ -77,3 +79,36 @@ These operational states help replicate realistic behaviors in response to fault
 
 ------
 
+### System Design of the Simulated Train
+
+For the simulated train, we implement the components as shown below diagram with 4 different sub system: 
+
+- Trains power control sub-system
+- Trains auto pilot control sub-system 
+- Trains driving control sub-system 
+- Trains operation information report sub-system
+
+![](img/s_05.png)
+
+#### Trains power Control subsystem
+
+I simulate the third rail track power supply solution for providing the power to trains, for the 3rd track power please refer to this link: https://www.railway-technology.com/features/overhead-lines-vs-third-rail-how-does-rail-electrification-work/?cf-view&cf-closed. Each block of the third track will provide 750VDC to the linked train to that specific block, each block's power is controlled by the third track block power control PLC which linked to HQ, so if HQ detected any emergency situation, it can cut off the power supply of the third track. On the train side there is another power input breaker to control the power from the 3rd track power to train link, this breaker can be cut off by the on-train's emergency stop button. So need both the 3rd track power breaker and the train input power breaker on then the train will get power.
+
+The main components of the trains power system:
+
+- Third rail track power : The power link next to the track to provide 750V-DC power for the trains. 
+- Third track block power control PLC: PLC in the railway SCADA network all the HQ train operation HMI to control the thrid track's power state. 
+- Third track power block Input control breakers : Breaker on track control by third track block power control PLC to provide power from 3rd rail track to the track-train power link. 
+- Train input power control breaker: Breakers on train control the power from  track-train power link to the train's internal circuit. 
+
+#### Trains auto pilot control sub-system 
+
+I simulate the train auto pilot control system on the train, the train will auto brake, accelerate, dock and departure based on the signals along the track. at the train head, there is one train front signal state receiver to receive the signal instruction in front the train under a distance. The receiver will linked to the train driving PLC, if the train front receiver receive the stop / front block lock signal, it will turn off the motor and turn on the air break to decrease the speed and stop, if it receive the front clear / lock release signal, it will turn on the motor and release the break to make the train accelerate. The Train also have one front radar for train detection, it will scan the train front safety distance to avoid the collision, if the radar detect a train in front less than the safety distance, it will auto trigger the brake procedure of the train.
+
+The main components of the Trains auto pilot control sub-system: 
+
+- Train front radar : A Rada sensor scan the safety distance (pixel area in the physical world simulation) to detect whether there is a train in front less that the safety distance, then send the information to Train driving control PLC. 
+- Train front signal state receiver : receiver to get the front nearest railway tracks' signal state and send the information to train driver PLC.
+- Train driving control PLC : The PLC will auto-control ladder logic to control the train motor and air brake based on the front radar and signal state receiver's feed back. 
+
+#### Trains driving control sub-system 
