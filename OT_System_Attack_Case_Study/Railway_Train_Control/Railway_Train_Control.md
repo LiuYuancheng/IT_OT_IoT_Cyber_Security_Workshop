@@ -175,51 +175,94 @@ This reporting loop ensures HQ can monitor speed, power state, brake pressure, s
 
 ### Network and Communication Configuration
 
-The train control system includes 3 different subnets with 5 buses. In the simulation we use 2 PLC simulation program control train in the OT train OT network. one RTU simulation program to collect the data from  physical world simulator and transfer the data to the on Train OT network and the Railway SCADA network.  The data flow sequence will be physical world simulator => PLC/RTU simulation program => related HMI program (driver console/HQ train monitor HMI)
+The simulated railway train control system is built on a modular communication architecture consisting of three major network subnets and five functional communication buses. This networked environment supports both control and monitoring across multiple components including simulated PLCs, RTUs, driver consoles, and HQ monitoring HMIs.
 
-- Electrical Signal Simulation Subnet : the green team network with UDP communication to simulate the electrical signal exchange. The VM and Bus in this subnet are: Railway Physical-world Simulator, Railway 3rd tack power switches control PLCs(PLC-06, PLC-07), On train operation control PLC (PLC-11, PLC12), On train RTU (RTU00 - RTU09), Electrical signal communication bus. 
-- On Train local SCADA network : The network on-side the train to link the on train OT controllers (PLC and RTU) with the train driver console. The VM and Bus in this subnet are: On train operation control PLC (PLC-11, PLC12), On train RTU (RTU00 - RTU09), on-Train Modbus-TCP bus, on-Train S7comm bus, train driver console HMI.
-- Railway SCADA network : The railway network outside the train included the 3rd rail track control PLC (wire connection ) and the train Information Report RTU to connect to the HQ train monitor HMI. The VM and Bus in this subnet are: Railway 3rd tack power switches control PLCs(PLC-06, PLC-07), railway SCADA s7Comm wireless bus, HQ Train monitoring HMI.
+To model realistic industrial OT behavior while enabling cybersecurity training, the simulation separates functions into isolated logical zones, while also exposing selective parts of the network to red/blue team interaction.
 
-The network diagram is shown below: 
+The data flow across the system follows this sequence:
+
+> Physical World Simulator → PLC/RTU Simulation → HMI Interfaces (Driver Console / HQ Train Monitor HMI)
+
+The diagram below illustrates the full communication structure and component relationships:
 
 ![](img/s_06.png)
 
-As shown in the network diagram, there are five different buses in the system.
+This distributed but logically compartmentalized network enables precise modeling of railway control and communication behavior while allowing cyber defenders (blue team) and attackers (red team) to train and test their skills in a safe, controlled simulation environment.
 
-Electrical signal communication bus : 
+#### Three Network Subnets
 
-- Function: Use high frequency UDP to link the OT devices (PLC, IED, RTU) and physical world components (breaker, motor, sensors) to simulate the electrical signal (such as voltage change) between physical devices and OT controllers. 
-- Data Protocol : UDP (Text format, wire connection)
-- Cyber exercise configuration : This bus will be isolated in green team networks, blue team and red team can not access the network. 
+The network topology consists of the following three subnets:
 
-On-Train PLC Communication Bus
+**Electrical Signal Simulation Subnet**
 
-- Function : The communication bus in On-Train local SCADA network for the train driver console to read data from and send control command to the on-Train PLCs(PLC11, PLC12). 
-- Data Protocol : Modbus-TCP (wire connection)
-- Cyber exercise configuration : This bus will be isolated in blue team subnet, only blue team (train driver) can access this network, the red team can not attack this network.
+- Function : Simulates the signal exchange between physical-world components (motors, sensors, breakers) and all the lvl1 OT controller devices.
+- Devices and Comm-Bus: Railway Physical-world Simulator, 3rd Rail Track Power Control PLCs (PLC-06, PLC-07), On-Train Operation PLCs (PLC-11, PLC-12), On-Train RTUs (RTU00–RTU09), Electrical Signal Communication Bus.
+- IP Range: `10.0.10.X`
 
-On-Train RTU Communication bus
+**On-Train Local SCADA Network**
 
-- Function : The communication bus in On-Train local SCADA network for the train driver console to read all the sensor and meter's data from the on-Train RTU (RTU00 - RTU09)
-- Data Protocol : Siemens-S7Comm (wire connection)
-- Cyber exercise configuration : This bus will be isolated in blue team subnet, only blue team (train driver) can access this network, the red team can not attack this network.
+- Function : Provides internal communication between train level-1 OT controllers and the level-2 train driver console.
+- Devices and Comm-Bus : On-Train PLCs (PLC-11, PLC-12), On-Train RTUs (RTU00–RTU09), Train Driver Console HMI, On-Train PLC Communication Bus, On-Train RTU Communication Bus
+- IP Ranges:  `192.168.101.0/24`, `192.168.102.0/24`
 
-Railway 3rd rail track PLC Communication Bus
+**Railway SCADA Network**
 
-- Function : The communication bus in the Railway SCADA network for the HQ train monitoring HMI to connect to the  Railway 3rd tack power switches control PLCs(PLC-06, PLC-07) to read and control the power state. 
-- Data Protocol : Modbus-TCP (wire connection)
-- Cyber exercise configuration : This bus is open for the blue team and the red team to access. 
+- Function : External SCADA network outside the train included the 3rd rail track control PLC and the train Information report RTU used by HQ for monitoring and control.
+- Devices and Comm-Bus : 3rd Rail Track Power PLCs (PLC-06, PLC-07), On-Train RTUs (RTU00–RTU09), HQ Train Monitoring HMI, Railway 3rd Rail Track PLC Communication Bus, Railway SCADA S7Comm RTU Communication Bus.
+- IP Ranges: `192.168.100.0/24`, `192.168.10.X`
 
-Railway SCADA s7Comm RTU Communication  bus
+#### Five Communication Data Buses
 
-- Function : The communication bus in the Railway SCADA network for the on-Train RTU (RTU00 - RTU09) to report the train operation state to HQ train monitoring HMI through wireless connection
-- Data Protocol : Siemens-S7Comm (wireless connection)
-- Cyber exercise configuration : This bus is open for the blue team and the red team to access. 
+**Electrical Signal Communication Bus**
+
+- Function: Simulates wire connection electrical signals (e.g., power coil activation, radar inputs) exchanged between physical devices and OT controllers.
+
+- Protocol: UDP (text-based signal exchange)
+- Access Policy: Isolated in Green Team network, Not accessible to Blue or Red teams
+
+**On-Train PLC Communication Bus**
+
+- Function: Facilitates wire connection data exchange between the Train Driver Console and onboard PLCs for throttle, brake, door, and autopilot control.
+- Protocol: Modbus-TCP
+- Access Policy: Isolated in Blue Team network, Not accessible to Red Team
+
+**On-Train RTU Communication Bus**
+
+- Function: Allows the Train Driver Console to collect real-time sensor and meter data from RTUs.
+- Protocol: Siemens S7Comm
+- Access Policy: Isolated in Blue Team network, Not accessible to Red Team
+
+**Railway 3rd Rail Track PLC Communication Bus**
+
+- Function: Connects HQ Train Monitor HMI to the 3rd Track Power Control PLCs to monitor and switch block power status.
+- Protocol: Modbus-TCP
+- Access Policy: Accessible to both Blue and Red teams, Target for SCADA network attack simulations
+
+**Railway SCADA S7Comm RTU Communication Bus**
+
+- Function: Enables On-Train RTUs to report operational status wirelessly to the HQ Train Monitor HMI.
+- Protocol: Siemens S7Comm (wireless)
+- Access Policy: Accessible to both Blue and Red teams, Target for communication spoofing or interception
 
 
 
 ------
+
+### Train Control Interfaces
+
+There are 3 different control interfaces to control the train.
+
+#### Simulated Physical control interface
+
+The simulated physical interface is using the program to simulate the physical breaker, emergency button on the train, the simulated physical control interface is located in the physical world simulator's left side as shown below:
+
+![](img/s_07.png)
+
+When the user press the green button, it will turn on the on-train power input breaker, if the user press the red emergency button, it will turn off the on-train power input breaker. If the user press the blue "reset" button, it will reset the train to its init state. 
+
+
+
+
 
 
 
