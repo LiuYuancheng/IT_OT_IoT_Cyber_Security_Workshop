@@ -81,34 +81,150 @@ These operational states help replicate realistic behaviors in response to fault
 
 ### System Design of the Simulated Train
 
-For the simulated train, we implement the components as shown below diagram with 4 different sub system: 
+The simulated train in the land-based railway cyber range is built as a modular system comprising four interconnected subsystems. Each subsystem is mapped to physical world behaviors and enables cyber-physical interaction between the virtual environment and control logic. The 4 train sub-system are: 
 
-- Trains power control sub-system
-- Trains auto pilot control sub-system 
-- Trains driving control sub-system 
-- Trains operation information report sub-system
+- Train Power Control Subsystem
+- Train Auto Pilot Control Subsystem
+- Train Driving Control Subsystem
+- Train Operation Information Report Subsystem
+
+The design not only supports autonomous operation but also enables manual control, monitoring, and communication with a simulated railway SCADA network. The overall structure is illustrated in the diagram below:
 
 ![](img/s_05.png)
 
-#### Trains power Control subsystem
 
-I simulate the third rail track power supply solution for providing the power to trains, for the 3rd track power please refer to this link: https://www.railway-technology.com/features/overhead-lines-vs-third-rail-how-does-rail-electrification-work/?cf-view&cf-closed. Each block of the third track will provide 750VDC to the linked train to that specific block, each block's power is controlled by the third track block power control PLC which linked to HQ, so if HQ detected any emergency situation, it can cut off the power supply of the third track. On the train side there is another power input breaker to control the power from the 3rd track power to train link, this breaker can be cut off by the on-train's emergency stop button. So need both the 3rd track power breaker and the train input power breaker on then the train will get power.
 
-The main components of the trains power system:
+#### 1. Train Power Control Subsystem
 
-- Third rail track power : The power link next to the track to provide 750V-DC power for the trains. 
-- Third track block power control PLC: PLC in the railway SCADA network all the HQ train operation HMI to control the thrid track's power state. 
-- Third track power block Input control breakers : Breaker on track control by third track block power control PLC to provide power from 3rd rail track to the track-train power link. 
-- Train input power control breaker: Breakers on train control the power from  track-train power link to the train's internal circuit. 
+This subsystem simulated the third rail electrification track infrastructure used in urban rail systems (as shown in the top part of the diagram). Each track block provides 750V DC to the train through a third rail segment, controlled by 3rd-track-side PLCs and HQ. For the train to receive power, two conditions must be met:
 
-#### Trains auto pilot control sub-system 
+- The **third track block input breaker** (track-side) must be ON
+- The **train’s onboard power breaker** must also be ON
 
-I simulate the train auto pilot control system on the train, the train will auto brake, accelerate, dock and departure based on the signals along the track. at the train head, there is one train front signal state receiver to receive the signal instruction in front the train under a distance. The receiver will linked to the train driving PLC, if the train front receiver receive the stop / front block lock signal, it will turn off the motor and turn on the air break to decrease the speed and stop, if it receive the front clear / lock release signal, it will turn on the motor and release the break to make the train accelerate. The Train also have one front radar for train detection, it will scan the train front safety distance to avoid the collision, if the radar detect a train in front less than the safety distance, it will auto trigger the brake procedure of the train.
+These dual-breaker safety controls reflect real-world redundancy and support emergency power cut-off functionality.
 
-The main components of the Trains auto pilot control sub-system: 
+**Key components:**
 
-- Train front radar : A Rada sensor scan the safety distance (pixel area in the physical world simulation) to detect whether there is a train in front less that the safety distance, then send the information to Train driving control PLC. 
-- Train front signal state receiver : receiver to get the front nearest railway tracks' signal state and send the information to train driver PLC.
-- Train driving control PLC : The PLC will auto-control ladder logic to control the train motor and air brake based on the front radar and signal state receiver's feed back. 
+- **Railway Third Track Power (750V DC):** Simulated third rail providing traction DC power.
+- **Third Track Block Power Control Breakers:** Controlled by the SCADA-integrated PLCs, these breakers supply power from the track to the train-3rdTrack power connection link.
+-  **Train-3rdTrack power** : Link between the train and 3rd rail electrification track to transfer power to the train.
+- **Train Input Power Control Breaker:** A local breaker onboard the train, operated by the emergency stop button or driver console.
+- **Third Track Block Power Control PLC:** Controlled via Modbus-TCP from the HQ Train Operation HMI.
 
-#### Trains driving control sub-system 
+For the 3rd track power technical details please refer to this link: https://www.railway-technology.com/features/overhead-lines-vs-third-rail-how-does-rail-electrification-work/?cf-view&cf-closed.
+
+
+
+#### 2. Train Auto Pilot Control Subsystem
+
+This subsystem enables autonomous operation such as braking, acceleration, and responding to track signals. Two primary on train sensors guide this behavior:
+
+- A **signal state receiver** at the train’s front detects upcoming track signals (e.g., STOP or CLEAR).
+- A **front radar** monitors safety distance ahead to prevent collisions.
+
+These sensor inputs are processed by the **onboard PLC**, which uses ladder logic to automatically control motor and brake behavior.
+
+**Key components:**
+
+- **Train Front Signal State Receiver:** Detects the nearest signal ahead and transmits the state to the PLC.
+- **Train Front Radar:** Scans the area in front of the train for check whether obstacles or other trains in safety distance range.
+- **Train Driving Control PLC:** Connect to the train motor and brake, executes logic to brake or accelerate based on sensor inputs.
+
+Typical behaviors include:
+
+- Signal RED / Blocked → Brake Activated, Motor Off
+- Signal GREEN / Clear → Brake Released, Motor On
+- Radar detects nearby train → Brake Activated to avoid collision
+
+
+
+#### 3. Train Driving Control Subsystem
+
+This subsystem simulates the physical mechanisms for motion, braking, and performance monitoring. It includes simulated actuators (motor and air brake) and sensors (speed, current, voltage, pressure) that work together to represent the train's dynamic state.
+
+Manual override is available via the **on-train driver console**, allowing the operator to switch off auto-pilot and take control using throttle, brake, and other controls.
+
+**Key components:**
+
+- **Train Driving DC Motor & Air Brake:** Execute train physical movement and braking.
+- **Train Speed & Motor RPM Meter:** Monitor real-time speed and motor RPM performance.
+- **Electric Current & Voltage Meters:** Measure power (current and voltage) input from third rail track.
+- **Air Brake Pressure Meter:** Measures air brake pressure ( PSI ) for braking control.
+- **Train Driving Control PLC:** Central logic controller managing actuators and safety inputs.
+- **Onboard RTU:** Gathers sensor data and reports it to the console and SCADA system.
+- **Train Driver Console (HMI):** Interface for manual train operation, including throttle/brake control, door operation, and state monitoring.
+
+
+
+#### 4. Train Operation Information Report Subsystem
+
+To maintain centralized situational awareness, each train reports its operational state to the HQ control center in real time via a **wireless SCADA link**. This simulates a 5G or radio communication network, and uses the Siemens  S7Comm protocol to transmit data from the train’s RTU to the HQ Train Monitoring HMI.
+
+**Key components:**
+
+- **Onboard RTU:** Collects sensor data and sends it via communication link.
+- **On-Train Antenna:** Simulated radio antenna linking from train to railway SCADA network.
+- **Railway Train Communication Antenna:** Network endpoint receiving train telemetry and integrate in the railway SCADA network.
+- **HQ Train Monitoring HMI:** Central dashboard HMI in HQ control center showing all train states, alerts, and statuses for supervisory control.
+
+This reporting loop ensures HQ can monitor speed, power state, brake pressure, signal compliance, and emergency conditions across all trains in the network.
+
+
+
+------
+
+### Network and Communication Configuration
+
+The train control system includes 3 different subnets with 5 buses. In the simulation we use 2 PLC simulation program control train in the OT train OT network. one RTU simulation program to collect the data from  physical world simulator and transfer the data to the on Train OT network and the Railway SCADA network.  The data flow sequence will be physical world simulator => PLC/RTU simulation program => related HMI program (driver console/HQ train monitor HMI)
+
+- Electrical Signal Simulation Subnet : the green team network with UDP communication to simulate the electrical signal exchange. The VM and Bus in this subnet are: Railway Physical-world Simulator, Railway 3rd tack power switches control PLCs(PLC-06, PLC-07), On train operation control PLC (PLC-11, PLC12), On train RTU (RTU00 - RTU09), Electrical signal communication bus. 
+- On Train local SCADA network : The network on-side the train to link the on train OT controllers (PLC and RTU) with the train driver console. The VM and Bus in this subnet are: On train operation control PLC (PLC-11, PLC12), On train RTU (RTU00 - RTU09), on-Train Modbus-TCP bus, on-Train S7comm bus, train driver console HMI.
+- Railway SCADA network : The railway network outside the train included the 3rd rail track control PLC (wire connection ) and the train Information Report RTU to connect to the HQ train monitor HMI. The VM and Bus in this subnet are: Railway 3rd tack power switches control PLCs(PLC-06, PLC-07), railway SCADA s7Comm wireless bus, HQ Train monitoring HMI.
+
+The network diagram is shown below: 
+
+![](img/s_06.png)
+
+As shown in the network diagram, there are five different buses in the system.
+
+Electrical signal communication bus : 
+
+- Function: Use high frequency UDP to link the OT devices (PLC, IED, RTU) and physical world components (breaker, motor, sensors) to simulate the electrical signal (such as voltage change) between physical devices and OT controllers. 
+- Data Protocol : UDP (Text format, wire connection)
+- Cyber exercise configuration : This bus will be isolated in green team networks, blue team and red team can not access the network. 
+
+On-Train PLC Communication Bus
+
+- Function : The communication bus in On-Train local SCADA network for the train driver console to read data from and send control command to the on-Train PLCs(PLC11, PLC12). 
+- Data Protocol : Modbus-TCP (wire connection)
+- Cyber exercise configuration : This bus will be isolated in blue team subnet, only blue team (train driver) can access this network, the red team can not attack this network.
+
+On-Train RTU Communication bus
+
+- Function : The communication bus in On-Train local SCADA network for the train driver console to read all the sensor and meter's data from the on-Train RTU (RTU00 - RTU09)
+- Data Protocol : Siemens-S7Comm (wire connection)
+- Cyber exercise configuration : This bus will be isolated in blue team subnet, only blue team (train driver) can access this network, the red team can not attack this network.
+
+Railway 3rd rail track PLC Communication Bus
+
+- Function : The communication bus in the Railway SCADA network for the HQ train monitoring HMI to connect to the  Railway 3rd tack power switches control PLCs(PLC-06, PLC-07) to read and control the power state. 
+- Data Protocol : Modbus-TCP (wire connection)
+- Cyber exercise configuration : This bus is open for the blue team and the red team to access. 
+
+Railway SCADA s7Comm RTU Communication  bus
+
+- Function : The communication bus in the Railway SCADA network for the on-Train RTU (RTU00 - RTU09) to report the train operation state to HQ train monitoring HMI through wireless connection
+- Data Protocol : Siemens-S7Comm (wireless connection)
+- Cyber exercise configuration : This bus is open for the blue team and the red team to access. 
+
+
+
+------
+
+
+
+
+
+------
+
+> last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 04/07/2025 if you have any problem, please send me a message. 
