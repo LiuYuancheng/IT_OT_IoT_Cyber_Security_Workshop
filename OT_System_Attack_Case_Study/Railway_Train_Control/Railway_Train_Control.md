@@ -248,23 +248,95 @@ The network topology consists of the following three subnets:
 
 ------
 
+### Trains Collision Avoidance Control Logic
+
+In the land-based railway cyber range simulation, train safety is ensured through a dual-layered **collision avoidance system** that integrates both automated and manual control. The train control PLC wire connection and the ladder logic is shown below: 
+
+![](img/s_10.png)
+
+#### Auto Collision Avoidance Sub-system
+
+Each simulated train is equipped with a front radar, responsible for detecting any obstacles or other trains within a predefined safe distance (e.g., within the front radar detection area shown in the diagram). When another train or object is detected in this zone, the radar sends a signal to the onboard PLC input contact to set a holding register.
+
+- The PLC logic processes this input through a ladder diagram, which evaluates the radar signal stored in Holding Register HR0.
+
+- If the holding register is set, the ladder logic will deactivates Coil00 (Throttle) and activates the coil01(brake) control, bringing the train to a controlled halt.
+
+This automatic mechanism prevents rear-end or head-on collisions by responding in real-time without human intervention. To supplement the automated logic, train operators are given manual override capability via the **Train Driver Console**. 
+
+#### PLC Ladder Logic Implementation
+
+The simplified ladder logic and its hardware linkage are depicted in the diagram below:
+
+**Key Functional Elements:**
+
+- **Coil00**: Controls throttle and braking system. Automatically set `OFF` if radar detects a threat.
+- **Coil01**: Controls main power relay. Cut off during emergency stop.
+- **HR0 (Radar Sensor Input)**: Stores binary signal from the front detection radar. Triggers automatic braking logic.
+- **HR1 (Speed Sensor Input)**: Captures current train speed data and shares it with the HMI for monitoring and diagnosis.
+- **HMI Control Panel**: Provides visualization of all train parameters and allows manual input to override automation logic when needed.
+
+This layered collision avoidance system ensures the reliability and safety of the train simulation under both normal operations and cyber attack simulations. By combining **sensor-driven PLC logic** and **operator-controlled emergency systems**, the cyber range supports diverse training scenarios, including fault injection, signal spoofing, and manual override response drills.
+
+
+
+------
+
 ### Train Control Interfaces
 
-There are 3 different control interfaces to control the train.
+In the land-based railway cyber range system, three distinct control interfaces are implemented to simulate the management of train operations under both normal and cybersecurity exercise conditions. Each interface serves a different purpose and user role—ranging from physical simulation control to operational management and high-level monitoring.
 
-#### Simulated Physical control interface
 
-The simulated physical interface is using the program to simulate the physical breaker, emergency button on the train, the simulated physical control interface is located in the physical world simulator's left side as shown below:
+
+#### Simulated Physical Control Interface
+
+The **simulated physical interface** mimics the real-world control buttons found on an actual train, such as emergency stop buttons, power breakers, and reset controls. These controls are implemented on the **left panel of the Physical World Simulator**, as shown in the image below:
 
 ![](img/s_07.png)
 
-When the user press the green button, it will turn on the on-train power input breaker, if the user press the red emergency button, it will turn off the on-train power input breaker. If the user press the blue "reset" button, it will reset the train to its init state. 
+**Functionality:**
+
+- Green Button: Turns ON the on-train power input breaker, simulating activation of the train’s main power switch.
+- Red Emergency Button: Immediately turns OFF the train’s input power breaker, simulating an emergency shutdown.
+- Blue "Reset" Button: Resets the selected train to its initial state, clearing its sensors and internal state registers.
+
+This interface is typically used by simulation operators or instructors to simulate fault conditions, emergency stops, or reinitialization during exercises.
 
 
 
+#### Train Driver Control Console Interface
+
+The **Train Driver Console** serves as the main HMI for train operators, allowing for direct manual control and monitoring of a single train’s status and performance. It is used by blue team members acting as train drivers during simulation exercises.
+
+![](img/s_08.png)
+
+Key Features:
+
+- **PLC Status Panel**: Displays connectivity status, input/output coil values, and register data from the onboard train PLC.
+- **Driving Indicators**: Train Speed (km/h) gauge, Air Brake Pressure (psi) gauge, Throttle and Brake Percentage indicators.
+- **Manual Controls**: Throttle and Brake Sliders, Manual Mode Selector, Direction Control (Forward/Reverse), Speed Limit Settings, Station Dwell Time Controls, Train Door Control Buttons. 
+- **Operational State Monitors**: Power Input Voltage and Current, Train State Alerts (e.g., overcurrent, brake fault, emergency)
+- **Power Controls**: Onboard Power Input Breaker Control and Power Reset button.
+
+This HMI simulates the typical driver experience while supporting both manual override and diagnostics.
 
 
 
+#### Railway Train Control HMI (HQ Monitoring Interface)
+
+The **Railway Train Control HMI** is a supervisory interface used by HQ operators to monitor and manage the status of all trains across the network. It offers a centralized view into telemetry, control systems, safety signals, and RTU feedback, making it vital for both simulation and red/blue team cyber operations. The UI with detail function explanatory note is shown below :
+
+![](img/s_09.png)
+
+Main Components:
+
+- **Train Information Panels (10+2)**: Train ID, Current and Average Speed, 3rd Rail Power Input: Voltage, Current, and Power State, Remote Power Control Switches for each train. 
+- **RTU Radar State Indicators**: Live feed from front-facing train radar to detect obstacle presence.
+- **RTU Information Panel**: Displays real-time RTU sensor input data.
+- **PLC Control Panels**: Real-time view of Modbus/S7Comm coil and register state from the railway’s power control PLCs.
+- **Auto-Avoidance Backdoor Switch**: Toggles the automatic train collision avoidance logic.
+
+This HMI acts as both an **operational dashboard** and a **cyber training surface**, providing visibility into control integrity and anomaly response capabilities.
 
 
 
