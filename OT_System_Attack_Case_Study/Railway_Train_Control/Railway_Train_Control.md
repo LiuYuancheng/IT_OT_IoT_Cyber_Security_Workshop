@@ -15,6 +15,28 @@
 
 [TOC]
 
+- [OT Railway System Development [05]](#ot-railway-system-development--05-)
+    + [Design of the Train Control for Land-Based Railway Cyber Range](#design-of-the-train-control-for-land-based-railway-cyber-range)
+    + [Introduction](#introduction)
+    + [Overview of the Train Simulation System](#overview-of-the-train-simulation-system)
+      - [Key Features of Each Simulated Train](#key-features-of-each-simulated-train)
+      - [Operation States of the Simulated Train](#operation-states-of-the-simulated-train)
+    + [System Design of the Simulated Train](#system-design-of-the-simulated-train)
+      - [1. Train Power Supply Control Subsystem](#1-train-power-supply-control-subsystem)
+      - [2. Train Auto Pilot Control Subsystem](#2-train-auto-pilot-control-subsystem)
+      - [3. Train Driving Control Subsystem](#3-train-driving-control-subsystem)
+      - [4. Train Operation Information Report Subsystem](#4-train-operation-information-report-subsystem)
+    + [Network and Communication Configuration](#network-and-communication-configuration)
+      - [Three Network Subnets](#three-network-subnets)
+      - [Five Communication Data Buses](#five-communication-data-buses)
+    + [Trains Collision Avoidance Control Logic](#trains-collision-avoidance-control-logic)
+      - [Auto Collision Avoidance Sub-system](#auto-collision-avoidance-sub-system)
+      - [PLC Ladder Logic Implementation](#plc-ladder-logic-implementation)
+    + [Train Control User Interfaces](#train-control-user-interfaces)
+      - [Simulated Physical Control Interface](#simulated-physical-control-interface)
+      - [Train Driver Control Console Interface](#train-driver-control-console-interface)
+      - [Railway Train Control HMI (HQ Monitoring Interface)](#railway-train-control-hmi--hq-monitoring-interface-)
+
 ------
 
 ### Introduction
@@ -48,7 +70,7 @@ The train simulation system is one of the core components of the land-based rail
 
 ` Figure-01: Trains in physical world simulator, version v_0.0.2 (2025)`
 
-Each train is a self-contained unit that interacts with its environment—including track signals, power systems, and sensors—while being monitored and controlled through two main interfaces as shown below:
+Each train is a self-contained unit that interacts with its environment—including track signals, power systems, and sensors—while being monitored and controlled through two main interfaces as shown below :
 
 ![](img/s_02.png)
 
