@@ -155,7 +155,7 @@ Ensure that the following **VM flavors** are available in your OpenStack environ
 | standard.tiny   | 1     | 1         | 512      |
 | standard.small  | 1     | 20        | 2048     |
 | standard.medium | 2     | 40        | 4096     |
-| standard.large  | 4     | 80        | 8192     |
+| standard.large  | 8     | 80        | 8192     |
 | standard.xlarge | 16    | 160       | 32768    |
 
 > Note: These flavor names must exactly match those referenced in KYPO’s Terraform scripts and for the standard.xlarge it will be good to use 16 vCPU and 32GB Ram, otherwise based on my test there will be high possibility the deployment will hang or fail if you use 8vCPU and 16GB.
@@ -182,3 +182,389 @@ If you need to clear/remove all the kypo instance from Openstack, these are the 
 
 ------
 
+### Deployment of OpenStack Base Resources
+
+This section follows the official deployment guide from the KYPO GitLab repository:🔗 [BASE.md Deployment Instructions](https://gitlab.ics.muni.cz/muni-kypo-crp/devops/kypo-crp-tf-deployment/-/blob/master/BASE.md)
+
+#### Pre-configure Installation Files
+
+**Step-1 Clone the KYPO CRP Deployment Repository**  
+
+SSH into one of your OpenStack controller nodes and clone the official KYPO CRP deployment scripts (v1.1.4):
+
+```
+git clone -b v1.1.4 https://gitlab.ics.muni.cz/muni-kypo-crp/devops/kypo-crp-tf-deployment.git
+```
+
+**Step 2: Copy Credential Files to Controller**
+
+Copy the previously generated `app-credxxx-open-rc.sh` and `clouds.yaml` Scp the OpenStack controller node, put the `clouds.yaml` file under the `tf-head-services` and `tf-openstac-base`folder as shown below:
+
+```bash
+kypo@controller2:~/kypoInstall/kypo-crp-tf-deployment/tf-head-services$ ls
+clouds.yaml  kypo.tf  provider.tf  README.md  terraform.tfstate  terraform.tfstate.backup  tfvars  values.yaml  variables.tf
+```
+
+**Step-3: Step 3: Update Terraform Provider File**
+
+Modify the `tf-openstack-base/provider.tf` file to define the OpenStack provider by append below 3 lines in the file.
+
+```json
+provider "openstack" {
+  cloud = "openstack"
+}
+```
+
+**Step 4: Update Base Variables**
+
+Edit `tf-openstack-base/tfvars/vars-base.tfvars` with these parameters:
+
+```t
+deploy_flavors                      = false
+deploy_kubernetes_cluster           = true
+kypo_kubernetes_cluster_flavor_name = "standard.xlarge"
+kypo_proxy_flavor_name              = "standard.medium"
+```
+
+> Note: When I follow the Kypo-Crp official web use the `vars-all.tfvars`, there will be high possibility the Kypo-k8s cluster `uag-service` container get crash during the deployment. 
+
+**Step 5: Install Terraform**
+
+```
+sudo apt install snapd
+sudo snap install terraform --classic
+```
+
+
+
+#### Deploy OpenStack Base Resources
+
+**Step 1: Load Application Credential**
+
+Activate the OpenStack application credential for Terraform by sourcing the script:
+
+```bash
+source /path/to/app-cred-<name>-openrc.sh
+```
+
+**Step 2: Configure External Network**
+
+Copy and modify the deployment variable file:
+
+```bash
+cd tf-openstack-base
+cp tfvars/deployment.tfvars-template tfvars/deployment.tfvars
+```
+
+Identify your external OpenStack network:
+
+```
+openstack network list --external --column Name
++----------+
+| Name     |
++----------+
+| provider |
++----------+
+```
+
+Add string `provider` to the `external_network_name` parameter in `deployment.tfvars` as shown below:
+
+```
+external_network_name = "provider"
+```
+
+**Step 3: Run Terraform Deployment**
+
+Initialize and apply the Terraform configuration (recommend run under sudo and add auto-approve ):
+
+```
+sudo terraform init
+terraform apply --auto-approve -var-file tfvars/deployment.tfvars -var-file tfvars/vars-base.tfvars
+```
+
+**Step 4: Record Output Information**
+
+Upon successful deployment, Terraform will output key Kubernetes and proxy configuration data. Save this information for the next deployment step:
+
+```verilog
+cluster_ip = "192.168.200.207"
+kubernetes_client_certificate = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0t...="
+kubernetes_client_key = "LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0..."
+proxy_host = "192.168.200.216"
+proxy_key = "LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS..."
+```
+
+**Step 5: Verify Connectivity**
+
+Check that the required ports (e.g., SSH, HTTP, HTTPS) are open on the Kubernetes cluster IP:
+
+```verilog
+yuancheng@kcontroller1:~/kypoInstall/kypo-crp-tf-deployment/tf-openstack-base$ nmap -F 192.168.200.207
+Starting Nmap 7.80 ( https://nmap.org ) at 2023-02-02 06:41 UTC
+Nmap scan report for 192.168.200.207
+Host is up (0.00018s latency).
+Not shown: 95 filtered ports
+PORT     STATE  SERVICE
+22/tcp   open   ssh
+80/tcp   open   http
+443/tcp  open   https
+515/tcp  closed printer
+8443/tcp closed https-alt
+```
+
+**Important** :  All the 5 ports must be opened, otherwise mean the K8s cluster some pod got problem, and most of time it will be the problem of the traefik router init failed. If you login the KYPO controller node and list the process, the normal situation will be like this:
+
+![](img/s_06.png)
+
+If the traefik  is not start, which mean the deploy has been failed (as shown below)
+
+![](img/s_07.png)
+
+To solve this problem you need to change the version in file `deployment.tfvars` these 2 lines version are correct: 
+
+```
+kypo_crp_head_version         = "1.1.1"
+kypo_postgres_version         = "1.0.0"
+```
+
+And we can see that in the KYPO repo commit version `4b3b918` , they also did the downgrade to fix this bug:
+
+![](img/s_08.png)
+
+
+
+#### Deployment of KYPO-CRP Helm Application
+
+With the OpenStack base infrastructure ready, the next phase is to deploy the KYPO Cyber Range Platform (CRP) application using Helm.
+
+**Step 1: Configure Deployment Variables**
+
+Navigate to the `tf-head-services` directory, which contains the Terraform configuration files for deploying KYPO CRP components:
+
+```
+cd tf-head-services
+cp tfvars/deployment.tfvars-template tfvars/deployment.tfvars
+```
+
+Edit the `tfvars/deployment.tfvars` file and populate it with values captured from the previous infrastructure setup step. Below is a sample configuration:
+
+```python
+acme_contact = "demo@kypo.cz"
+application_credential_id = "9cd30053e56d4981806e83f08c2cb831"
+application_credential_secret = "kypotest7"
+gen_user_count = "100"
+
+git_config = {
+  type                 = "INTERNAL"
+  server               = "git-internal.kypo"
+  sshPort              = 22
+  restServerUrl        = "http://git-internal.kypo:5000/"
+  user                 = "git"
+  privateKey           = ""
+  accessToken          = "no-gitlab-token"
+  ansibleNetworkingUrl = "git@git-internal.kypo:/repos/backend-python/ansible-networking-stage/kypo-ansible-stage-one.git"
+  ansibleNetworkingRev = "v1.0.10"
+}
+
+guacamole_admin_password = "password"
+guacamole_user_password  = "password"
+
+head_host = "192.168.200.207"
+head_ip   = "192.168.200.207"
+
+kubernetes_host                = "192.168.200.207"
+kubernetes_client_certificate = "<Base64 Encoded Certificate>"
+kubernetes_client_key         = "<Base64 Encoded Private Key>"
+
+kypo_crp_head_version   = "1.1.1"
+kypo_postgres_version   = "1.0.0"
+os_auth_url             = "http://10.0.6.4:5000/v3/"
+
+oidc_providers = [
+  {
+    url              = "https://192.168.200.207:443/csirtmu-dummy-issuer-server/"
+    logoutUrl        = "https://192.168.200.207:443/csirtmu-dummy-issuer-server/endsession"
+    clientId         = "bFkibCmIhdoJJjExCZzuKSeOfDdjYkJETIjn"
+    label            = "Login with local issuer"
+    issuerIdentifier = ""
+    userInfoUrl      = ""
+    responseType     = ""
+  }
+]
+
+proxy_host = "192.168.200.216"
+proxy_key  = "<Base64 Encoded Proxy Private Key>"
+
+users = {
+  "kypo-admin" = {
+    iss        = "https://192.168.200.207:443/csirtmu-dummy-issuer-server/"
+    password   = "password"
+    email      = "kypo-admin@example.com"
+    fullName   = "Demo Admin"
+    givenName  = "Demo"
+    familyName = "Admin"
+    admin      = true
+  }
+}
+```
+
+Important note: For the `gen_user_count`, please set to a big number such as 300, otherwise you need to go to the K8s pod to add more new users after deploy finished. Later I will show how to add new users. 
+
+**Step 2: Deploy KYPO CRP with Terraform**
+
+With your `deployment.tfvars` file configured, initialize Terraform and apply the configuration to install the KYPO CRP Helm application:
+
+```
+terraform apply --auto-approve -var-file=tfvars/deployment.tfvars
+```
+
+Remark: If you want to start a clear new deployment, please remove the `terraform.tfstate`  file. 
+
+The Installation process will take about 9 - 13 mins if no error happens.
+
+```
+module.kypo_crp.helm_release.kypo_crp_head: Still creating... [11m20s elapsed]
+module.kypo_crp.helm_release.kypo_crp_head: Still creating... [11m30s elapsed]
+module.kypo_crp.helm_release.kypo_crp_head: Creation complete after 11m34s [id=kypo-crp-head]
+Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
+```
+
+If you find the installation take more than half hour, there will be high possibility the deploy fail, base on my test some times it will time out , some times it will hang there. 
+
+**Step-3: Test access the Kypo-dashboard and login**
+
+Access the KYPO dashboard by the url `https://<head_host>` , if the dashboard below show up, which means the KYPO K8s cluster deployed successful as show below. Login with the admin user we configured just now.
+
+![](img/s_09.png)
+
+But when you login to create sandbox, it will fail, you need to change some K8s setting then you can start to use. 
+
+
+
+### Change Kypo-Kubernetes Cluster Configuration
+
+If you are unable to successfully create sandboxes with the admin after installation. To address this, manual adjustments are required inside the KYPO Kubernetes cluster environment. The following steps detail how to configure the cluster to resolve the problem. 
+
+**Step 1: Prepare the Kypo K8s Public Key to login the Kypo K8s-Node**
+
+Visit: https://www.base64decode.org/ and cover the **proxy_key** string `proxy_key = "LS0tLS1CRUdJTiBFQyB..."` in the `deployment.tfvars` to key file and save the contents in `key.pem`
+
+**Step 2: Log in to the KYPO Kubernetes Node**
+
+scp the `key.pem` to OpenStack controller node and ssh to the k8s cluster vm with the key.
+
+```
+chmod 0600 key.pem
+ssh ubuntu@192.168.200.207 -i key.pem 
+```
+
+**Step 3: Configure Host Aliases for Broken DNS Resolution**
+
+If the OpenStack environment lacks DNS name resolution, manually edit the KYPO deployment files to use `hostAliases`. Run the below command one by one :
+
+```
+sudo kubectl edit deployment sandbox-service -n kypo
+sudo kubectl edit deployment sandbox-service-worker-ansible -n kypo   
+sudo kubectl edit deployment sandbox-service-worker-openstack -n kypo   
+sudo kubectl edit deployment oidc-issuer-ldap -n kypo
+sudo kubectl edit deployment sandbox-service-worker-default -n kypo
+```
+
+for each deployment add below content under `specs.template.specs`  after containers config :
+
+```yaml
+...
+   - mountPath: /root/.ssh/kypo-crp-proxy-key  
+      name: kypo-crp-proxy-key  
+      subPath: kypo-crp-proxy-key    
+    - mountPath: /var/opt/kypo/kypo-ansible-runner-volumes   
+      name: ansible-runner-vol 
+    - mountPath: /root/.ssh/git-ssh-key  
+      name: git-ssh-key          
+      subPath: git-ssh-key  
+  dnsPolicy: ClusterFirst   
+  # Add the below host aliases part:
+  hostAliases:   
+  - hostnames:   
+    - controller2  
+    ip: 10.0.6.4    
+  # -------------------------------
+  restartPolicy: Always                                                               
+  schedulerName: default-scheduler                                                   
+  securityContext: {}        
+...              
+```
+Reference: https://serverfault.com/questions/895088/can-host-aliases-be-assigned-to-deployments-in-kubernetes-if-so-how
+
+**Step 4: Fix Git Clone Bug (libguac install)**
+
+The Kypo-Crp has one bug to install lib "guacamole guacd" by using apt install. After branch v1.0.10, they fix the bug. login the kypo-k8s cluster and edit the internal git pod:
+
+```yaml
+spec:
+  template:
+    spec:
+      containers:
+        - name: git-internal-ssh
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                - sh
+                - -c
+                - |
+                  mkdir -p /assets/keys
+                  ssh-keygen -y -f /tmp/keys/git-ssh-key > /assets/keys/git-ssh-key.pub
+                  cat /assets/keys/git-ssh-key.pub > /home/git/.ssh/authorized_keys
+                  git clone -q --bare https://gitlab.ics.muni.cz/muni-kypo-crp/prototypes-and-examples/sandbox-definitions/small-sandbox.git /repos/prototypes-and-examples/sandbox-definitions/small-sandbox.git
+                  git clone -q --bare https://gitlab.ics.muni.cz/muni-kypo-crp/prototypes-and-examples/sandbox-definitions/kypo-crp-demo-training.git /repos/prototypes-and-examples/sandbox-definitions/kypo-crp-demo-training.git
+                  git clone -q --bare https://gitlab.ics.muni.cz/muni-kypo-crp/prototypes-and-examples/sandbox-definitions/kypo-crp-demo-training-adaptive.git /repos/prototypes-and-examples/sandbox-definitions/kypo-crp-demo-training-adaptive.git
+                  # Add the branch version as shown below: 
+                  git clone -b v1.0.10 -q --bare https://gitlab.ics.muni.cz/muni-kypo-crp/backend-python /ansible-networking-stage/kypo-ansible-stage-one.git /repos/backend-python/ansible-networking-stage/kypo-ansible-stage-one.git
+...
+```
+
+**Step 5: Test Sandbox Definition and Pool Allocation**
+
+Now you can login the KYPO-dashboard to define a test sandbox by using the below git to do the test:
+
+```
+URL: git@git-internal.kypo:/repos/prototypes-and-examples/sandbox-definitions/kypo-crp-hack-training-linear.git
+Revision: master
+```
+
+Then create a sand box pool to and allocate one sandbox to check whether kypo works:
+
+![](img/s_10.png)
+
+If all 3 stage passed no error(as shown above), which means all the config are working normally and the KYPO deployment on OpensStack is successful. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------
+
+### Reference Link
+
+https://gitlab.ics.muni.cz/muni-kypo-crp/devops/kypo-lite
+
+https://gitlab.ics.muni.cz/muni-kypo-crp/devops/kypo-crp-tf-deployment
+
+https://gitlab.ics.muni.cz/muni-kypo-images/muni-kypo-images-wiki/-/wikis/How-to-build-an-image-locally
