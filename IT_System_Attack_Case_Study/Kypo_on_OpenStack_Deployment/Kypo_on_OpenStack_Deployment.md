@@ -642,6 +642,7 @@ Now you can start to use the KYPO to create the sandbox for testing.
 - https://gitlab.ics.muni.cz/muni-kypo-crp/devops/kypo-crp-tf-deployment
 
 - https://gitlab.ics.muni.cz/muni-kypo-images/muni-kypo-images-wiki/-/wikis/How-to-build-an-image-locally
+- https://docs.crp.kypo.muni.cz/reference/kypo-user-and-group-swagger-open-api/
 
 
 
