@@ -541,30 +541,110 @@ If all 3 stage passed no error(as shown above), which means all the config are w
 
 
 
+### Add Multiple New Users In KYPO-CRP
 
+If you want to add more new users, you need to log in the KYPO K8s node as previous section with the key file: 
 
+```
+ssh ubuntu@192.168.200.207 -i key.pem 
+```
 
+Then use the KYPO users API, as shown in the deploy section, port 8084 is not opened to outside, so this can only be done inside the K8s node. 
 
+```
+https://localhost:8084/kypo-rest-user-and-group/api/v1/users
+```
 
+Create a simple `users.json` file with the new users you want to add: 
 
+```json
+{
+  "users": [
+    {
+      "sub": "user301@example.com",
+      "iss": "https://192.168.200.207:443/csirtmu-dummy-issuer-server/",
+      "full_name": "user301",
+      "given_name": "",
+      "family_name": ""
+    }, 
+    {
+      "sub": "user302@example.com",
+      "iss": "https://192.168.200.207:443/csirtmu-dummy-issuer-server/",
+      "full_name": "user302",
+      "given_name": "",
+      "family_name": ""
+    }...
+  ],
+  "groupName": "group1"
+}
+```
 
+The login username need to be the sub email name. Then use curl to post the new users information :
 
+```bash
+curl -X POST "http://localhost:8084/kypo-rest-user-and-group/api/v1/users" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"users\": [ { \"sub\": \"user301@example.com\", \"iss\": \"https://192.168.200.207:443/csirtmu-dummy-issuer-server/\", \"full_name\": \"user301\", \"given_name\": \"\", \"family_name\": \"\" }, { \"sub\": \"user302@example.com\", \"iss\": \"https://192.168.200.207:443/csirtmu-dummy-issuer-server/\", \"full_name\": \"user302\", \"given_name\": \"\", \"family_name\": \"\" } ], \"groupName\": \"group1\"}"
+```
 
+If you want to create 100 users, create a simple python program on the node and run:
 
+```python
+import requests
+import json
 
+url = "https://localhost:8084/kypo-rest-user-and-group/api/v1/users"
+data = json.load(users.json)
+response = requests.post(url, json=data) # Sends JSON in the body
+print(response.status_code)
+print(response.json())
+```
 
+After you add the users, go to the web to download the user information or use the curl GET the user information with the ID, assume there is already 300 users, then if I add one more user user-301, then the new user's ID is 301.
 
+```
+curl -X GET "http://localhost:8084/kypo-rest-user-and-group/api/v1/users/301" -H "accept: application/json"
+```
 
+Then we can get system generated password from the response data
 
+```json
+{
+  "content": [
+    {
+      "sub": "user301@example.com",
+      "iss": "https://192.168.200.207:443/csirtmu-dummy-issuer-server/",
+      "fullName": "John Doe",
+      "mail": "user301@example.com",
+      "givenName": "",
+      "familyName": "",
+      "password": "ZLUyJJ62ej"
+      "roles": [
+        {
+          "idOfMicroservice": 5,
+          "nameOfMicroservice": "kypo-training",
+          "description": "This role will allow you to create and delete groups.",
+          "role_type": "ROLE_USER",
+          "id": 301
+        }
+      ],
+    }
+  ],
+}
+```
 
-
+Now you can start to use the KYPO to create the sandbox for testing. 
 
 ------
 
 ### Reference Link
 
-https://gitlab.ics.muni.cz/muni-kypo-crp/devops/kypo-lite
+- https://gitlab.ics.muni.cz/muni-kypo-crp/devops/kypo-lite
 
-https://gitlab.ics.muni.cz/muni-kypo-crp/devops/kypo-crp-tf-deployment
+- https://gitlab.ics.muni.cz/muni-kypo-crp/devops/kypo-crp-tf-deployment
 
-https://gitlab.ics.muni.cz/muni-kypo-images/muni-kypo-images-wiki/-/wikis/How-to-build-an-image-locally
+- https://gitlab.ics.muni.cz/muni-kypo-images/muni-kypo-images-wiki/-/wikis/How-to-build-an-image-locally
+
+
+
+------
+
+> Last edit by LiuYuancheng(liu_yuan_cheng@hotmail.com) at 19/07/2025, if you have any problem or find anu bug, please send me a message .
