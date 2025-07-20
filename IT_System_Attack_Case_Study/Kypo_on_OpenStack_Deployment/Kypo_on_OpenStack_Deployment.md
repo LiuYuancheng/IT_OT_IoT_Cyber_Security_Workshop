@@ -4,39 +4,60 @@
 
 The KYPO Cyber Range Platform (KYPO CRP) is an open-source solution developed by Masaryk University to support cybersecurity training and exercises. Licensed under the MIT license, it offers flexibility for organizations to customize and extend the platform to meet specific training goals. KYPO CRP is built on a combination of OpenStack and Kubernetes technologies and integrates key functionalities such as Capture-the-Flag (CTF) scenario delivery and virtual instance management.
 
-The official installation guide provides a streamlined deployment procedure ([official guide](https://gitlab.ics.muni.cz/muni-kypo-crp/devops/kypo-crp-tf-deployment)),  when I follow the instruction to deploying on OpenStack, I found it lacks some detailed configurations and especially some troubleshooting tips which caused people's deployment failed. The purpose of this article is to bridge that gap by presenting a comprehensive step-by-step guide to deploying KYPO CRP on OpenStack-YOGA. It includes necessary pre-configuration tasks, complete deployment instructions using Terraform and Helm, and common issues users may encounter, along with their practical solutions.
+![](img/title.png)
+
+The official installation guide provides a streamlined deployment procedure ([official guide](https://gitlab.ics.muni.cz/muni-kypo-crp/devops/kypo-crp-tf-deployment)),  when I followed the instruction to deploying on OpenStack, I found it lacks some detailed configurations and especially some troubleshooting tips which caused people's deployment failed. The purpose of this article is to bridge that gap by presenting a comprehensive step-by-step guide to deploying KYPO CRP on OpenStack-YOGA. It includes necessary pre-configuration tasks, complete deployment instructions using Terraform and Helm, and common issues users may encounter, along with their practical solutions.
 
 This article includes 3 main parts: 
 
-- **OpenStack Pre-Configuration** : Essential setup required in your OpenStack-YOGA environment before deploying KYPO CRP.
-- **KYPO Deployment Steps** : Detailed procedures to deploy KYPO-CRP using Terraform and deploy applications using Helm, modify the Kypo-K8s cluster and the Kypo-Web-dashboard. 
+- **OpenStack Pre-Configuration** : Essential setup required in your OpenStack-YOGA environment before deploying KYPO-CRP.
+- **KYPO Deployment Steps** : Detailed procedures to deploy KYPO-CRP using Terraform and deploy applications using Helm, modify the KYPO-K8s cluster and the KYPO-Web-dashboard. 
 - **Troubleshooting and Usage** : How to access the platform post-deployment and resolve common issues encountered during the setup.
 
-```
+```python
 # Author:      Yuancheng Liu
 # Created:     2023/02/20
 # Version:     v_0.1.3
 # Copyright:   Copyright (c) 2025 Liu Yuancheng
+# License:     MIT License 
 ```
 
 **Table of Contents** 
 
 [TOC]
 
+- [How to Deploy KYPO_CRP on OpenStack-YOGA](#how-to-deploy-kypo-crp-on-openstack-yoga)
+    + [Introduction](#introduction)
+    + [KYPO-CRP Technology Overview](#kypo-crp-technology-overview)
+    + [OpenStack Preparation](#openstack-preparation)
+      - [Create OpenStack Application Credential for KYPO-CRP](#create-openstack-application-credential-for-kypo-crp)
+      - [Configure Required OpenStack Flavors](#configure-required-openstack-flavors)
+    + [Deployment of OpenStack Base Resources](#deployment-of-openstack-base-resources)
+      - [Pre-configure Installation Files](#pre-configure-installation-files)
+      - [Deploy OpenStack Base Resources](#deploy-openstack-base-resources)
+      - [Deployment of KYPO-CRP Helm Application](#deployment-of-kypo-crp-helm-application)
+    + [Change Kypo-Kubernetes Cluster Configuration](#change-kypo-kubernetes-cluster-configuration)
+    + [Add Multiple New Users In KYPO-CRP](#add-multiple-new-users-in-kypo-crp)
+    + [Reference Link](#reference-link)
+
 ------
 
 ### Introduction
 
-The KYPO Cyber Range Platform (KYPO CRP) is an open-source cybersecurity training platform developed by Masaryk University, designed to support both academic and professional training needs. It is built using modern technologies such as k8s , containers, microservices, and infrastructure as code, making it a flexible, scalable, and cost-effective solution for creating realistic cybersecurity scenarios.
+The KYPO Cyber Range Platform (KYPO CRP) designed to support both academic and professional training needs. It is built using modern technologies such as k8s , containers, microservices, and infrastructure as code, making it a flexible, scalable, and cost-effective solution for creating realistic cybersecurity scenarios.
 
-KYPO CRP enables the creation of customizable sandboxes—both in the **cloud** and **on-premises**—allowing learners and professionals to engage in hands-on training exercises, such as Capture-the-Flag (CTF) challenges and cyber incident simulations. The platform is fully open source and available under the MIT license, allowing organizations to tailor deployments to their unique infrastructure and training goals.
+KYPO-CRP enables the creation of customizable sandboxes—both in the **cloud** and **on-premises**—allowing learners to engage in hands-on training exercises, such as Capture-the-Flag (CTF) challenges and cyber incident simulations. The platform is fully open source and available under the MIT license, allowing organizations to tailor deployments to their unique infrastructure and training goals. The main reference of this article is based on below two links:
 
 - KYPO official web: https://crp.kypo.muni.cz/
 - KYPO GitLab Repo link: https://gitlab.ics.muni.cz/muni-kypo-crp
 
-This article provides a detailed, step-by-step guide to deploying KYPO CRP on OpenStack-YOGA, as illustrated in the diagram below. 
+This article provides a detailed, step-by-step guide to deploying KYPO-CRP on OpenStack-YOGA, as illustrated in the diagram below. 
 
 ![](img/s_03.png)
+
+
+
+` Figure-00: Deployment workflow diagram, version v_0.1.3 (2025)`
 
 The deployment process is divided into four main stages:
 
@@ -54,13 +75,15 @@ The deployment process is divided into four main stages:
 
 ### KYPO-CRP Technology Overview
 
-The KYPO CRP is entirely based on state-of-the-art approaches such as containers, infrastructures as code, microservices, and open-source software, including cloud provider technology - OpenStack.  The system structure is shown below:
+The KYPO-CRP is entirely based on state-of-the-art approaches such as containers, infrastructures as code, microservices, and open-source software, including cloud provider technology - OpenStack.  The system structure is shown below:
 
 ![](img/s_04.png)
 
+` Figure-01: KYPO_CRP system workflow diagram, version v_0.1.3 (2025)`
+
 KYPO CRP uses the same open approach for the content as for its architecture to encourage creating a community of trainers and supporting the sharing of training building blocks. For that reason, virtual machines, networks, and trainings are entirely defined in human-readable data-serialization languages JSON and YAML or use open-source software Packer to build virtual machines and Ansible for describing machine content.
 
-The Kypo control node is running a K8s cluster with different pods. In the node "default-kubernetes-cluster" you can get their state as shown blow:
+The KYPO control node is running a K8s cluster with different pods. In the OpenStack node "default-kubernetes-cluster" you can get their state as shown blow:
 
 ```bash
 ubuntu@default-kubernetes-cluster:~$ kubectl get pods
@@ -99,13 +122,15 @@ git-internal-c959ccff5-c9xgq                        2/2     Running   0         
 
 ### OpenStack Preparation
 
-Before deploying the KYPO Cyber Range Platform (KYPO CRP), you need to configure several settings in your OpenStack environment. This includes creating an application credential for KYPO and setting up required flavors to ensure the virtual machines (VMs) can be provisioned correctly.
+Before deploying the KYPO-CRP, you need to configure several settings in your OpenStack environment. This includes creating an application credential for KYPO and setting up required flavors to ensure the virtual machines (VMs) can be provisioned correctly.
 
 #### Create OpenStack Application Credential for KYPO-CRP
 
-**Step-1:** login the OpenStack-YOGA horizon dashboard as admin,  Under `Identity` -> `Application Credential` and create the credential as shown below: 
+**Step-1:** Login the OpenStack-YOGA horizon dashboard as admin,  Under `Identity` -> `Application Credential` and create the credential as shown below: 
 
 ![](img/s_05.png)
+
+` Figure-02: Create OpenStack Application Credential, version v_0.1.3 (2025)`
 
 For the credentials roles select all 4 roles: `admin`, `user`, `member`, `reader`  , and check the `Unrestricted` check box.
 
@@ -141,7 +166,7 @@ clouds:
 
 You can also create the application credential in the OpenStack Controller node with below commends:
 
-```
+```bash
 openstack application credential create --secret "kypotest7" --description "2nd Kypo installation" --role admin --role user --role reader --role member kypotest7
 ```
 
@@ -158,25 +183,25 @@ Ensure that the following **VM flavors** are available in your OpenStack environ
 | standard.large  | 8     | 80        | 8192     |
 | standard.xlarge | 16    | 160       | 32768    |
 
-> Note: These flavor names must exactly match those referenced in KYPO’s Terraform scripts and for the standard.xlarge it will be good to use 16 vCPU and 32GB Ram, otherwise based on my test there will be high possibility the deployment will hang or fail if you use 8vCPU and 16GB.
+> Note: These flavor names must exactly match those referenced in KYPO’s Terraform scripts and for the `standard.xlarge` it will be good to use 16 vCPU and 32GB Ram, otherwise based on my test there will be high possibility the deployment will hang or fail if you use 8vCPU and 16GB.
 
 Another very important thing is if your deployment progress fail and you want to re-deploy from beginning, you need to do blow clear up setting, otherwise there will be high possibility the redeploy will fail again: 
 
-If you need to clear/remove all the kypo instance from Openstack, these are the parameter need to be removed: 
+If you need to clear/remove all the KYPO instance from OpenStack, these are the parameter need to be removed: 
 
-- Clear the keypair with the name '`<ProjectName>-kypo`' such as (Admin Kypo or kypo-kypo)
+- Clear the keypair with the name '`<ProjectName>-kypo`' such as (Admin `Kypo` or `kypo-kypo`)
 
-- Release 2 OpenStack float IP address Kypo used.
+- Release 2 OpenStack float IP address KYPO used.
 
-- Delete the kypo-public router.
+- Delete the `kypo-public` router.
 
-- Delete all the kypo-instance : [ delete all `default-p000000000-*` ]
+- Delete all the `kypo-instance` : [ delete all `default-p000000000-*` ]
 
-- Delete the kypo-base network: [ if got delete error, clean the port, subnetwork of the network and delete again] 
+- Delete the `kypo-base` network: [ if got delete error, clean the port, subnetwork of the network and delete again] 
 
-- Clear all the kypo-created security groups.
+- Clear all the KYPO created security groups.
 
-- Delete the "sandbox" subnet under "Provider" network
+- Delete the "sandbox" subnet under "provider" network.
 
 
 
@@ -192,13 +217,13 @@ This section follows the official deployment guide from the KYPO GitLab reposito
 
 SSH into one of your OpenStack controller nodes and clone the official KYPO CRP deployment scripts (v1.1.4):
 
-```
+```bash
 git clone -b v1.1.4 https://gitlab.ics.muni.cz/muni-kypo-crp/devops/kypo-crp-tf-deployment.git
 ```
 
 **Step 2: Copy Credential Files to Controller**
 
-Copy the previously generated `app-credxxx-open-rc.sh` and `clouds.yaml` Scp the OpenStack controller node, put the `clouds.yaml` file under the `tf-head-services` and `tf-openstac-base`folder as shown below:
+Copy the previously generated `app-credxxx-open-rc.sh` and `clouds.yaml` , `scp` the OpenStack controller node, put the `clouds.yaml` file under the `tf-head-services` and `tf-openstac-base`folder as shown below:
 
 ```bash
 kypo@controller2:~/kypoInstall/kypo-crp-tf-deployment/tf-head-services$ ls
@@ -219,18 +244,18 @@ provider "openstack" {
 
 Edit `tf-openstack-base/tfvars/vars-base.tfvars` with these parameters:
 
-```t
+```python
 deploy_flavors                      = false
 deploy_kubernetes_cluster           = true
 kypo_kubernetes_cluster_flavor_name = "standard.xlarge"
 kypo_proxy_flavor_name              = "standard.medium"
 ```
 
-> Note: When I follow the Kypo-Crp official web use the `vars-all.tfvars`, there will be high possibility the Kypo-k8s cluster `uag-service` container get crash during the deployment. 
+> Note: When I follow the Kypo-Crp official web use the `vars-all.tfvars`, there will be high possibility the KYPO-k8s cluster `uag-service` container get crash during the deployment. 
 
 **Step 5: Install Terraform**
 
-```
+```bash
 sudo apt install snapd
 sudo snap install terraform --classic
 ```
@@ -316,9 +341,13 @@ PORT     STATE  SERVICE
 
 ![](img/s_06.png)
 
+` Figure-03: Normal KYPO K8s process list, version v_0.1.3 (2025)`
+
 If the traefik  is not start, which mean the deploy has been failed (as shown below)
 
 ![](img/s_07.png)
+
+` Figure-04: Exception KYPO K8s process list, version v_0.1.3 (2025)`
 
 To solve this problem you need to change the version in file `deployment.tfvars` these 2 lines version are correct: 
 
@@ -537,9 +566,11 @@ Then create a sand box pool to and allocate one sandbox to check whether kypo wo
 
 ![](img/s_10.png)
 
-If all 3 stage passed no error(as shown above), which means all the config are working normally and the KYPO deployment on OpensStack is successful. 
+If all 3 stage passed no error(as shown above), which means all the config are working normally and the KYPO deployment on OpenStack is successful. 
 
 
+
+------
 
 ### Add Multiple New Users In KYPO-CRP
 
