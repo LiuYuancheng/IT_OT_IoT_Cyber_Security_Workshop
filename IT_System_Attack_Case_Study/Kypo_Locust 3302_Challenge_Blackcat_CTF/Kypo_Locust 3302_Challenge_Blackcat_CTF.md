@@ -57,6 +57,8 @@ This layered design mimics a **real-world penetration test**, where attackers mu
 
 The challenge progresses through six structured questions, requiring participants to solve them step by step, the main techniques to solve the challenge questions are: 
 
+![](img/s_02.png)
+
 - **Q1 – Scan the IP address and ports**: Use **Nmap** to identify running services and discover the **Webmin** interface.
 - **Q2 – Identify a vulnerability**: Employ **Metasploit** to detect a web service vulnerability and link it to a related **CVE**.
 - **Q3 – Exploit the vulnerability**: Execute a **command injection exploit** against Webmin to establish a foothold.
@@ -263,7 +265,7 @@ This means you now have shell access to the target server through the backdoor.
 
 
 
-#### Step 3: Locate the Evidence File
+#### Step 3: Locate the Flag from Evidence File
 
 With shell access, navigate and search for the suspicious file mentioned in the challenge:
 
@@ -286,3 +288,173 @@ As shown above, the **user 25790**  is the flag information, enter this value in
 
 ------
 
+### CTF Challenge Q4: Find the IP Address of the Secret Server
+
+**Challenge Background:**
+
+In previous section WARNING-READ-ME file, it is obvious that Black cat anticipated our attack and notified their members. Most of their data seem to have been deleted , but hopefully, there's still something left elsewhere. Find the IP address of the new server that they moved their files to. We're not giving up just yet!
+
+**Question Task**:
+
+- Learn how an attacker’s **command history** can reveal critical evidence.
+- Investigate the account of **eve** (a BlackCat member) in the `/home/` directory.
+- Extract the **IP address of the server** to which Eve transferred files.
+- The correct flag is the **IP address of the secret server**.
+
+#### Step 1:  Review the Command History
+
+The hacker had to connect to the secret server from this host when they copied the data. Perhaps, some traces of the connection could remain in their homes located at the /home/ directory.
+
+We continue from the reverse shell session obtained in Task 3. First, check Eve’s home folder for hidden files:
+
+```shell
+ls -a /home/eve
+```
+
+Among the results, we see `.bash_history`, which logs the commands previously executed by this user as show below:
+
+![](img/s_17.png)
+
+Now we find the bash history file, then we can check whether there is some thing in the history with cmd:
+
+```
+less /home/eve/.bash_history
+```
+
+This reveals a series of commands left behind by the attacker as shown below:
+
+![](img/s_18.png)
+
+
+
+#### Step 2: Identify Flag From Suspicious Activity
+
+Based on the question description, eve transferred the files to some secret server his/her home folder, so we need to find the files transfer cmd from the history, as shown below, she use the scp to the server 10.1.17.4
+
+![](img/s_19.png)
+
+This provides direct evidence of where the stolen data was moved. Then fill the IP address in the text field to complete the task 4 as shown below:
+
+![](img/s_20.png)
+
+**> The correct answer(flag) is:**  `10.1.17.4`
+
+
+
+------
+
+### CTF Challenge Q5: Access the Secret Server
+
+**Challenge Background:**
+
+Very well, we now have the IP of their "secret" server (10.1.17.4). But how do we get in? It is surely heavily guarded. Don't try to search for vulnerabilities, that would probably be a waste of time. Search for interesting files on the web server (172.18.1.5) you previously exploited. There might be something that will help you access the secret server.
+
+**Question Task**:
+
+- Find some way to crack SSH private Key’s passphrase. 
+
+- Flag: the passphrase to a file that allows you to access the secret server.
+
+#### Step 1: Locate Eve’s SSH Private Key
+
+When eve was working on the web server, she authenticated to the secret server using an SSH keypair. (Password authentication is turned off.) There is a .ssh directory with a private SSH key in Eve's directory. Print it on the terminal (`cat /home/eve/.ssh/id_rsa`) and copy it to a local file on your attacker vm, so that you can crack it later.
+
+On the compromised web server, we navigate to Eve’s home directory and check the hidden `.ssh` folder:
+
+![](img/s_21.png)
+
+Here we find Eve’s private key file (`id_rsa`). We print it (`cat /home/eve/.ssh/id_rsa`) and copy the contents to a local file on our attacker VM for cracking as shown below:
+
+![](img/s_24.png)
+
+The private key is protected by a passphrase. Directly using it to connect will prompt for that passphrase:
+
+```
+ssh  -i id_rsa eve@10.1.17.4
+```
+
+We need to type in eve's key protection passphrase. So you cannot use the private SSH key without a passphrase. 
+
+#### Step 2: Run a Dictionary Attack with ssh2john
+
+Use a password-cracking tool ssh2john on your Attacker vm to find out that passphrase. Then, you will be able to connect to the secret server. The file **ssh2john.py** is the John the Ripper and how to use it can follow this link: https://bughacking.com/how-to-crack-ssh-private-key-with-john-the-ripper/
+
+To crack it, we first convert the key into a hash format that John the Ripper can process. This is done using the `ssh2john.py` helper script:
+
+```shell
+python ssh2john.py id_rsa > hash
+```
+
+Brute forcing an SSH key passphrase is impractical, so we use a **dictionary attack** with John the Ripper. One of the most common wordlists is `rockyou.txt`, which is available on Kali/Linux under `/usr/share/wordlists/`.
+
+```bash
+john --wordlist=/usr/share/wordlists/rockyou.txt hash
+```
+
+John successfully cracks the passphrase and outputs:
+
+![](img/s_22.png)
+
+The cracked passphrase is **pinkprincess**. With this, we can unlock Eve’s SSH private key and gain access to the secret server. Fill the passphrase in the page to complete task 5:
+
+![](img/s_23.png)
+
+**> The correct answer(flag) is:**  `pinkprincess`
+
+
+
+------
+
+### CTF Challenge Q6: Steal Eve's secret from the server
+
+**Challenge Background:**
+
+We have successfully cracked the passphrase (`pinkprincess`) protecting Eve’s SSH private key. Now it’s time to use this key to access the secret server (`10.1.17.4`) and retrieve the sensitive information Eve tried to hide.
+
+**Question Task**:
+
+- Use Eve’s private key to log in to the secret server.
+- Locate and extract the hidden top-secret flag.
+- **Flag:** The integer value contained inside the `flag.txt` file.
+
+#### Step 1: Set Correct Permissions for the Private Key
+
+Change the mode of the key file to ensure the key is only accessible by the current user and ssh to login the server: 
+
+```shell
+┌──(user㉿attacker)-[~]
+└─$ ls
+hash  id_rsa  ssh2john.py
+┌──(user㉿attacker)-[~]
+└─$ chmod 0600 id_rsa
+┌──(user㉿attacker)-[~]
+└─$ ssh -i id_rsa eve@10.1.17.4
+```
+
+Now, log in using Eve’s private key and the cracked passphrase:
+
+![](img/s_25.png)
+
+ Enter `pinkprincess` to unlock the key.
+
+#### Step 2: Connect to the Secret Server and Locate the Flag
+
+Once inside the server, we explore Eve’s directories. In the `/top_secret/` folder, we discover a file named `flag.txt`.
+
+![](img/s_26.png)
+
+The file contains a hidden integer value. Find the flag integer 58345 and fill the flag in the Kypo page to complete task 6 as shown below:
+
+![](img/s_27.png)
+
+**> The correct answer(flag) is:**  `58345`
+
+
+
+**Now all the tasks are completed! With all six flags captured, the investigation into Black Cat’s activities has been completed, proving the defender’s ability to follow digital footprints and expose hidden threats.**
+
+
+
+------
+
+>  last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 15/08/2025 if you have any problem, please send me a message.
