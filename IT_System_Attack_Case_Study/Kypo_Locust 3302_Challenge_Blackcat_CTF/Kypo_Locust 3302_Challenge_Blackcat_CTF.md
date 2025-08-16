@@ -4,6 +4,8 @@
 
 This CTF challenge is designed as an advanced Web and Information security exam to test the CTF participants through  penetration testing workflows, web service vulnerability exploit , command injection attack and the information protection knowledge and skills taught in Masaryk University Cybersecurity course [PV276 Seminar on Simulation of Cyber Attacks Course](https://is.muni.cz/course/fi/autumn2020/PV276) . The Locust 3302 sandbox is publicly available as part of KYPO’s open-source releases on KYPO official Gitlab: [MUNI-KYPO-TRAININGS / games / locust-3302 · GitLab](https://gitlab.ics.muni.cz/muni-kypo-trainings/games/locust-3302) for people to practice hands-on cyber defense and offense techniques.
 
+![](img/title.png)
+
 ```python
 # Author:      Yuancheng Liu
 # Created:     2024/03/20
