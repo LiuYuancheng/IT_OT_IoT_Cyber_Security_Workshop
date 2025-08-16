@@ -121,3 +121,59 @@ Record the service information (Name, Version and Port ) for solving the further
 
 ------
 
+### CTF Challenge Q2: Identify a Vulnerability
+
+**Question Task:**
+
+- Perform penetration testing to identify vulnerabilities in the discovered web service and determine the associated **CVE** that can be used for exploitation.
+
+#### Step 1: Use Metasploit to Find Known Vulnerabilities
+
+From the **Nmap** scan in Task 1, we know that the target server is running **Webmin** on port **10000**:
+
+```bash
+└─$ nmap -sV 172.18.1.5
+Starting Nmap 7.92 ( https://nmap.org ) at 2023-05-05 05:40 UTC
+Nmap scan report for 172.18.1.5
+Host is up (0.0026s latency).
+Not shown: 998 closed tcp ports (conn-refused)
+PORT      STATE SERVICE VERSION
+22/tcp    open  ssh     OpenSSH 7.9p1 Debian 10+deb10u2 (protocol 2.0)
+10000/tcp open  http    MiniServ 1.920 (Webmin httpd)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+```
+
+The version of Webmin in use is **1.920**. Our next step is to check whether this version is known to contain any security flaws.
+
+A common approach in penetration testing is to use **SearchSploit**([usage example](https://bughacking.com/how-to-use-searchsploit-in-kali-linux/)), a tool bundled with Kali Linux that queries Exploit-DB for publicly available exploits.
+
+Run the following command:
+
+```
+searchsploit Webmin
+```
+
+![](img/s_09.png)
+
+This shows several entries, with two particularly relevant to our target version:
+
+- `Webmin 1.920 - Remote Code Execution`
+- `Webmin 1.920 - Unauthenticated Remote Code Execution (Metasploit)`
+
+#### Step 3: Identify the CVE to Find the Task2 Flag
+
+Each known vulnerability is cataloged with a **CVE (Common Vulnerabilities and Exposures)** identifier. To find the specific CVE linked to Webmin 1.920, you can:
+
+- Use [Exploit-DB](https://www.exploit-db.com/) or [cve.mitre.org](https://cve.mitre.org/).
+- Or search online for “**Webmin 1.920 Remote Code Execution**.”
+
+Google search the content `Webmin 1.920 - Remote Code Execution` or `Webmin 1.920 - Unauthenticated Remote Code Execution (Metasploit)`, this is the 1st link Google provide: https://www.acunetix.com/vulnerabilities/web/webmin-v1-920-unauhenticated-remote-command-execution/. In the link we can find the CVE (CVE-2019-15107) information: 
+
+![](img/s_10.png)
+
+This vulnerability allows **unauthenticated attackers** to execute arbitrary commands remotely through a crafted request to `password_change.cgi`. See more at https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-15107
+
+Fill in the flag **CVE-2019-15107** and submit to complete task 2: s
+
+![](img/s_11.png)
+
