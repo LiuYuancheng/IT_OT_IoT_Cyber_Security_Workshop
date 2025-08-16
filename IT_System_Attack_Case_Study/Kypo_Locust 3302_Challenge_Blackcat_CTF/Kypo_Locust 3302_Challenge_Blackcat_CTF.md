@@ -1,4 +1,4 @@
-# Write Up of KYPO Locust 3302 Challenge of Blackcat_CTF
+# CTF Challenge Write Up :  KYPO Locust 3302 Challenge of Blackcat
 
 **Design Purpose** : In the previous article *[How to Deploy KYPO_CRP on OpenStack-YOGA](https://www.linkedin.com/pulse/how-deploy-kypocrp-openstack-yoga-yuancheng-liu-zmjhc)*, I introduced how to deploy KYPO CRP on Open Stack cluster. This write-up will focus on the detailed steps of using the KYPO-CRP application and solving practical CTF questions through the KYPO Locust 3302 Challenge which used in the Blackcat CTF [Hacker and Defender Training] developed by Masaryk University’s Cybersecurity. 
 
@@ -20,39 +20,104 @@ This CTF challenge is designed as an advanced Web and Information security exam 
 
 ### Introduction 
 
-Before starting with the technical details of how to solve the Locust 3302 Blackcat Challenge, I want to express thanks to the challenge authors Adam Chovanec, Hana Pospíšilová, Peter Jaško for creating the interesting and challenging CTF challenge Question. The challenge includes 6 questions which covers the knowledge of cybersecurity threats, network, Linux system security, encryption and decryption. The CTF participants needs to solve them with blew actions: 
+Before diving into the technical details of how to solve the Locust 3302 Blackcat Challenge, I would like to acknowledge and express thanks to the challenge authors — **Adam Chovanec**, **Hana Pospíšilová**, and **Peter Jaško** for designing such an engaging and thought-provoking CTF exercise. This challenge consists of six sequential tasks, each designed to test core cybersecurity skills across multiple domains, including the penetration testing, web vulnerabilities, command injection attacks, Linux system forensics, and cryptographic password cracking.
 
-- penetration test and web security: Conduct penetration testing using suitable tools such as Metaploit to identify the possibility vulnerability of a web service.
-- command injection attack: How to use command injection introduce in CVE-2019-15107 to attack the Webmin service (password_change.cgi) to start a web shell then check the webhost’s critical information. 
-- Linus system Critical information analysis : How does the hacker find the secret information by tracing the the user’s bash cmd history. [ ]
-- Encryption and decryption, information protection: How to use the password cracking software tool John the Ripper(ssh2Jhon) to crack SSH private Key’s passphrase. 
+The tasks simulate realistic attacker-defender scenarios where participants must:
+
+- **Penetration test and web security**: Use tools such as `Metasploit` to identify vulnerabilities in a web service.
+- **Command injection attack**: Exploit `CVE-2019-15107` in the Webmin service (`password_change.cgi`) to gain remote access via a web shell.
+- **Linux system critical information analysis**: Trace and analyze `bash command history` to extract sensitive information left by other users.
+- **Encryption and decryption**: Leverage `John the Ripper (ssh2john)` to crack an SSH private key’s passphrase and gain deeper system access.
 
 #### Challenge Background Story
 
-When login the KYPO challenge page, the background storage is shown
+Upon logging into the KYPO challenge page, participants are introduced to a narrative backdrop as shown below:
 
 ![](img/s_03.png)
 
-Infosec community all over the word has been investigating hacker group Black cat. This mysterious organization has been very active in the hacker scene and is believed to be responsible for several cyber-attacks.Recently you have acquired an IP address of one of their servers. Find out who they are and what do they do. These criminals have to be stopped!"
+This storyline provides context for the tasks, immersing players in a **red team vs. hacker group** investigation scenario: 
 
-#### Environment network topology
+>  Infosec community all over the word has been investigating hacker group Black cat. This mysterious organization has been very active in the hacker scene and is believed to be responsible for several cyber-attacks.Recently you have acquired an IP address of one of their servers. Find out who they are and what do they do. These criminals have to be stopped!"
 
-There are three VMs in 3 subnets as show below:
+#### Environment and Network Topology
 
-![](img/s_04.png)
+The challenge runs on the **KYPO CRP cyber range**, which simulates a multi-network environment with three interconnected VMs as shown below:
 
-- Attacker (10.10.135.83) is the student's practice VM which student can login with sudo permission, all the hacking tools are installed in this VM, the student can use this VM to attack the other 2 VMs in the other two subnets. 
-- Web VM (172.18.1.5) in "outside-network" is simulating a web-server host Webmin web-service, it is hidden for the students.  
-- Client VM (10.1.17.4) behind "big-broker" subnet is a secret server which another hacker transferred the web host file to, the students need to find its IP by search and analysis the web-server's related information. so it is hidden for the student.   
+![img](img/s_04.png)
 
-#### CTF Questions Techniques
+- **Attacker VM (10.10.135.83)** – A Kali-like environment preloaded with penetration testing tools. CTF participants will use this VM to launch attacks on the target systems.
 
-The challenge contents 6 questions under linear sequence, the CTF participants needs to solve then one by one, the main technical for each questions are: 
+- **Web VM (172.18.1.5)** – Located in the *outside-network*, this hidden web server hosts the vulnerable **Webmin** service.
 
-- **Q1[Scan the IP address and port]** : The player will be orient in Kali Linux and its tools, learn how to use Nmap to scan a specific ipaddress' ports to find the program which is hosting some service. In this section they need to find the web-based system administration tool for Unix-like servers Webmin running in the target network.
-- **Q2[Identify a vulnerability]** : The player needs to use  penetration testing tool set Metasploit to identify the vulnerability of a service (web) and find the related CVE for exploiting the vulnerability.
-- **Q3[Exploit the vulnerability]** : The participants need to use basic metasploit function console and use CVE to exploit a web service with command injection attack.
-- **Q4 [Find an IP address of the secret server]** : The player need the check the hacker can trace and analysis the command history of linux system to get the critical information.
-- **Q5[Access the secret server]** : How to use the password cracking software tool John the Ripper(ssh2Jhon) to crack SSH private Key’s passphrase.
-- Q6[Steal secret information from the other server]: The CTF player needs to find how to change the private key permission to login the server and get the secret data.
+- **Client VM (10.1.17.4)** – A protected server hidden behind the “big-broker” subnet. Hackers have already transferred stolen files here, and CTF participants must uncover its existence by analyzing evidence.
+
+This layered design mimics a **real-world penetration test**, where attackers must pivot from one compromised system to another.
+
+#### CTF Questions and Techniques
+
+The challenge progresses through six structured questions, requiring participants to solve them step by step, the main techniques to solve the challenge questions are: 
+
+- **Q1 – Scan the IP address and ports**: Use **Nmap** to identify running services and discover the **Webmin** interface.
+- **Q2 – Identify a vulnerability**: Employ **Metasploit** to detect a web service vulnerability and link it to a related **CVE**.
+- **Q3 – Exploit the vulnerability**: Execute a **command injection exploit** against Webmin to establish a foothold.
+- **Q4 – Find the secret server’s IP address**: Analyze **Linux shell history** to reveal critical clues.
+- **Q5 – Access the secret server**: Crack the **SSH private key’s passphrase** using **John the Ripper**.
+- **Q6 – Steal secret information**: Adjust key permissions, log into the client server, and retrieve hidden data.
+
+Now lets go through the detailed steps to solve the six CTF challenge questions one by one. 
+
+
+
+------
+
+### CTF Challenge Q1: Scan the IP Address and Ports
+
+**Question Task:**
+
+- The participants will act as a defender to find some cyber attack action evidence  of the Black cat members. 
+- As one attacker, found some information from some Blackcat's document that the IP address (172.18.1.5 ) is hosting some of their service. See if the acquired IP address 172.18.1.5 leads anywhere.
+
+#### Step 1: Get KYPO Environment SSH Access
+
+From the KYPO CTF challenge page, go to topic 2 – Get Access and click **Get SSH Config** as shown below:
+
+![](img/s_05.png)
+
+This downloads a file `ssh-access.zip`. Extract it, then copy the key file named `pool-id-<your_file_id>-sandbox-id-<your_sandbox_id>-user-key` in to your into your `~/.ssh` directory.
+
+Next, log into your assigned Kali Linux VM (called **transaction**) using the following command:
+
+```bash
+ssh -F pool-id-<your file id>-sandbox-id-<your sandbox id>-user-config transaction
+```
+
+For example:
+
+![](img/s_06.png)
+
+If successful, you will now have shell access to the **Kali Linux attacker VM** — the environment you will use for most of the tasks.
+
+#### Step 2: Nmap Find the Task1 Flag
+
+Inside your home folder, you’ll find a `flag.txt` file. Opening it will display the keyword "start". Enter `start` in the challenge portal to officially begin **Task 1**:
+
+![](img/s_07.png)
+
+To discover which services are running on the target server (`172.18.1.5`), use **Nmap** to scan the service of the target VM, In this task, we use the **`-sV`** option to detect the version of running services:
+
+```
+nmap -sV 172.18.1.5
+```
+
+If you want to focus only on a specific port, you can add the **`-p <port_number>`** parameter.
+
+Example scan:
+
+![](img/s_08.png)
+
+Record the service information (Name, Version and Port ) for solving the further section questions. Based on the task description the the CTF challenge task 1 correct answer(flag) is:  **Webmin**
+
+
+
+------
 
