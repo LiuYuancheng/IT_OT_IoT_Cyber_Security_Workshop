@@ -1,8 +1,8 @@
 # CTF Challenge Write Up :  KYPO Locust 3302 Challenge of Blackcat
 
-**Design Purpose** : In the previous article *[How to Deploy KYPO_CRP on OpenStack-YOGA](https://www.linkedin.com/pulse/how-deploy-kypocrp-openstack-yoga-yuancheng-liu-zmjhc)*, I introduced how to deploy KYPO CRP on Open Stack cluster. This write-up will focus on the detailed steps of using the KYPO-CRP application and solving practical CTF questions through the KYPO Locust 3302 Challenge which used in the Blackcat CTF [Hacker and Defender Training] developed by Masaryk University’s Cybersecurity. 
+**Design Purpose** : In the previous article *[How to Deploy KYPO_CRP on OpenStack-YOGA](https://www.linkedin.com/pulse/how-deploy-kypocrp-openstack-yoga-yuancheng-liu-zmjhc)*, I introduced how to deploy KYPO CRP on your Open Stack cluster. This write-up will focus on the detailed steps of using the KYPO-CRP application and solving practical CTF questions through the KYPO Locust 3302 Challenge which used in the Blackcat CTF [Hacker and Defender Training] developed by Masaryk University’s Cybersecurity Team. 
 
-This CTF challenge is designed as an advanced Web and Information security exam to test the CTF participants through  penetration testing workflows, web service vulnerability exploit , command injection attack and the information protection knowledge and skills taught in Masaryk University Cybersecurity course [PV276 Seminar on Simulation of Cyber Attacks Course](https://is.muni.cz/course/fi/autumn2020/PV276) . The Locust 3302 sandbox is publicly available as part of KYPO’s open-source releases on KYPO official Gitlab: [MUNI-KYPO-TRAININGS / games / locust-3302 · GitLab](https://gitlab.ics.muni.cz/muni-kypo-trainings/games/locust-3302) for people to practice hands-on cyber defense and offense techniques.
+This CTF challenge is designed as an advanced Web and Information security exam to test the CTF participants' knowledge and skills through  penetration testing workflows, web service vulnerability exploit , command injection attack and the information protection taught in Masaryk University Cybersecurity course [PV276 Seminar on Simulation of Cyber Attacks Course](https://is.muni.cz/course/fi/autumn2020/PV276) . The Locust 3302 sandbox is publicly available as part of KYPO’s open-source releases on KYPO official Gitlab Repo [MUNI-KYPO-TRAININGS / games / locust-3302 · GitLab](https://gitlab.ics.muni.cz/muni-kypo-trainings/games/locust-3302) for people to practice hands-on cyber defense and offense techniques.
 
 ![](img/title.png)
 
@@ -18,16 +18,41 @@ This CTF challenge is designed as an advanced Web and Information security exam 
 
 [TOC]
 
+- [CTF Challenge Write Up :  KYPO Locust 3302 Challenge of Blackcat](#ctf-challenge-write-up----kypo-locust-3302-challenge-of-blackcat)
+    + [Introduction](#introduction)
+      - [Challenge Background Story](#challenge-background-story)
+      - [Environment and Network Topology](#environment-and-network-topology)
+      - [CTF Questions and Techniques](#ctf-questions-and-techniques)
+    + [CTF Challenge Q1: Scan the IP Address and Ports](#ctf-challenge-q1--scan-the-ip-address-and-ports)
+      - [Step 1: Get KYPO Environment SSH Access](#step-1--get-kypo-environment-ssh-access)
+      - [Step 2: Nmap Find the Task1 Flag](#step-2--nmap-find-the-task1-flag)
+    + [CTF Challenge Q2: Identify a Vulnerability](#ctf-challenge-q2--identify-a-vulnerability)
+      - [Step 1: Use Metasploit to Find Known Vulnerabilities](#step-1--use-metasploit-to-find-known-vulnerabilities)
+      - [Step 2: Identify the CVE to Find the Task2 Flag](#step-2--identify-the-cve-to-find-the-task2-flag)
+    + [CTF Challenge Q3: Exploit the Vulnerability](#ctf-challenge-q3--exploit-the-vulnerability)
+      - [Step 1: Launch Metasploit and Select the Exploit](#step-1--launch-metasploit-and-select-the-exploit)
+      - [Step 2: Configure Exploit Options](#step-2--configure-exploit-options)
+      - [Step 3: Locate the Flag from Evidence File](#step-3--locate-the-flag-from-evidence-file)
+    + [CTF Challenge Q4: Find the IP Address of the Secret Server](#ctf-challenge-q4--find-the-ip-address-of-the-secret-server)
+      - [Step 1:  Review the Command History](#step-1---review-the-command-history)
+      - [Step 2: Identify Flag From Suspicious Activity](#step-2--identify-flag-from-suspicious-activity)
+    + [CTF Challenge Q5: Access the Secret Server](#ctf-challenge-q5--access-the-secret-server)
+      - [Step 1: Locate Eve’s SSH Private Key](#step-1--locate-eve-s-ssh-private-key)
+      - [Step 2: Run a Dictionary Attack with ssh2john](#step-2--run-a-dictionary-attack-with-ssh2john)
+    + [CTF Challenge Q6: Steal Eve's secret from the server](#ctf-challenge-q6--steal-eve-s-secret-from-the-server)
+      - [Step 1: Set Correct Permissions for the Private Key](#step-1--set-correct-permissions-for-the-private-key)
+      - [Step 2: Connect to the Secret Server and Locate the Flag](#step-2--connect-to-the-secret-server-and-locate-the-flag)
+
 ------
 
 ### Introduction 
 
-Before diving into the technical details of how to solve the Locust 3302 Blackcat Challenge, I would like to acknowledge and express thanks to the challenge authors — **Adam Chovanec**, **Hana Pospíšilová**, and **Peter Jaško** for designing such an engaging and thought-provoking CTF exercise. This challenge consists of six sequential tasks, each designed to test core cybersecurity skills across multiple domains, including the penetration testing, web vulnerabilities, command injection attacks, Linux system forensics, and cryptographic password cracking.
+Before diving into the technical details of how to solve the Locust 3302 Blackcat Challenge, I would like to acknowledge and express thanks to the CTF challenge authors — **Adam Chovanec**, **Hana Pospíšilová**, and **Peter Jaško** for designing such an engaging and thought-provoking hands on assignment for cyber security education and contest. This challenge consists of six sequential tasks, each designed to test core cybersecurity skills across multiple domains, including the penetration testing, web vulnerabilities, command injection attacks, Linux system forensics, and cryptographic password cracking.
 
 The tasks simulate realistic attacker-defender scenarios where participants must:
 
 - **Penetration test and web security**: Use tools such as `Metasploit` to identify vulnerabilities in a web service.
-- **Command injection attack**: Exploit `CVE-2019-15107` in the Webmin service (`password_change.cgi`) to gain remote access via a web shell.
+- **Command injection attack**: Exploit `CVE-2019-15107` in the `Webmin` service (`password_change.cgi`) to gain remote access command execution via a reverse shell.
 - **Linux system critical information analysis**: Trace and analyze `bash command history` to extract sensitive information left by other users.
 - **Encryption and decryption**: Leverage `John the Ripper (ssh2john)` to crack an SSH private key’s passphrase and gain deeper system access.
 
@@ -43,7 +68,7 @@ This storyline provides context for the tasks, immersing players in a **red team
 
 #### Environment and Network Topology
 
-The challenge runs on the **KYPO CRP cyber range**, which simulates a multi-network environment with three interconnected VMs as shown below:
+The challenge runs on the **KYPO Cyber Range Platform** and the contest scoring uses **CTFd** , The KYPO-CRP provide one set of a multi-network environment with three interconnected VMs for each CTF participants to access from internet, the network topology is shown below:
 
 ![img](img/s_04.png)
 
@@ -78,12 +103,12 @@ Now lets go through the detailed steps to solve the six CTF challenge questions 
 
 **Question Task:**
 
-- The participants will act as a defender to find some cyber attack action evidence  of the Black cat members. 
-- As one attacker, found some information from some Blackcat's document that the IP address (172.18.1.5 ) is hosting some of their service. See if the acquired IP address 172.18.1.5 leads anywhere.
+- The participants will act as a defender to find some cyber attack action evidence of the Black cat members. 
+- As one attacker has found some information from some Blackcat's document that the IP address (172.18.1.5 ) is hosting some of their service. See if the acquired IP address 172.18.1.5 leads anywhere.
 
 #### Step 1: Get KYPO Environment SSH Access
 
-From the KYPO CTF challenge page, go to topic 2 – Get Access and click **Get SSH Config** as shown below:
+To access the KYPO environment, we need to use the KYPO ssh chain config file to ssh login the specific VM. From the KYPO CTF challenge page, go to topic 2 – Get Access and click **Get SSH Config** button as shown below:
 
 ![](img/s_05.png)
 
@@ -103,7 +128,7 @@ If successful, you will now have shell access to the **Kali Linux attacker VM** 
 
 #### Step 2: Nmap Find the Task1 Flag
 
-Inside your home folder, you’ll find a `flag.txt` file. Opening it will display the keyword "start". Enter `start` in the challenge portal to officially begin **Task 1**:
+Inside your Kali home folder, you’ll find a `flag.txt` file. Opening it will display the keyword "start". Enter `start` in the challenge portal to officially begin **Task 1** Scan the IP address task page as shown below:
 
 ![](img/s_07.png)
 
@@ -177,7 +202,7 @@ Google search the content `Webmin 1.920 - Remote Code Execution` or `Webmin 1.92
 
 This vulnerability allows **unauthenticated attackers** to execute arbitrary commands remotely through a crafted request to `password_change.cgi`. See more at https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-15107
 
-Fill in the flag **CVE-2019-15107** and submit to complete task 2: s
+Fill in the flag **CVE-2019-15107** and submit to complete task 2: 
 
 ![](img/s_11.png)
 
@@ -331,7 +356,7 @@ This reveals a series of commands left behind by the attacker as shown below:
 
 #### Step 2: Identify Flag From Suspicious Activity
 
-Based on the question description, eve transferred the files to some secret server his/her home folder, so we need to find the files transfer cmd from the history, as shown below, she use the scp to the server 10.1.17.4
+Based on the question description, the hacker Eve transferred the files to some secret server his/her home folder, so we need to find the files transfer cmd from the history, as shown below, she use the scp to the server 10.1.17.4
 
 ![](img/s_19.png)
 
