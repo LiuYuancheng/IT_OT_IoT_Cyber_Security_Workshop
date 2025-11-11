@@ -1,4 +1,4 @@
-# CTF Challenge Write Up :  KYPO Locust 3302 Challenge of Blackcat
+# CTF Challenge Write Up 01:  KYPO Locust 3302 Challenge of Blackcat
 
 **Design Purpose** : In the previous article *[How to Deploy KYPO_CRP on OpenStack-YOGA](https://www.linkedin.com/pulse/how-deploy-kypocrp-openstack-yoga-yuancheng-liu-zmjhc)*, I introduced how to deploy KYPO CRP on your Open Stack cluster. This write-up will focus on the detailed steps of using the KYPO-CRP application and solving practical CTF questions through the KYPO Locust 3302 Challenge which used in the Blackcat CTF [Hacker and Defender Training] developed by Masaryk University’s Cybersecurity Team. 
 
@@ -11,7 +11,7 @@ This CTF challenge is designed as an advanced Web and Information security exam 
 # Created:     2024/03/20
 # Version:     v_0.1.2
 # License:     MIT License
-# Kyppo Disclarmer: This training topic is for educational purposes only.The story is fictitious.
+# Kypo-CRP Disclarmer: This training topic is for educational purposes only.The story is fictitious.
 ```
 
 **Table of Contents** 
