@@ -1,6 +1,6 @@
-# Kypo-CRP CTF Challenge Write Up 02: The Secret Laboratory
+# Kypo-CRP Penetration Test CTF Challenge Write Up 02: The Secret Laboratory
 
-**Project Design Purpose** : This article is the second write up of using the Kypo-CRP for building cyber security CTF challenges or hands on exams environment. I will use the s CTF game “The Secret Laboratory” from Masaryk University’s Spring 2020 semester course PV276 – Seminar on Simulation of Cyber Attacks and as a case study, this article demonstrates two key objectives:
+**Project Design Purpose** : This article is the second write up of using the Kypo-CRP for building cyber security CTF challenges or hands on exams environment. I will use the penetration test CTF game “The Secret Laboratory” from Masaryk University’s Spring 2020 semester course PV276 – Seminar on Simulation of Cyber Attacks and as a case study, this article demonstrates two key objectives:
 
 - How to build and deploy a custom CTF or teaching-assignment sandbox on the KYPO-CRP platform.
 - How to operate within the KYPO-CRP to solve the PV276 Secret Laboratory challenge step-by-step.
@@ -21,33 +21,120 @@ The Secret Laboratory CTF challenge is designed as an advanced web and informati
 
 [TOC]
 
-
-
 ------
 
 ### Introduction
 
-Before diving into the technical details of how to solve the Secret Laboratory Challenge, I would like to acknowledge and express thanks to the CTF challenge authors - Stanislav Boboň, David Hofman, Jakub Smatana  for designing such an engaging and thought-provoking hands on assignment for cyber security education and contest. This challenge consists of six sequential tasks, each designed to test core cybersecurity skills across cybersecurity threats, network, Linux system security, encryption and decryption. After solve the challenge the participants will get below knowledge about: 
+Before we dive into the technical walkthrough of solving the **Secret Laboratory** challenge, I’d like to thank the challenge authors—**Stanislav Boboň, David Hofman, and Jakub Smatana**—for designing a compact, engaging, and pedagogically rich hands-on assignment for cybersecurity education and competition.
 
-- Basic concept about network probing/scanning tools such as  **fping** and **Nmap**.
+The Secret Laboratory challenge is composed of five sequential tasks that together exercise core cybersecurity skills across networking, Linux system administration, web security, cryptography, and privilege escalation. Completing the challenge will leave participants comfortable with the following concepts and techniques:
 
-- Understand the Linux file system, ssh configuration, user and file permission configuration.
+- Basic network discovery and probing using tools such as `fping` and `nmap`.
 
-- How to do a simple penetration test for a web service to identify and exploit possible vulnerability by use the **CVE-2014-6271** information.
+- Linux filesystem layout, SSH configuration, and user/file permission models configuration.
 
-- How to use a permission mis-configured file to do  library hijacking/overwrite attack and privilege escalation
+- Performing a focused penetration test against a web service, including identifying and exploiting a known vulnerability (CVE-2014-6271).
 
-
+- Exploiting misconfigured permissions and performing library hijacking/overwrite attacks to achieve privilege escalation and extract sensitive information.
 
 #### Challenge Background Story
 
-Upon logging into the KYPO challenge page, participants are introduced to a narrative backdrop as shown below:
+On the KYPO challenge page participants are greeted with a short narrative that frames the exercise and sets the goals as shown below :
 
 ![](img/s_03.png)
 
+This storyline provides context for the tasks: 
+
+> **Welcome!** You are a cybersecurity officer hired to perform a penetration test on a startup’s web service so they can fix security problems early. You will be given a Kali machine on the same network as the target server—use it to locate vulnerabilities and demonstrate how they can be exploited.
+
+#### Environment and Network Topology
+
+The exercise runs on the **KYPO Cyber Range Platform (KYPO-CRP)** and uses **CTFd** for scoring. For each participant KYPO provisions a small multi-network environment composed of two interconnected VMs. The simplified network topology used in this write-up is shown below:
+
+![](img/s_04.png)
+
+- **Attacker (10.32.51.12)** — a Kali VM provided to the participant. It includes common pentest tools and the participant has `sudo` privileges to perform tasks.
+- **Web VM (10.32.51.173)** — the target server hosting the vulnerable web service.
+
+#### CTF Questions and Core Techniques
+
+The challenge is structured into five progressive questions as shown in the below diagram
+
+![](img/s_05.png)
+
+The main learning objectives and techniques covered are summarized here:
+
+- **Q1 — Network Probing:** Learn to orient yourself in Kali Linux and discover hosts in the target subnet using tools like `fping` and `nmap`.
+- **Q2 — Service Scanning:** Use `nmap` to enumerate open ports and services on the discovered host(s).
+- **Q3 — Identify the Vulnerability:** Use web scanning tools (for example, `nikto`) and CVE research to pinpoint a vulnerable service and gather vulnerability details.
+- **Q4 — Exploit the Vulnerability:** Apply an exploit informed by CVE-2014-6271 (Shellshock) to gain code execution on the web server.
+- **Q5 — Retrieve Secret Information & Privilege Escalation:** Explore how interpreted language library hijacking or overwriting combined with misconfigured file permissions can lead to information leakage and privilege escalation.
 
 
 
+------
 
-https://gitlab.ics.muni.cz/muni-kypo-images
+### Challenge Q1: Network Probing (Target Discovery)
+
+**Objective:** From your Kali VM on the KYPO network, discover the hosts in the subnet and submit the *total number of IP addresses* (including your own) as the flag.
+
+**Question Tasks**: Before any penetration test (or detection/defense activity) you must know the network layout: which hosts exist, which IPs belong to the target subnet, and which node you are. That lets you focus scans responsibly and — from a defender’s perspective — quickly spot new or suspicious devices on the network.
+
+#### Step 1.1 - Get KYPO Environment SSH Access
+
+CTF participant needs to get to the training topic 2 **Get Access to the Course Environment** , click the button **Get SSH Config** and follow the section "Access the Kypo-Crp Course Challenge VMs" in `UserAccessManual_CR1.pdf` to login to their own sandbox vm. (As shown below)
+
+![](img/s_06.png)
+
+Then the participant can login their own individual sandboxes (as shown below) with the downloaded SSH key and the configuration file as shown below:
+
+![](img/s_07.png)
+
+
+
+#### Step 1.2 - Confirm your VM network interface and subnet
+
+On the Kali attack VM run:
+
+```bash
+ip addr
+# or
+ifconfig
+```
+
+Look for the interface with an IP like `10.32.51.12`. From this address you can infer the subnet. In this challenge your Kali VM IP is `10.32.51.12`, so the subnet is `10.32.51.0/24` (i.e. addresses `10.32.51.0`–`10.32.51.255`).
+
+#### Step 1.3 - Probe the subnet for live hosts
+
+The participant can use `fping` (fast ICMP pinger) or `nmap` to enumerate live hosts. Examples used in the lab:
+
+**With fping** (list all live hosts in the subnet):
+
+```
+fping -ag 10.32.51.0/24 2>/dev/null
+```
+
+`-a` prints alive hosts, `-g` expands the range. `2>/dev/null` hides error messages.
+
+**With nmap** (ping scan / host discovery only):
+
+```
+nmap -sn 10.32.51.0/24
+```
+
+`-sn` performs host discovery without doing port/service scans. (You can run `nmap --help` or `man nmap` to read options; `-sV` is the option for service/version detection when you later want to enumerate services.)
+
+The result is shown below:
+
+![](img/s_08.png)
+
+The scanner output will list the IP addresses that responded. There are 4 node in shown in the result, then fill in the result 4 the flag submission page as shown below:
+
+![](img/s_09.png)
+
+**Correct answer (flag):** `4`
+
+
+
+------
 
