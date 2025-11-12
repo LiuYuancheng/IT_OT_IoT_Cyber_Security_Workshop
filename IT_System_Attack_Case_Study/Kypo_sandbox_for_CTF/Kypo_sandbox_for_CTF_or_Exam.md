@@ -138,3 +138,96 @@ The scanner output will list the IP addresses that responded. There are 4 node i
 
 ------
 
+### Challenge Q2 : Target Service Scanning (Service Enumeration)
+
+**Objective:**  Determine **which services** are running on that host and — critically — to extract the **HTTP service version string**. Submit the flag under format `<service-name> httpd <version number> ((Debian))`
+
+#### Step 2.1 - Nmap scan the target 
+
+Experiment with `nmap` options and run a service/version probe against the target. Useful options:
+
+- `-sS` — SYN (stealth) scan
+- `-sV` — probe services to detect versions
+- `-O`  — attempt OS detection
+
+Use the below command to scan the target host:
+
+```
+nmap -sV 10.32.51.173
+```
+
+The result is shown below:
+
+![](img/s_10.png)
+
+From that output get the Apache string is:
+
+```
+Apache httpd 2.4.38 ((Debian))
+```
+
+Fill in the result in the flag submission page: 
+
+![](img/s_11.png)
+
+**Correct answer (flag):** `Apache httpd 2.4.38 ((Debian))`
+
+
+
+------
+
+### Challenge Q3 : Identify the Vulnerability
+
+**Objective:** Scan the discovered web service to identify known vulnerabilities and submit the CVE identifier found in an open vulnerability database.
+
+**Tasks**: Knowing the server software and version (from Q2) lets you search for known weaknesses. In this task we perform a focused web vulnerability scan against the Apache-hosted service to discover a concrete, public CVE that explains how the server can be exploited.
+
+#### Step 3.1 — Scan with Nikto (discover potential CVEs)
+
+We use **Nikto**, a simple web vulnerability scanner preinstalled on the Kali VM. Nikto checks a web server for known issues and will list related CVE identifiers when it finds matching tests.
+
+Run:
+
+```
+nikto -h 10.32.51.173
+```
+
+Result:
+
+![](img/s_12.png)
+
+Nikto will probe common CGI scripts and headers and report findings. In this lab the scanner detects the **Shellshock**-related issue in a CGI script, and the output shows the associated CVE(s). Example output (screenshot in lab) shows the CVE entries discovered.
+
+Some time if the web server response slow, the student result may show below message: 
+
+![](img/s_13.png)
+
+This is because the nikto's plugin code design, both CVE2014-6271 and CVE2013-6278 belongs to the shellshock vulnerability for the same cgi, but use different Header for different API. The source code of the shellshock vulnerability detection plug in : https://github.com/sullo/nikto/blob/master/program/plugins/nikto_shellshock.plugin
+
+- CVE2014-6271 : Use API header 'User-Agent' (Public)
+- CVE2013-6278 : use API 'header 'Referer' (Debugging)
+
+#### Step 3.2 — Confirm with Nmap (optional verification)
+
+As the `User-Agent` is a public API, so most of the tools will detect the vulnerability as CVE2014-6271. For example if we use the Nmap's script vulnerability detection to expose the CVE, it will show CVE2014-6271, actually both of the answer are correct. 
+
+Run:
+
+```
+nmap -sV --script http-shellshock --script-args uri=/cgi-bin/printenv 10.32.51.173
+```
+
+The script output will commonly reference **CVE-2014-6271** (see the screenshot below). Both Nikto and this Nmap script are valid ways to corroborate the vulnerability.
+
+![](img/s_14.png)
+
+Fill in the flag in the submission page:
+
+![](img/s_15.png)
+
+**The correct answer(flag) is**:  `CVE-2014-6271`
+
+
+
+------
+
