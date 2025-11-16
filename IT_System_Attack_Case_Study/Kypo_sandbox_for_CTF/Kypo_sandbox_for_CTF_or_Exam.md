@@ -292,7 +292,7 @@ Result:
 
 ![](img/s_19.png)
 
-#### **Solution 4.3 (Optional): Reverse shell via Netcat**
+#### Solution 4.3 (Optional): Reverse shell via Netcat
 
 If instructors want to teach reverse shells and post-exploitation techniques:
 
@@ -318,3 +318,124 @@ After use test ssh login with the user `michael` and confirm the password correc
 
 ------
 
+### Challenge Q5: Find the Secret Information
+
+**CTF Challenge Information** :
+
+- **Objective:** Understand the Linux file permissions and special permission bits (especially **SUID**), Library hijacking / module overwriting in interpreted languages (Python, PHP, Perl, etc.) and Privilege escalation techniques.
+- **Tasks**: There is a secret file located under `/root`, but its permission prevents normal users from reading it. nside *michael*’s home directory, there are two files owned by **root**, both read-only for him, yet still executable. This is unusual—and suspicious. Their task is to find a way to use these files as a “bridge” to escalate privileges.
+- **Flag**: the text contents in the *txt file in /root folder.
+
+#### Step 5.1 : Inspecting sudo permissions
+
+n this challenge environment, a root-owned script named **try_it.py** (mode `0644`) is placed inside Michael’s home directory.
+ A hint is also added to `/etc/sudoers`:
+
+```
+- name: Allow for user michael to execute python script
+  lineinfile:
+    path: /etc/sudoers
+    insertafter: '^root'
+    line: 'michael ALL=(john) NOPASSWD: /usr/bin/python3 /home/michael/try_it.py'
+```
+
+Then check the user information to find user john with `sudo` cmd:
+
+```
+sudo -l
+```
+
+Result:
+
+![](img/s_21.png)
+
+This reveals:
+
+- User **michael** is allowed to run `/usr/bin/python3 /home/michael/try_it.py`
+- The command will be executed **as user john**, without requiring john’s password
+
+#### Step 5.2 : Review try_it.py file
+
+Then we check the try_it.py file:
+
+![](img/s_22.png)
+
+The script is trivial—no exploitable logic.
+ However:
+
+- It is **owned by root**
+- It is **executed with elevated privileges** (when run via sudo)
+
+This means we can exploit its Python runtime behavior.
+
+#### Step 5.3 Library Hijacking via Python Module Overwrite
+
+The Python searches for modules in this order:
+
+1. Current directory
+2. Directories in `PYTHONPATH`
+3. System library directories
+
+Because `try_it.py` contains `import random`, we can overwrite the `random` module by placing a fake `random.py` in the same directory. This allows us to execute arbitrary commands **with the privilege of the target user (john)**.
+
+Create the file `/home/michael/random.py` as shown below:
+
+![](img/s_23.png)
+
+Important notes:
+
+- Include the correct shebang (`#!/usr/bin/python3`)
+- Use `os.system` / `pty.spawn` / `subprocess` to spawn a shell
+
+#### Step 5.4 : Execute the hijacked script
+
+Run the script as instructed by sudo:
+
+```
+sudo -u john /usr/bin/python3 /home/michael/try_it.py
+```
+
+Result:
+
+![](img/s_24.png)
+
+Now we have a john-shell without needing john’s password. Because the system thinks *root* is spawning a shell as john (root never needs a password).
+
+#### Step 5.5 : Privilege Escalation: john → root
+
+Inside john’s home directory, students will find a suspicious SUID binary:
+
+![](img/s_25.png)
+
+A binary named **agetty** is sitting there—this is abnormal:
+
+- agetty is a system login program
+- It **should not** be located inside a user's home directory
+- It **should not** have SUID set
+- When SUID-root, agetty becomes a privilege escalation vector
+
+#### Step 5.6 : Use GTFOBins to escalate
+
+Search “agetty privilege escalation” or check GTFOBins and get : https://gtfobins.github.io/gtfobins/agetty/, this The site confirms the **agetty** with SUID can spawn a root shell.
+
+Run the exploitation command:
+
+```
+./agetty -o -p -l /bin/sh -a root tty
+```
+
+Result: 
+
+![](img/s_26.png)
+
+Grants a **root shell** and cat the root.txt to get the flag, submit the flag in the Kypo page:
+
+![](img/s_27.png)
+
+**The correct answer(flag) is**:  `FIIT_STU{got_r00t}`
+
+
+
+------
+
+> last edit by LiuYuancheng (liu_yuan_cheng@hotmail.com) by 15/11/2025 if you have any problem, please send me a message.
