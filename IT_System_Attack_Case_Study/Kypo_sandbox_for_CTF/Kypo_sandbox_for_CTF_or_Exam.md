@@ -7,7 +7,7 @@
 
 The Secret Laboratory CTF challenge is designed as an advanced web and information security exercise that introduces participants to the penetration testing workflow from a defender’s perspective. It emphasizes web service vulnerability identification and exploitation, CVE-based attacks, and data protection techniques taught in [Masaryk University’s PV276 Cybersecurity course](https://is.muni.cz/course/fi/autumn2020/PV276). The corresponding KYPO sandbox for this challenge is publicly available through KYPO’s official open-source repository on GitLab ([MUNI-KYPO-TRAININGS / games / secret-laboratory](https://gitlab.ics.muni.cz/muni-kypo-trainings/games/secret-laboratory)), allowing learners and professionals alike to practice hands-on cyber offense and defense skills in a realistic environment.
 
-
+![](img/title.png)
 
 ```python
 # Author:      Yuancheng Liu
@@ -434,7 +434,12 @@ Grants a **root shell** and cat the root.txt to get the flag, submit the flag in
 
 **The correct answer(flag) is**:  `FIIT_STU{got_r00t}`
 
+------
 
+If you are intereset about other article about Kypo CTP and the CTF challenge please refer to:
+
+- [*How to Deploy KYPO_CRP on OpenStack-YOGA*](https://www.linkedin.com/pulse/how-deploy-kypocrp-openstack-yoga-yuancheng-liu-zmjhc)
+- [CTF Challenge Write Up : KYPO Locust 3302 Challenge of Blackcat](https://www.linkedin.com/pulse/ctf-challenge-write-up-kypo-locust-3302-blackcat-yuancheng-liu-srkrc)
 
 ------
 
