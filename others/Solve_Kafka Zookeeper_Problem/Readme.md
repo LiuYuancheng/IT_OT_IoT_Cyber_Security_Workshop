@@ -2,7 +2,7 @@
 
 ![](img.png)
 
-This article will introduce the detailed steps by step about how to solve the  'unable to load data base on disk' problem happens in the Druid Database Kafka Zookeeper. 
+This article will introduce the detailed steps about how to solve the  'unable to load data base on disk' problem happens in the Druid Database Kafka Zookeeper. 
 
 ```python
 #Author:      Yuancheng Liu
